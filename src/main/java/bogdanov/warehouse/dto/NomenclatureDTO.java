@@ -10,4 +10,10 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class NomenclatureDTO {
+
+    private Long id;
+    private String name;
+    private String code;
+    private Long amount;
+
 }

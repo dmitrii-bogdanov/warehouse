@@ -1,6 +1,7 @@
 package bogdanov.warehouse.database.repositories;
 
 import bogdanov.warehouse.database.entities.PersonEntity;
+import bogdanov.warehouse.database.entities.StaffEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -34,5 +35,8 @@ public interface PersonRepository extends JpaRepository<PersonEntity, Long> {
                                                                          String lastname,
                                                                          String patronymic);
 
+    public List<PersonEntity> findAllByStaffEquals(StaffEntity staff);
+
+    public List<PersonEntity> findAllByStaffNot(StaffEntity staff);
 
 }

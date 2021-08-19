@@ -10,4 +10,9 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class StaffDTO {
+
+    private Long id;
+    private String position;
+    private PersonDTO person;
+
 }

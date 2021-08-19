@@ -13,10 +13,14 @@ public class UserServiceImpl implements UserService {
 
     private UserRepository userRepository;
 
+    //region Autowired setters
     @Autowired
     private void setUserRepository(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
+    //endregion
+
+
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

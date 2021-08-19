@@ -10,4 +10,12 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class UserDTO {
+
+    private Long id;
+    private String username;
+    private String lastname;
+    private String firstname;
+    private String patronymic;
+    private String position;
+
 }

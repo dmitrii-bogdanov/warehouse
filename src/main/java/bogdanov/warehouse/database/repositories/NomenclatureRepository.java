@@ -24,6 +24,6 @@ public interface NomenclatureRepository extends JpaRepository<NomenclatureEntity
 
     public List<NomenclatureEntity> findAllByAmountEquals(long amount);
 
-    public List<NomenclatureEntity> findAllByActive(boolean isActive);
+    public List<NomenclatureEntity> findAllByIsActive(boolean isActive);
 
 }

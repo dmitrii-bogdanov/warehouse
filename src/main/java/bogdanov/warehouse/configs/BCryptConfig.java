@@ -12,12 +12,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 public class BCryptConfig {
 
     @Bean("user")
-    public BCryptPasswordEncoder getBCryptPasswordEncoderForUser(@Value("${adminStr}") int strength) {
+    public BCryptPasswordEncoder getBCryptPasswordEncoderForUser(@Value("${userStr}") int strength) {
         return new BCryptPasswordEncoder(strength);
     }
 
     @Bean("admin")
-    public BCryptPasswordEncoder getBCryptPasswordEncoderForAdmin(@Value("${adminStr") int strength) {
+    public BCryptPasswordEncoder getBCryptPasswordEncoderForAdmin(@Value("${adminStr}") int strength) {
         return new BCryptPasswordEncoder(strength);
     }
 

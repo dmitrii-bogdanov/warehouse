@@ -19,51 +19,86 @@ public class RolesConfig {
     @Autowired
     private void initializeRoles(RoleRepository roleRepository) {
         for (Role role : Role.values()) {
-            roleRepository.save(new RoleEntity(role));
+            roleRepository.save(new RoleEntity(role.getId(), role.name()));
         }
     }
 
     @Autowired
     private void initializeDefaultAdmin(UserRepository userRepository,
+                                        RoleRepository roleRepository,
                                         @Qualifier("admin") BCryptPasswordEncoder encoder,
                                         @Value("${admin.username}") String username,
                                         @Value("${admin.password}") String password) {
         UserEntity admin = new UserEntity();
         admin.setUsername(username);
         admin.setPassword(encoder.encode(password));
-        admin.getRoles().add(new RoleEntity(Role.ROLE_ADMIN));
-        admin.getRoles().add(new RoleEntity(Role.ROLE_STAFF));
-        admin.getRoles().add(new RoleEntity(Role.ROLE_USER));
+        admin.getRoles().add(roleRepository.getByName("ROLE_ADMIN"));
+        admin.getRoles().add(roleRepository.getByName("ROLE_STAFF"));
+        admin.getRoles().add(roleRepository.getByName("ROLE_USER"));
+        admin.getRoles().add(roleRepository.getByName("ROLE_EXTERIOR_MANAGER"));
+        admin.getRoles().add(roleRepository.getByName("ROLE_MANAGER"));
         userRepository.save(admin);
     }
 
     //TODO DELETE
     @Autowired
     private void initializeDefaultStaff(UserRepository userRepository,
+                                        RoleRepository roleRepository,
                                         @Qualifier("user") BCryptPasswordEncoder encoder,
                                         @Value("staff") String username,
                                         @Value("password") String password) {
         UserEntity staff = new UserEntity();
         staff.setUsername(username);
         staff.setPassword(encoder.encode(password));
-        staff.getRoles().add(new RoleEntity(Role.ROLE_STAFF));
-        staff.getRoles().add(new RoleEntity(Role.ROLE_USER));
+        staff.getRoles().add(roleRepository.getByName("ROLE_STAFF"));
+        staff.getRoles().add(roleRepository.getByName("ROLE_USER"));
         userRepository.save(staff);
     }
 
     //TODO DELETE
     @Autowired
     private void initializeDefaultUser(UserRepository userRepository,
-                                        @Qualifier("user") BCryptPasswordEncoder encoder,
-                                        @Value("user") String username,
-                                        @Value("password") String password) {
+                                       RoleRepository roleRepository,
+                                       @Qualifier("user") BCryptPasswordEncoder encoder,
+                                       @Value("user") String username,
+                                       @Value("password") String password) {
         UserEntity user = new UserEntity();
         user.setUsername(username);
         user.setPassword(encoder.encode(password));
-        user.getRoles().add(new RoleEntity(Role.ROLE_STAFF));
-        user.getRoles().add(new RoleEntity(Role.ROLE_USER));
+        user.getRoles().add(roleRepository.getByName("ROLE_USER"));
         userRepository.save(user);
     }
 
+    //TODO DELETE
+    @Autowired
+    private void initializeDefaultManager(UserRepository userRepository,
+                                        RoleRepository roleRepository,
+                                        @Qualifier("user") BCryptPasswordEncoder encoder,
+                                        @Value("manager") String username,
+                                        @Value("password") String password) {
+        UserEntity staff = new UserEntity();
+        staff.setUsername(username);
+        staff.setPassword(encoder.encode(password));
+        staff.getRoles().add(roleRepository.getByName("ROLE_STAFF"));
+        staff.getRoles().add(roleRepository.getByName("ROLE_USER"));
+        staff.getRoles().add(roleRepository.getByName("ROLE_MANAGER"));
+        userRepository.save(staff);
+    }
+
+    //TODO DELETE
+    @Autowired
+    private void initializeDefaultExteriorManager(UserRepository userRepository,
+                                        RoleRepository roleRepository,
+                                        @Qualifier("user") BCryptPasswordEncoder encoder,
+                                        @Value("extmanager") String username,
+                                        @Value("password") String password) {
+        UserEntity staff = new UserEntity();
+        staff.setUsername(username);
+        staff.setPassword(encoder.encode(password));
+        staff.getRoles().add(roleRepository.getByName("ROLE_STAFF"));
+        staff.getRoles().add(roleRepository.getByName("ROLE_USER"));
+        staff.getRoles().add(roleRepository.getByName("ROLE_EXTERIOR_MANAGER"));
+        userRepository.save(staff);
+    }
 
 }

@@ -34,6 +34,5 @@ public interface PersonRepository extends JpaRepository<PersonEntity, Long> {
                                                                          String lastname,
                                                                          String patronymic);
 
-    public List<PersonEntity> findAllByStaffExists();
 
 }

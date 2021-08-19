@@ -28,7 +28,7 @@ public class OperationEntity {
     private OperationStatusEntity status;
 
     @ElementCollection
-    private Map<NomenclatureEntity, Integer> operationItems = new HashMap<>();
+    private Map<NomenclatureEntity, Long> operationItems = new HashMap<>();
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     private UserEntity createdBy;

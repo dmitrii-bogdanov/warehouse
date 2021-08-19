@@ -28,7 +28,7 @@ public class OrderEntity {
     private OrderStatusEntity status;
 
     @ElementCollection
-    private Map<NomenclatureEntity, Integer> operationItems = new HashMap<>();
+    private Map<NomenclatureEntity, Long> operationItems = new HashMap<>();
 
     @OneToMany(mappedBy = "order")
     private Collection<OperationEntity> operations = new ArrayList<>();

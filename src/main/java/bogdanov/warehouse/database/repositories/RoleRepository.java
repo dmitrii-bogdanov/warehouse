@@ -9,6 +9,4 @@ public interface RoleRepository extends JpaRepository<RoleEntity, Long> {
 
     public RoleEntity getByName(String name);
 
-    public RoleEntity getByName(String name);
-
 }

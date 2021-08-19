@@ -11,7 +11,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 @PropertySource("classpath:bcrypt.properties")
 public class BCryptConfig {
 
-    @Primary
     @Bean("user")
     public BCryptPasswordEncoder getBCryptPasswordEncoderForUser(@Value("${adminStr}") int strength) {
         return new BCryptPasswordEncoder(strength);

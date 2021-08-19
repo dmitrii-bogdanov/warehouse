@@ -1,5 +1,6 @@
 package bogdanov.warehouse.database.entities;
 
+import bogdanov.warehouse.database.enums.Role;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
@@ -27,9 +28,13 @@ public class RoleEntity implements GrantedAuthority {
         super();
     }
 
-    public RoleEntity(ROLE role) {
-        this.id = role.getId();
-        this.name = role.name();
+    public RoleEntity(Role role) {
+        this(role.getId(), role.name());
+    }
+
+    public RoleEntity(long id, String name){
+        this.id = id;
+        this.name = name;
     }
 
     @Override

@@ -1,22 +1,22 @@
-package bogdanov.warehouse.database.entities;
+package bogdanov.warehouse.database.enums;
 
-enum ROLE {
+public enum Role {
     ROLE_ADMIN(1L),
     ROLE_STAFF(2L),
     ROLE_USER(3L);
 
     private final long id;
 
-    ROLE(final long id) {
+    Role(final long id) {
         this.id = id;
     }
 
-    long getId() {
+    public long getId() {
         return id;
     }
 
     @Override
     public String toString() {
-        return String.format("ROLE{id=%d, name='%s'}", id, name());
+        return String.format("Role{id=%d, name='%s'}", id, name());
     }
 }

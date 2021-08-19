@@ -31,7 +31,7 @@ public class NomenclatureEntity {
     @Column(nullable = false)
     private boolean isActive = true;
 
-    NomenclatureEntity() {
+    protected NomenclatureEntity() {
     }
 
     public NomenclatureEntity(long id, String name, String code, long amount) {

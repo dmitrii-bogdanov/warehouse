@@ -9,5 +9,5 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class PersonDTO {
+public class PositionDTO {
 }

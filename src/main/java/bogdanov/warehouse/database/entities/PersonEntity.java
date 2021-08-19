@@ -30,6 +30,8 @@ public class PersonEntity {
 
     private String email;
 
+    private String company;
+
     @OneToOne(mappedBy = "person", fetch = FetchType.EAGER)
     private StaffEntity staff;
 

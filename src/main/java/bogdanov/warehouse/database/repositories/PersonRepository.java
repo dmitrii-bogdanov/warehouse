@@ -1,7 +1,6 @@
 package bogdanov.warehouse.database.repositories;
 
 import bogdanov.warehouse.database.entities.PersonEntity;
-import bogdanov.warehouse.database.entities.StaffEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 
 @Entity
 @Getter
@@ -31,10 +32,10 @@ public class UserEntity implements UserDetails {
     private boolean isEnabled = false;
 
     @ManyToMany(fetch = FetchType.EAGER)
-    private Collection<RoleEntity> roles = new ArrayList<>();
+    private Collection<RoleEntity> roles = new HashSet<>();
 
     @OneToOne(fetch = FetchType.EAGER)
-    private StaffEntity staff;
+    private PersonEntity person;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

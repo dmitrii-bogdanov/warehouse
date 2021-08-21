@@ -32,7 +32,7 @@ public class PositionEntity {
     }
 
     @Transient
-    @OneToMany(mappedBy = "position")
-    private Collection<StaffEntity> staff;
+    @OneToMany(mappedBy = "position", fetch = FetchType.LAZY)
+    private Collection<PersonEntity> persons;
 
 }

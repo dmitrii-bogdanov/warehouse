@@ -32,7 +32,7 @@ public class PersonEntity {
 
     private String company;
 
-    @OneToOne(mappedBy = "person", fetch = FetchType.EAGER)
-    private StaffEntity staff;
+    @ManyToOne(fetch = FetchType.EAGER)
+    private PositionEntity position;
 
 }

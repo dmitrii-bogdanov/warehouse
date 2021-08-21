@@ -1,29 +1,20 @@
 package bogdanov.warehouse.services.mappers;
 
+import bogdanov.warehouse.database.entities.PersonEntity;
 import bogdanov.warehouse.database.entities.RoleEntity;
 import bogdanov.warehouse.database.entities.UserEntity;
-import bogdanov.warehouse.dto.RoleDTO;
-import bogdanov.warehouse.dto.UserRegistrationDTO;
-import org.springframework.beans.factory.annotation.Autowired;
+import bogdanov.warehouse.dto.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class Mapper {
 
-    private RoleMapper roleMapper;
-    private UserRegistrationMapper userRegistrationMapper;
-
-    //region Autowired setters
-    @Autowired
-    private void setRoleMapper(RoleMapper roleMapper) {
-        this.roleMapper = roleMapper;
-    }
-
-    @Autowired
-    private void setUserRegistrationMapper(UserRegistrationMapper userRegistrationMapper) {
-        this.userRegistrationMapper = userRegistrationMapper;
-    }
-    //endregion
+    private final RoleMapper roleMapper;
+    private final UserRegistrationMapper userRegistrationMapper;
+    private final UserMapper userMapper;
+    private final PersonMapper personMapper;
 
     //region RoleDTO <--> RoleEntity
     public RoleEntity convert(RoleDTO role) {
@@ -35,8 +26,30 @@ public class Mapper {
     }
     //endregion
 
-    public UserEntity convert(UserRegistrationDTO user) {
+    //region UserRegistrationDTO, UserRegistrationInfoDTO <--> UserEntity
+    public UserEntity convert(UserAccountWithPasswordDTO user) {
         return userRegistrationMapper.convert(user);
     }
+
+    public UserAccountDTO convert(UserEntity user, boolean isAdminConsole) {
+        return isAdminConsole ? userRegistrationMapper.convert(user) : null;
+    }
+    //endregion
+
+    //region UserDTO <-- UserEntity
+    public UserDTO convert(UserEntity user) {
+        return userMapper.convert(user);
+    }
+    //endregion
+
+    //region PersonDTO <--> PersonEntity
+    public PersonEntity convert(PersonDTO person) {
+        return personMapper.convert(person);
+    }
+
+    public PersonDTO convert(PersonEntity person) {
+        return personMapper.convert(person);
+    }
+    //endregion
 
 }

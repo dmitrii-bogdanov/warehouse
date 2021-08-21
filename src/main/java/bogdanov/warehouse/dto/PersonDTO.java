@@ -17,7 +17,6 @@ public class PersonDTO {
     private String patronymic;
     private String phoneNumber;
     private String email;
-    private String company;
-    private Long StaffId;
+    private String position;
 
 }

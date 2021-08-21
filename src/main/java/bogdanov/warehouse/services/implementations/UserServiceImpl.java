@@ -1,6 +1,5 @@
 package bogdanov.warehouse.services.implementations;
 
-import bogdanov.warehouse.database.repositories.StaffRepository;
 import bogdanov.warehouse.database.repositories.UserRepository;
 import bogdanov.warehouse.services.interfaces.UserService;
 import org.springframework.beans.factory.annotation.Autowired;

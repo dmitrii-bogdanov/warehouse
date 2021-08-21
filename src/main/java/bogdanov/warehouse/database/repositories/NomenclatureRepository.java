@@ -9,9 +9,9 @@ import java.util.List;
 @Repository
 public interface NomenclatureRepository extends JpaRepository<NomenclatureEntity, Long> {
 
-    public NomenclatureEntity findByCode(String code);
+    public NomenclatureEntity getByCode(String code);
 
-    public NomenclatureEntity findByName(String name);
+    public NomenclatureEntity getByName(String name);
 
     //TODO Check what it does
     public List<NomenclatureEntity> findAllByNameContaining(String partialName);

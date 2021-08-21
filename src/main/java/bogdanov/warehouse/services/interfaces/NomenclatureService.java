@@ -20,7 +20,7 @@ public interface NomenclatureService {
 
     public NomenclatureDTO getByName(String name);
 
-    public NomenclatureDTO getByCode(String name);
+    public NomenclatureDTO getByCode(String code);
 
     public NomenclatureDTO updateName(NomenclatureDTO nomenclature);
 

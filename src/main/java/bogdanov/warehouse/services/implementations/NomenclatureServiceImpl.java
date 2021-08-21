@@ -3,12 +3,18 @@ package bogdanov.warehouse.services.implementations;
 import bogdanov.warehouse.database.entities.NomenclatureEntity;
 import bogdanov.warehouse.database.repositories.NomenclatureRepository;
 import bogdanov.warehouse.dto.NomenclatureDTO;
+import bogdanov.warehouse.exceptions.NomenclatureAlreadyTakenNameException;
+import bogdanov.warehouse.exceptions.NomenclatureWrongIdCodePairException;
+import bogdanov.warehouse.exceptions.ResourceNotFoundException;
 import bogdanov.warehouse.services.interfaces.NomenclatureService;
 import bogdanov.warehouse.services.mappers.NomenclatureMapper;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 //TODO
 @Service
@@ -21,40 +27,67 @@ public class NomenclatureServiceImpl implements NomenclatureService {
 
     @Override
     public NomenclatureDTO createNew(NomenclatureDTO nomenclature) {
-        boolean nameIsAvailable = nomenclatureRepository.getByName(nomenclature.getName()) == null;
-        boolean codeIsAvailable = nomenclatureRepository.getByCode(nomenclature.getCode()) == null;
+        boolean isNameAvailable = nomenclatureRepository.getByName(nomenclature.getName()) == null;
+        boolean isCodeAvailable = nomenclatureRepository.getByCode(nomenclature.getCode()) == null;
 
-        if ((name))
+        if (isNameAvailable && isCodeAvailable) {
+            return mapper.convert(
+                    nomenclatureRepository.save(
+                            mapper.convert(nomenclature
+                            )));
+        } else {
+            return nomenclature;
+        }
     }
 
     @Override
     public List<NomenclatureDTO> createNew(List<NomenclatureDTO> nomenclature) {
-        return
+        return nomenclature.stream().map(this::createNew).collect(Collectors.toList());
     }
 
     @Override
     public List<NomenclatureDTO> createNew(NomenclatureDTO[] nomenclature) {
-        return null;
+        return createNew(Arrays.asList(nomenclature));
     }
 
     @Override
     public NomenclatureDTO getById(long id) {
-        return null;
+        return mapper.convert(nomenclatureRepository.getById(id));
     }
 
     @Override
     public NomenclatureDTO getByName(String name) {
-        return null;
+        return mapper.convert(nomenclatureRepository.getByName(name));
     }
 
     @Override
-    public NomenclatureDTO getByCode(String name) {
-        return null;
+    public NomenclatureDTO getByCode(String code) {
+        return mapper.convert(nomenclatureRepository.getByCode(code));
     }
 
     @Override
     public NomenclatureDTO updateName(NomenclatureDTO nomenclature) {
-        return null;
+        NomenclatureEntity nomenclatureEntity = nomenclatureRepository.getById(nomenclature.getId());
+        if (nomenclatureEntity != null) {
+            if (Strings.isBlank(nomenclature.getCode())
+                    & Strings.isBlank(nomenclatureEntity.getCode())
+                    || nomenclatureEntity.getCode().equals(nomenclature.getCode())) {
+                if (nomenclatureRepository.getByName(nomenclature.getName()) == null) {
+                    nomenclatureEntity.setName(nomenclature.getName());
+
+                    return mapper.convert(nomenclatureRepository.save(nomenclatureEntity));
+
+                } else {
+                    throw new NomenclatureAlreadyTakenNameException("Name is already taken");
+                }
+            } else {
+                throw new NomenclatureWrongIdCodePairException(
+                        nomenclature.getId() + " " + nomenclature.getCode() +
+                                "Incorrect Nomenclature Id Code Pair");
+            }
+        } else {
+            throw new ResourceNotFoundException(nomenclature.getId() + " id; Nomenclature Resource Not Found");
+        }
     }
 
     @Override

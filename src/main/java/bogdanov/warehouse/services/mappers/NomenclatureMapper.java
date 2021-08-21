@@ -2,6 +2,7 @@ package bogdanov.warehouse.services.mappers;
 
 import bogdanov.warehouse.database.entities.NomenclatureEntity;
 import bogdanov.warehouse.dto.NomenclatureDTO;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Component;
 
 //TODO
@@ -10,12 +11,15 @@ public class NomenclatureMapper {
 
     //TODO Change public to default visibility
     public NomenclatureDTO convert(NomenclatureEntity nomenclature) {
-        return new NomenclatureDTO(
+        return nomenclature != null
+
+                ? new NomenclatureDTO(
                 nomenclature.getId(),
                 nomenclature.getName(),
                 nomenclature.getCode(),
-                nomenclature.getAmount()
-                );
+                nomenclature.getAmount())
+
+                : new NomenclatureDTO();
     }
 
     //TODO Change public to default visibility
@@ -23,7 +27,11 @@ public class NomenclatureMapper {
         NomenclatureEntity nomenclatureEntity = new NomenclatureEntity();
 
         nomenclatureEntity.setName(nomenclature.getName());
-        nomenclatureEntity.setCode(nomenclature.getCode());
+        if (nomenclature.getCode().isBlank()) {
+            nomenclatureEntity.setCode(Strings.EMPTY);
+        } else {
+            nomenclatureEntity.setCode(nomenclature.getCode());
+        }
 
         return nomenclatureEntity;
     }

@@ -9,8 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class NomenclatureMapper {
 
-    //TODO Change public to default visibility
-    public NomenclatureDTO convert(NomenclatureEntity nomenclature) {
+    NomenclatureDTO convert(NomenclatureEntity nomenclature) {
         return nomenclature != null
 
                 ? new NomenclatureDTO(
@@ -22,8 +21,7 @@ public class NomenclatureMapper {
                 : new NomenclatureDTO();
     }
 
-    //TODO Change public to default visibility
-    public NomenclatureEntity convert(NomenclatureDTO nomenclature) {
+    NomenclatureEntity convert(NomenclatureDTO nomenclature) {
         NomenclatureEntity nomenclatureEntity = new NomenclatureEntity();
 
         nomenclatureEntity.setName(nomenclature.getName());

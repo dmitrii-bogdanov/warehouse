@@ -1,5 +1,6 @@
 package bogdanov.warehouse.services.mappers;
 
+import bogdanov.warehouse.database.entities.NomenclatureEntity;
 import bogdanov.warehouse.database.entities.PersonEntity;
 import bogdanov.warehouse.database.entities.RoleEntity;
 import bogdanov.warehouse.database.entities.UserEntity;
@@ -15,6 +16,7 @@ public class Mapper {
     private final UserRegistrationMapper userRegistrationMapper;
     private final UserMapper userMapper;
     private final PersonMapper personMapper;
+    private final NomenclatureMapper nomenclatureMapper;
 
     //region RoleDTO <--> RoleEntity
     public RoleEntity convert(RoleDTO role) {
@@ -49,6 +51,16 @@ public class Mapper {
 
     public PersonDTO convert(PersonEntity person) {
         return personMapper.convert(person);
+    }
+    //endregion
+
+    //region NomenclatureDTO <--> NomenclatureEntity
+    public NomenclatureDTO convert(NomenclatureEntity nomenclature) {
+        return nomenclatureMapper.convert(nomenclature);
+    }
+
+    public NomenclatureEntity convert(NomenclatureDTO nomenclature) {
+        return nomenclatureMapper.convert(nomenclature);
     }
     //endregion
 

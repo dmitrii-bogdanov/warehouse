@@ -24,20 +24,25 @@ public class NomenclatureServiceImpl implements NomenclatureService {
 
     @Override
     public NomenclatureDTO createNew(NomenclatureDTO nomenclature) {
+        //TODO Check if getByName can return NULL
         boolean isNameAvailable = nomenclatureRepository.getByName(nomenclature.getName()) == null;
         boolean isCodeAvailable = nomenclatureRepository.getByCode(nomenclature.getCode()) == null;
 
-        if (isNameAvailable) {
-            if (isCodeAvailable) {
-                return mapper.convert(
-                        nomenclatureRepository.save(
-                                mapper.convert(nomenclature
-                                )));
+        if (Strings.isNotBlank(nomenclature.getName())) {
+            if (isNameAvailable) {
+                if (isCodeAvailable) {
+                    return mapper.convert(
+                            nomenclatureRepository.save(
+                                    mapper.convert(nomenclature
+                                    )));
+                } else {
+                    throw new NomenclatureAlreadyTakenCodeException(nomenclature.toString());
+                }
             } else {
-                throw new NomenclatureAlreadyTakenCodeException(nomenclature.toString());
+                throw new NomenclatureAlreadyTakenNameException(nomenclature.toString());
             }
         } else {
-            throw new NomenclatureAlreadyTakenNameException(nomenclature.toString());
+            throw new BlankNameException(nomenclature.toString());
         }
     }
 
@@ -77,6 +82,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
             boolean isBothBlank = Strings.isBlank(nomenclature.getCode())
                     && Strings.isBlank(nomenclatureEntity.getCode());
             if (isBothBlank || nomenclatureEntity.getCode().equals(nomenclature.getCode())) {
+                //TODO CHECK if getByName can return NULL
                 boolean isNameAvailable = nomenclatureRepository.getByName(nomenclature.getName()) == null;
                 if (isNameAvailable) {
                     nomenclatureEntity.setName(nomenclature.getName());
@@ -108,13 +114,12 @@ public class NomenclatureServiceImpl implements NomenclatureService {
                 Arrays.asList(nomenclature));
     }
 
+    //TODO Check at morning
     @Override
     public NomenclatureDTO updateCode(NomenclatureDTO nomenclature) {
         if (nomenclature.getId() != null) {
             NomenclatureEntity nomenclatureEntity = nomenclatureRepository.getById(nomenclature.getId());
-            boolean isBothBlank = Strings.isBlank(nomenclature.getName())
-                    && Strings.isBlank(nomenclatureEntity.getName());
-            if (isBothBlank || nomenclatureEntity.getName().equals(nomenclature.getName())) {
+            if (nomenclatureEntity.getName().equals(nomenclature.getName())) {
                 boolean isCodeAvailable = nomenclatureRepository.getByCode(nomenclature.getCode()) == null;
                 if (isCodeAvailable) {
                     nomenclatureEntity.setCode(nomenclature.getCode());
@@ -156,7 +161,10 @@ public class NomenclatureServiceImpl implements NomenclatureService {
 
     @Override
     public List<NomenclatureDTO> getAllAvailable() {
-        return null;
+        return nomenclatureRepository.findAllByAmountGreaterThan(0)
+                .stream()
+                .map(mapper::convert)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -210,12 +218,12 @@ public class NomenclatureServiceImpl implements NomenclatureService {
     }
 
     @Override
-    public NomenclatureDTO checkData(NomenclatureDTO nomenclature, boolean checkAmount) {
+    public NomenclatureDTO checkData(NomenclatureDTO nomenclature, boolean checkPositiveAmount) {
         return null;
     }
 
     @Override
-    public List<NomenclatureDTO> checkData(List<NomenclatureDTO> nomenclature, boolean checkAmount) {
+    public List<NomenclatureDTO> checkData(List<NomenclatureDTO> nomenclature, boolean checkPositiveAmount) {
         return null;
     }
 }

@@ -26,16 +26,7 @@ public class NomenclatureEntity {
     @Column(nullable = false)
     private long amount = 0L;
 
-    @Column(nullable = false)
-    private boolean isActive = true;
-
-    protected NomenclatureEntity() {
-    }
-
-    public NomenclatureEntity(String name, String code, long amount) {
-        this.name = name;
-        this.code = code;
-        this.amount = amount;
+    public NomenclatureEntity() {
     }
 
     public void add(long amount) {

@@ -2,6 +2,7 @@ package bogdanov.warehouse.services.interfaces;
 
 import bogdanov.warehouse.database.entities.NomenclatureEntity;
 import bogdanov.warehouse.dto.NomenclatureDTO;
+import bogdanov.warehouse.exceptions.NomenclatureException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,56 +11,90 @@ import java.util.List;
 @Service
 public interface NomenclatureService {
 
-    public NomenclatureDTO createNew(NomenclatureDTO nomenclature);
+    NomenclatureDTO createNew(NomenclatureDTO nomenclature);
 
-    public List<NomenclatureDTO> createNew(List<NomenclatureDTO> nomenclature);
+    List<NomenclatureDTO> createNew(List<NomenclatureDTO> nomenclature);
 
-    public List<NomenclatureDTO> createNew(NomenclatureDTO[] nomenclature);
+    List<NomenclatureDTO> createNew(NomenclatureDTO[] nomenclature);
 
-    public NomenclatureDTO getById(long id);
+    NomenclatureDTO getById(long id);
 
-    public NomenclatureDTO getByName(String name);
+    NomenclatureDTO getByName(String name);
 
-    public NomenclatureDTO getByCode(String code);
+    NomenclatureDTO getByCode(String code);
 
-    public NomenclatureDTO updateName(NomenclatureDTO nomenclature);
+    NomenclatureDTO updateName(NomenclatureDTO nomenclature);
 
-    public List<NomenclatureDTO> updateName(List<NomenclatureDTO> nomenclature);
+    List<NomenclatureDTO> updateName(List<NomenclatureDTO> nomenclature);
 
-    public List<NomenclatureDTO> updateName(NomenclatureDTO[] nomenclature);
+    List<NomenclatureDTO> updateName(NomenclatureDTO[] nomenclature);
 
-    public NomenclatureDTO updateCode(NomenclatureDTO nomenclature);
+    NomenclatureDTO updateCode(NomenclatureDTO nomenclature);
 
-    public List<NomenclatureDTO> updateCode(List<NomenclatureDTO> nomenclature);
+    List<NomenclatureDTO> updateCode(List<NomenclatureDTO> nomenclature);
 
-    public List<NomenclatureDTO> updateCode(NomenclatureDTO[] nomenclature);
+    List<NomenclatureDTO> updateCode(NomenclatureDTO[] nomenclature);
 
-    public List<NomenclatureDTO> getAll();
+    List<NomenclatureDTO> getAll();
 
-    public List<NomenclatureDTO> getAllAvailable();
+    List<NomenclatureDTO> getAllAvailable();
 
-    public NomenclatureDTO addAmount(NomenclatureDTO nomenclature);
+    NomenclatureDTO addAmount(NomenclatureDTO nomenclature);
 
-    public List<NomenclatureDTO> addAmount(List<NomenclatureDTO> nomenclature);
+    List<NomenclatureDTO> addAmount(List<NomenclatureDTO> nomenclature);
 
-    public List<NomenclatureDTO> addAmount(NomenclatureDTO[] nomenclature);
+    List<NomenclatureDTO> addAmount(NomenclatureDTO[] nomenclature);
 
-    public NomenclatureDTO subtractAmount(NomenclatureDTO nomenclature);
+    NomenclatureDTO subtractAmount(NomenclatureDTO nomenclature);
 
-    public List<NomenclatureDTO> subtractAmount(List<NomenclatureDTO> nomenclature);
+    List<NomenclatureDTO> subtractAmount(List<NomenclatureDTO> nomenclature);
 
-    public List<NomenclatureDTO> subtractAmount(NomenclatureDTO[] nomenclature);
+    List<NomenclatureDTO> subtractAmount(NomenclatureDTO[] nomenclature);
 
-    public NomenclatureDTO checkIdAndName(NomenclatureDTO nomenclature);
 
-    public List<NomenclatureDTO> checkIdAndName(List<NomenclatureDTO> nomenclature);
+    boolean checkId(NomenclatureDTO dto);
 
-    public NomenclatureDTO checkIdAndCode(NomenclatureDTO nomenclature);
+    boolean checkId(NomenclatureDTO dto, NomenclatureException e);
 
-    public List<NomenclatureDTO> checkIdAndCode(List<NomenclatureDTO> nomenclature);
 
-    public NomenclatureDTO checkData(NomenclatureDTO nomenclature, boolean checkAmount);
+    boolean checkNameAvailability(NomenclatureDTO dto);
 
-    public List<NomenclatureDTO> checkData(List<NomenclatureDTO> nomenclature, boolean checkAmount);
+    boolean checkNameAvailability(NomenclatureDTO dto, NomenclatureException e);
+
+
+    boolean checkCodeAvailability(NomenclatureDTO dto);
+
+    boolean checkCodeAvailability(NomenclatureDTO dto, NomenclatureException e);
+
+
+    boolean checkIdAndNamePair(NomenclatureDTO dto, NomenclatureEntity entity);
+
+    boolean checkIdAndNamePair(NomenclatureDTO dto, NomenclatureEntity entity, NomenclatureException e);
+
+//    List<NomenclatureDTO> checkIdAndName(List<NomenclatureDTO> nomenclature, NomenclatureException e);
+
+
+    boolean checkIdAndCodePair(NomenclatureDTO dto, NomenclatureEntity entity);
+
+    boolean checkIdAndCodePair(NomenclatureDTO dto, NomenclatureEntity entity, NomenclatureException e);
+
+//    List<NomenclatureDTO> checkIdAndCodePair(List<NomenclatureDTO> nomenclature, NomenclatureException e);
+
+
+    boolean checkAmount(NomenclatureDTO dto);
+
+    boolean checkAmount(NomenclatureDTO dto, NomenclatureException e);
+
+
+    boolean checkAmountAvailability(NomenclatureDTO dto);
+
+    boolean checkAmountAvailability(NomenclatureDTO dto, NomenclatureException e);
+
+
+    boolean checkData(NomenclatureDTO dto);
+
+    boolean checkData(NomenclatureDTO dto, NomenclatureException e);
+
+//    List<NomenclatureDTO> checkData(List<NomenclatureDTO nomenclature>);
 
 }

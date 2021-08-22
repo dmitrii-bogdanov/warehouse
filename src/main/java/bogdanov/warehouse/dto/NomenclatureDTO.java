@@ -11,4 +11,13 @@ public class NomenclatureDTO {
     private String code;
     private Long amount;
 
+    public String toFormatedString() {
+        return "{\n"
+                + "\t\"id\" : " + id + ",\n"
+                + "\t\"name\" : \"" + name + "\",\n"
+                + "\t\"code\" : \"" + code + "\",\n"
+                + "\t\"amount\" : " + amount + "\n"
+                + "}";
+    }
+
 }

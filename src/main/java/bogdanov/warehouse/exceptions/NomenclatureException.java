@@ -13,7 +13,7 @@ import java.util.TreeMap;
 public class NomenclatureException extends RuntimeException {
 
     private final String exception = getClass().toString();
-    private final Map<NomenclatureDTO, String> exceptions = new TreeMap<>();
+    private final Map<String, String> exceptions = new TreeMap<>();
 
     public NomenclatureException(String message) {
         super(message);
@@ -24,12 +24,30 @@ public class NomenclatureException extends RuntimeException {
         return this;
     }
 
-    public void put(NomenclatureDTO n, RuntimeException e) {
-        String tmp = exceptions.getOrDefault(n, Strings.EMPTY);
+    private void add(String nomenclature, String message) {
+        String tmp = exceptions.getOrDefault(nomenclature, Strings.EMPTY);
         exceptions.put(
-                n,
-                tmp + (tmp.isBlank() ? "" : "\n") + e.getClass() + " : " + e.getMessage()
+                nomenclature,
+                tmp + (tmp.isBlank() ? "" : "\n") + message
         );
+    }
+
+    public void add(NomenclatureDTO n, RuntimeException e) {
+        add(n.toFormatedString(), e.getClass() + " : " + e.getMessage());
+    }
+
+    public void add(NomenclatureException e) {
+        for (Map.Entry<String, String> entry : e.exceptions.entrySet()) {
+            add(entry.getKey(), entry.getValue());
+        }
+    }
+
+    public boolean isEmpty() {
+        return exceptions.isEmpty();
+    }
+
+    public boolean isNotEmpty() {
+        return !exceptions.isEmpty();
     }
 
 }

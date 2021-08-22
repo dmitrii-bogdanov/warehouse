@@ -198,32 +198,82 @@ public class NomenclatureServiceImpl implements NomenclatureService {
     }
 
     @Override
-    public NomenclatureDTO checkIdAndName(NomenclatureDTO nomenclature) {
-        return null;
+    public boolean checkId(NomenclatureDTO dto) {
+        return false;
     }
 
     @Override
-    public List<NomenclatureDTO> checkIdAndName(List<NomenclatureDTO> nomenclature) {
-        return null;
+    public boolean checkId(NomenclatureDTO dto, NomenclatureException e) {
+        return false;
     }
 
     @Override
-    public NomenclatureDTO checkIdAndCode(NomenclatureDTO nomenclature) {
-        return null;
+    public boolean checkNameAvailability(NomenclatureDTO dto) {
+        return false;
     }
 
     @Override
-    public List<NomenclatureDTO> checkIdAndCode(List<NomenclatureDTO> nomenclature) {
-        return null;
+    public boolean checkNameAvailability(NomenclatureDTO dto, NomenclatureException e) {
+        return false;
     }
 
     @Override
-    public NomenclatureDTO checkData(NomenclatureDTO nomenclature, boolean checkPositiveAmount) {
-        return null;
+    public boolean checkCodeAvailability(NomenclatureDTO dto) {
+        return false;
     }
 
     @Override
-    public List<NomenclatureDTO> checkData(List<NomenclatureDTO> nomenclature, boolean checkPositiveAmount) {
-        return null;
+    public boolean checkCodeAvailability(NomenclatureDTO dto, NomenclatureException e) {
+        return false;
+    }
+
+    @Override
+    public boolean checkIdAndNamePair(NomenclatureDTO dto, NomenclatureEntity entity) {
+        return false;
+    }
+
+    @Override
+    public boolean checkIdAndNamePair(NomenclatureDTO dto, NomenclatureEntity entity, NomenclatureException e) {
+        return false;
+    }
+
+    @Override
+    public boolean checkIdAndCodePair(NomenclatureDTO dto, NomenclatureEntity entity) {
+        return false;
+    }
+
+    @Override
+    public boolean checkIdAndCodePair(NomenclatureDTO dto, NomenclatureEntity entity, NomenclatureException e) {
+        return false;
+    }
+
+    @Override
+    public boolean checkAmount(NomenclatureDTO dto) {
+        return false;
+    }
+
+    @Override
+    public boolean checkAmount(NomenclatureDTO dto, NomenclatureException e) {
+        return false;
+    }
+
+    @Override
+    public boolean checkAmountAvailability(NomenclatureDTO dto) {
+        return false;
+    }
+
+    @Override
+    public boolean checkAmountAvailability(NomenclatureDTO dto, NomenclatureException e) {
+        return false;
+    }
+
+    @Override
+    public boolean checkData(NomenclatureDTO dto) {
+        return false;
+    }
+
+    @Override
+    public boolean checkData(NomenclatureDTO dto, NomenclatureException e) {
+        return false;
     }
 }

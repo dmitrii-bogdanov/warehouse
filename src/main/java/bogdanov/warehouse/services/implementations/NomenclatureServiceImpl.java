@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -149,8 +151,8 @@ public class NomenclatureServiceImpl implements NomenclatureService {
 
         if (
                 (null != (entity = checkIdAndRetrieve(nomenclature, exception)))
-                & checkCodeAvailability(nomenclature, exception)
-                && checkIdAndNamePair(nomenclature, entity, exception)
+                        & checkCodeAvailability(nomenclature, exception)
+                        && checkIdAndNamePair(nomenclature, entity, exception)
         ) {
             entity.setCode(nomenclature.getCode());
             return mapper.convert(nomenclatureRepository.save(entity));
@@ -162,11 +164,33 @@ public class NomenclatureServiceImpl implements NomenclatureService {
 
     @Override
     public List<NomenclatureDTO> updateCode(List<NomenclatureDTO> nomenclature) {
-        return nomenclature
+        final NomenclatureException exception = new NomenclatureException();
+        final List<NomenclatureEntity> entity = Collections.singletonList(null);
+
+        nomenclature
                 .stream()
                 .filter(n -> n.isNotEmpty())
-                .map(this::updateCode)
+                .map(dto -> {
+                    if (
+                            (null != entity.set(0, checkIdAndRetrieve(dto, exception)))
+                                    & checkCodeAvailability(dto, exception)
+                                    && checkIdAndNamePair(dto, entity.get(0), exception)
+                    ) {
+                        entity.get(0).setCode(dto.getCode());
+                        return mapper.convert(nomenclatureRepository.save(entity.get(0)));
+                    } else {
+                        return null;
+                    }
+                })
+                .filter(dto -> dto != null)
                 .collect(Collectors.toList());
+
+        if (exception.isEmpty()) {
+            return nomenclature;
+        } else {
+            exception.acceptAll(nomenclature);
+            throw exception;
+        }
     }
 
     @Override
@@ -364,7 +388,9 @@ public class NomenclatureServiceImpl implements NomenclatureService {
 
     @Override
     public boolean checkAmount(NomenclatureDTO dto, NomenclatureException e) {
-        return false;
+//        if ((dto.getId() == null) || (dto.getId() < 0)) {
+//            throw new NomenclatureNotPositiveAmount();
+//        }
     }
 
     @Override

@@ -4,6 +4,8 @@ import bogdanov.warehouse.dto.NomenclatureDTO;
 import lombok.Data;
 import org.apache.logging.log4j.util.Strings;
 
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -11,11 +13,16 @@ import java.util.TreeMap;
 @Data
 public class NomenclatureException extends RuntimeException {
 
+    private final Collection<NomenclatureDTO> accepted = new LinkedList<>();
     private final String exception = getClass().toString();
     private final Map<String, String> exceptions = new TreeMap<>();
 
     public NomenclatureException(String message) {
         super(message);
+    }
+
+    public NomenclatureException() {
+
     }
 
     @Override
@@ -47,6 +54,14 @@ public class NomenclatureException extends RuntimeException {
 
     public boolean isNotEmpty() {
         return !exceptions.isEmpty();
+    }
+
+    public void accept(NomenclatureDTO dto) {
+        accepted.add(dto);
+    }
+
+    public void acceptAll(Collection<NomenclatureDTO> dto) {
+        accepted.addAll(dto);
     }
 
 }

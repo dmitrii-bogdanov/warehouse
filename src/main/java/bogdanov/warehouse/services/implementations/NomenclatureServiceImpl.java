@@ -141,27 +141,23 @@ public class NomenclatureServiceImpl implements NomenclatureService {
                 Arrays.asList(nomenclature));
     }
 
-    //TODO Check at morning
     @Override
     public NomenclatureDTO updateCode(NomenclatureDTO nomenclature) {
-        if (nomenclature.getId() != null) {
-            NomenclatureEntity nomenclatureEntity = nomenclatureRepository.getById(nomenclature.getId());
-            if (nomenclatureEntity.getName().equals(nomenclature.getName())) {
-                boolean isCodeAvailable = nomenclatureRepository.getByCode(nomenclature.getCode()) == null;
-                if (isCodeAvailable) {
-                    nomenclatureEntity.setCode(nomenclature.getCode());
 
-                    return mapper.convert(nomenclatureRepository.save(nomenclatureEntity));
+        NomenclatureException exception = new NomenclatureException();
+        NomenclatureEntity entity;
 
-                } else {
-                    throw new NomenclatureAlreadyTakenCodeException(nomenclature.toString());
-                }
-            } else {
-                throw new NomenclatureWrongIdNamePairException(nomenclature.toString());
-            }
+        if (
+                (null != (entity = checkIdAndRetrieve(nomenclature, exception)))
+                & checkCodeAvailability(nomenclature, exception)
+                && checkIdAndNamePair(nomenclature, entity, exception)
+        ) {
+            entity.setCode(nomenclature.getCode());
+            return mapper.convert(nomenclatureRepository.save(entity));
         } else {
-            throw new NullIdException(nomenclature.toString());
+            throw exception;
         }
+
     }
 
     @Override
@@ -250,7 +246,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
 
     @Override
     public NomenclatureEntity checkIdAndRetrieve(NomenclatureDTO dto) {
-        if (dto.getId() != null) {
+        if (dto.getId() == null) {
             throw new NullIdException();
         }
         try {

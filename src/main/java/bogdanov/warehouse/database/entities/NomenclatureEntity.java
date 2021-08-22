@@ -3,6 +3,7 @@ package bogdanov.warehouse.database.entities;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.logging.log4j.util.Strings;
 
 import javax.persistence.*;
 
@@ -43,4 +44,11 @@ public class NomenclatureEntity {
         return false;
     }
 
+    public void setCode(String code) {
+        if (Strings.isBlank(code)) {
+            this.code = Strings.EMPTY;
+        } else {
+            this.code = code;
+        }
+    }
 }

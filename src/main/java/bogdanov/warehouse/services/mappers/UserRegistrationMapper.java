@@ -5,6 +5,7 @@ import bogdanov.warehouse.database.entities.UserEntity;
 import bogdanov.warehouse.database.enums.Role;
 import bogdanov.warehouse.dto.UserAccountWithPasswordDTO;
 import bogdanov.warehouse.dto.UserAccountDTO;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;

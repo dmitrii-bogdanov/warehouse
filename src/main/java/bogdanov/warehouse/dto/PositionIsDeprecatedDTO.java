@@ -1,2 +1,5 @@
-package bogdanov.warehouse.dto;public class PositionIsDeprecatedDTO {
+package bogdanov.warehouse.dto;
+
+//TODO
+public class PositionIsDeprecatedDTO {
 }

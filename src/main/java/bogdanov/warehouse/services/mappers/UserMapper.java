@@ -23,13 +23,12 @@ public class UserMapper {
         userDTO.setId(user.getId());
         userDTO.setUsername(user.getUsername());
 
-        StaffEntity staff = user.getStaff();
-        PersonEntity person = staff.getPerson();
+        PersonEntity person = user.getPerson();
 
         userDTO.setFirstname(person.getFirstname());
         userDTO.setLastname(person.getLastname());
         userDTO.setPatronymic(person.getPatronymic());
-        userDTO.setPosition(staff.getPosition().getName());
+        userDTO.setPosition(person.getPosition().getName());
 
         return userDTO;
     }

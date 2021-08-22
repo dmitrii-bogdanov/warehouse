@@ -1,8 +1,7 @@
 package bogdanov.warehouse.exceptions;
 
-//TODO
-public class NomenclatureAlreadyTakenNameException extends RuntimeException{
-    public NomenclatureAlreadyTakenNameException(String message) {
+public class NomenclatureBlankNameException extends RuntimeException {
+    public NomenclatureBlankNameException(String message) {
         super(message);
     }
 

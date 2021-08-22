@@ -42,7 +42,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
                 throw new NomenclatureAlreadyTakenNameException(nomenclature.toString());
             }
         } else {
-            throw new BlankNameException(nomenclature.toString());
+            throw new NomenclatureBlankNameException(nomenclature.toString());
         }
     }
 

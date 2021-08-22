@@ -51,11 +51,13 @@ public interface NomenclatureService {
 
     List<NomenclatureDTO> subtractAmount(NomenclatureDTO[] nomenclature);
 
-
     boolean checkId(NomenclatureDTO dto);
 
     boolean checkId(NomenclatureDTO dto, NomenclatureException e);
 
+    NomenclatureEntity checkIdAndRetrieve(NomenclatureDTO dto);
+
+    NomenclatureEntity checkIdAndRetrieve(NomenclatureDTO dto, NomenclatureException e);
 
     boolean checkNameAvailability(NomenclatureDTO dto);
 

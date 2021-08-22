@@ -2,7 +2,6 @@ package bogdanov.warehouse.exceptions;
 
 import bogdanov.warehouse.dto.NomenclatureDTO;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
 
 import java.util.Map;
@@ -33,7 +32,7 @@ public class NomenclatureException extends RuntimeException {
     }
 
     public void add(NomenclatureDTO n, RuntimeException e) {
-        add(n.toFormatedString(), e.getClass() + " : " + e.getMessage());
+        add(n.toFormattedString(), e.getClass() + " : " + e.getMessage());
     }
 
     public void add(NomenclatureException e) {

@@ -5,6 +5,10 @@ public class NomenclatureBlankNameException extends RuntimeException {
         super(message);
     }
 
+    public NomenclatureBlankNameException() {
+
+    }
+
     @Override
     public synchronized Throwable fillInStackTrace() {
         return this;

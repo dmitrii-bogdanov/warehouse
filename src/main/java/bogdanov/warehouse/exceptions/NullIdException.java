@@ -6,6 +6,10 @@ public class NullIdException extends RuntimeException{
         super(message);
     }
 
+    public NullIdException() {
+
+    }
+
     @Override
     public synchronized Throwable fillInStackTrace() {
         return this;

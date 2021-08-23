@@ -46,6 +46,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
                 nomenclature
                         .stream()
                         .filter(NomenclatureDTO::isNotEmpty)
+                        .distinct()
                         .map(dto -> {
                             if (
                                     checkNameAvailability(dto, exception)
@@ -163,14 +164,15 @@ public class NomenclatureServiceImpl implements NomenclatureService {
         nomenclature = nomenclature
                 .stream()
                 .filter(NomenclatureDTO::isNotEmpty)
+                .distinct()
                 .map(dto -> {
                     final NomenclatureEntity entity;
                     if (
                             (null != (entity = checkIdAndRetrieve(dto, exception)))
-                                    & checkCodeAvailability(dto, exception)
-                                    && checkIdAndNamePair(dto, entity, exception)
+                                    & checkNameAvailability(dto, exception)
+                                    && checkIdAndCodePair(dto, entity, exception)
                     ) {
-                        entity.setCode(dto.getCode());
+                        entity.setName(dto.getName());
                         return mapper.convert(nomenclatureRepository.save(entity));
                     } else {
                         return null;
@@ -220,6 +222,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
                 nomenclature
                         .stream()
                         .filter(NomenclatureDTO::isNotEmpty)
+                        .distinct()
                         .map(dto -> {
                             final NomenclatureEntity entity;
                             if (
@@ -255,7 +258,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
         return nomenclatureRepository.findAll()
                 .stream()
                 .map(mapper::convert)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -263,7 +266,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
         return nomenclatureRepository.findAllByAmountGreaterThan(0)
                 .stream()
                 .map(mapper::convert)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

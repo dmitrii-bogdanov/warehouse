@@ -13,7 +13,7 @@ import java.util.TreeMap;
 @Data
 public class NomenclatureException extends RuntimeException {
 
-    private final Collection<NomenclatureDTO> accepted = new LinkedList<>();
+    private Collection<NomenclatureDTO> accepted = new LinkedList<>();
     private final String exception = getClass().getSimpleName();
     private final Map<String, String> exceptions = new TreeMap<>();
 
@@ -22,7 +22,7 @@ public class NomenclatureException extends RuntimeException {
     }
 
     public NomenclatureException() {
-
+        super();
     }
 
     @Override
@@ -44,7 +44,23 @@ public class NomenclatureException extends RuntimeException {
 
     public void add(NomenclatureException e) {
         for (Map.Entry<String, String> entry : e.exceptions.entrySet()) {
-            add(entry.getKey(), entry.getValue());
+            this.add(entry.getKey(), entry.getValue());
+        }
+        boolean thisContainsAccepted;
+        boolean thisContainsException;
+        if (!e.accepted.isEmpty()) {
+            for (NomenclatureDTO dto : e.accepted) {
+                thisContainsAccepted = this.accepted.contains(dto);
+                thisContainsException = this.exceptions.containsKey(dto.toFormattedString());
+                if (!(thisContainsAccepted || thisContainsException)) {
+                    this.accept(dto);
+                }
+            }
+        }
+        for (NomenclatureDTO dto : this.accepted) {
+            if (this.exceptions.containsKey(dto.toFormattedString())) {
+                this.accepted.remove(dto);
+            }
         }
     }
 

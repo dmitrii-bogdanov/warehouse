@@ -9,11 +9,10 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.TreeMap;
 
-//TODO
 @Data
 public class NomenclatureException extends RuntimeException {
 
-    private Collection<NomenclatureDTO> accepted = new LinkedList<>();
+    private final Collection<NomenclatureDTO> accepted = new LinkedList<>();
     private final String exception = getClass().getSimpleName();
     private final Map<String, String> exceptions = new TreeMap<>();
 
@@ -57,11 +56,7 @@ public class NomenclatureException extends RuntimeException {
                 }
             }
         }
-        for (NomenclatureDTO dto : this.accepted) {
-            if (this.exceptions.containsKey(dto.toFormattedString())) {
-                this.accepted.remove(dto);
-            }
-        }
+        this.accepted.removeIf(dto -> this.exceptions.containsKey(dto.toFormattedString()));
     }
 
     public boolean isEmpty() {

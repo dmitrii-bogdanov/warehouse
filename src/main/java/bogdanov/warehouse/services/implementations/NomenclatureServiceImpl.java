@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 //TODO
 @Service
@@ -115,9 +114,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
 
     @Override
     public List<NomenclatureDTO> findAllByNameContaining(String partialName) {
-        final List<NomenclatureEntity> entities;
         if (Strings.isBlank(partialName)) {
-//            return Collections.EMPTY_LIST;
             throw new NomenclatureBlankNameException("Name is blank");
         }
         return nomenclatureRepository
@@ -344,7 +341,6 @@ public class NomenclatureServiceImpl implements NomenclatureService {
         }
     }
 
-    //TODO Check results
     @Override
     public boolean checkNameAvailability(NomenclatureDTO dto) {
         if (Strings.isBlank(dto.getName())) {
@@ -371,14 +367,13 @@ public class NomenclatureServiceImpl implements NomenclatureService {
 
     @Override
     public boolean checkCodeAvailability(NomenclatureDTO dto) {
-        if (Strings.isBlank(dto.getCode())) {
-            return true;
-        }
-        NomenclatureEntity entity = nomenclatureRepository.getByCode(dto.getCode());
-        if (entity != null) {
-            throw new NomenclatureAlreadyTakenCodeException(
-                    "Code : " + dto.getCode() + " belongs to id : " + entity.getId()
-            );
+        if (Strings.isNotBlank(dto.getCode())) {
+            NomenclatureEntity entity = nomenclatureRepository.getByCode(dto.getCode());
+            if (entity != null) {
+                throw new NomenclatureAlreadyTakenCodeException(
+                        "Code : " + dto.getCode() + " belongs to id : " + entity.getId()
+                );
+            }
         }
         return true;
     }

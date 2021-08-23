@@ -3,6 +3,7 @@ package bogdanov.warehouse.dto;
 import lombok.*;
 
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
 public class NomenclatureDTO {
 
@@ -23,7 +24,7 @@ public class NomenclatureDTO {
     }
 
     public String toFormattedString() {
-        return "{\n"
+        return "\n{\n"
                 + "\t\"id\" : " + id + ",\n"
                 + "\t\"name\" : \"" + name + "\",\n"
                 + "\t\"code\" : \"" + code + "\",\n"

@@ -25,11 +25,7 @@ public class NomenclatureMapper {
         NomenclatureEntity nomenclatureEntity = new NomenclatureEntity();
 
         nomenclatureEntity.setName(nomenclature.getName());
-        if (nomenclature.getCode().isBlank()) {
-            nomenclatureEntity.setCode(Strings.EMPTY);
-        } else {
-            nomenclatureEntity.setCode(nomenclature.getCode());
-        }
+        nomenclatureEntity.setCode(nomenclature.getCode());
 
         return nomenclatureEntity;
     }

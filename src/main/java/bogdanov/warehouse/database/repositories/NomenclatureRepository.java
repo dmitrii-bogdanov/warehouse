@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface NomenclatureRepository extends JpaRepository<NomenclatureEntity, Long> {
@@ -13,6 +14,7 @@ public interface NomenclatureRepository extends JpaRepository<NomenclatureEntity
 
     public NomenclatureEntity getByName(String name);
 
+    public List<NomenclatureEntity> findAllByCode(String code);
     //TODO Check what it does
     public List<NomenclatureEntity> findAllByNameContaining(String partialName);
 
@@ -24,6 +26,5 @@ public interface NomenclatureRepository extends JpaRepository<NomenclatureEntity
 
     public List<NomenclatureEntity> findAllByAmountEquals(long amount);
 
-    public List<NomenclatureEntity> findAllByIsActive(boolean isActive);
-
+    public List<NomenclatureEntity> findAllByCodeContaining(String partialCode);
 }

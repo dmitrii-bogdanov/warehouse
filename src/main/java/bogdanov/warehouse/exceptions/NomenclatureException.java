@@ -14,7 +14,7 @@ import java.util.TreeMap;
 public class NomenclatureException extends RuntimeException {
 
     private final Collection<NomenclatureDTO> accepted = new LinkedList<>();
-    private final String exception = getClass().toString();
+    private final String exception = getClass().getSimpleName();
     private final Map<String, String> exceptions = new TreeMap<>();
 
     public NomenclatureException(String message) {
@@ -39,7 +39,7 @@ public class NomenclatureException extends RuntimeException {
     }
 
     public void add(NomenclatureDTO n, RuntimeException e) {
-        add(n.toFormattedString(), e.getClass() + " : " + e.getMessage());
+        add(n.toFormattedString(), e.getClass().getSimpleName() + " : " + e.getMessage());
     }
 
     public void add(NomenclatureException e) {

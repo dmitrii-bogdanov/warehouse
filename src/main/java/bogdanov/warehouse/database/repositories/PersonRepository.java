@@ -34,8 +34,4 @@ public interface PersonRepository extends JpaRepository<PersonEntity, Long> {
                                                                          String lastname,
                                                                          String patronymic);
 
-    public List<PersonEntity> findAllByStaffEquals(StaffEntity staff);
-
-    public List<PersonEntity> findAllByStaffNot(StaffEntity staff);
-
 }

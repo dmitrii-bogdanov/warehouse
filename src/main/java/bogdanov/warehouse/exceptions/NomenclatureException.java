@@ -64,4 +64,12 @@ public class NomenclatureException extends RuntimeException {
         accepted.addAll(dto);
     }
 
+    public int countAccepted() {
+        return accepted.size();
+    }
+
+    public int size() {
+        return exceptions.size();
+    }
+
 }

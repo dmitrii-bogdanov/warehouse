@@ -374,7 +374,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
         NomenclatureEntity entity = nomenclatureRepository.getByCode(dto.getCode());
         if (entity != null) {
             throw new NomenclatureAlreadyTakenCodeException(
-                    "code : " + dto.getCode() + " belongs to id : " + entity.getId()
+                    "Code : " + dto.getCode() + " belongs to id : " + entity.getId()
             );
         }
         return true;

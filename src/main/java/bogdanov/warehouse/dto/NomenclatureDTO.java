@@ -12,6 +12,13 @@ public class NomenclatureDTO {
     private String code;
     private Long amount;
 
+    public NomenclatureDTO(NomenclatureDTO dto) {
+        this.id = dto.id;
+        this.name = dto.name;
+        this.code = dto.code;
+        this.amount = dto.amount;
+    }
+
     public boolean isEmpty() {
         return id == null
                 && name == null

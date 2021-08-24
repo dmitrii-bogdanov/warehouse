@@ -26,7 +26,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
         final NomenclatureException exception = new NomenclatureException();
         if (
                 checkNameAvailability(nomenclature, exception)
-                        && checkCodeAvailability(nomenclature, exception)
+                        & checkCodeAvailability(nomenclature, exception)
         ) {
             return mapper.convert(
                     nomenclatureRepository.save(
@@ -49,7 +49,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
                         .map(dto -> {
                             if (
                                     checkNameAvailability(dto, exception)
-                                            && checkCodeAvailability(dto, exception)
+                                            & checkCodeAvailability(dto, exception)
                             ) {
                                 return mapper.convert(nomenclatureRepository.save(mapper.convert(dto)));
                             } else {
@@ -386,7 +386,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
             return checkCodeAvailability(dto);
         } catch (NomenclatureAlreadyTakenCodeException ex) {
             e.add(dto, ex);
-            return true;
+            return false;
         }
     }
 

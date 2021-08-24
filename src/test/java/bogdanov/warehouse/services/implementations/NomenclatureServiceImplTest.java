@@ -40,10 +40,10 @@ class NomenclatureServiceImplTest {
             new NomenclatureDTO(null, "name1", null, null);
 
     private final NomenclatureDTO NAME1_EMPTY_CODE =
-            new NomenclatureDTO(null, "name1", "", null);
+            new NomenclatureDTO(null, "name1", Strings.EMPTY, null);
 
     private final NomenclatureDTO NAME1_BLANK_CODE =
-            new NomenclatureDTO(null, "name1", " ", null);
+            new NomenclatureDTO(null, "name1", "\t", null);
 
     private final NomenclatureDTO NAME2_CODE1 =
             new NomenclatureDTO(null, "name2", "code1", null);
@@ -69,7 +69,7 @@ class NomenclatureServiceImplTest {
 
     private NomenclatureException e;
     private NomenclatureEntity entity;
-    private NomenclatureDTO dto;
+    private NomenclatureDTO dto, result;
 
     @BeforeEach
     private void clear() {
@@ -81,6 +81,7 @@ class NomenclatureServiceImplTest {
         e = new NomenclatureException();
         entity = new NomenclatureEntity();
         dto = new NomenclatureDTO();
+        result = null;
     }
 
     //region checkId()
@@ -361,108 +362,250 @@ class NomenclatureServiceImplTest {
         );
         assertEquals("Code : " + dto.getCode() + " belongs to id : " + dto.getId(), ex.getMessage());
     }
+
+    @Test
+    @Order(28)
+    void test28_checkCodeAvailabilityDtoException_dtoWithNullCode() {
+        dto.setCode(null);
+        assertTrue(nomenclatureService.checkCodeAvailability(dto, e));
+        assertEquals(0, e.size());
+    }
+
+    @Test
+    @Order(29)
+    void test29_checkCodeAvailabilityDtoException_dtoWithEmptyCode() {
+        dto.setCode(Strings.EMPTY);
+        assertTrue(nomenclatureService.checkCodeAvailability(dto, e));
+        assertEquals(0, e.size());
+    }
+
+    @Test
+    @Order(30)
+    void test30_checkCodeAvailabilityDtoException_dtoWithBlankCode() {
+        dto.setCode("\t");
+        assertTrue(nomenclatureService.checkCodeAvailability(dto, e));
+        assertEquals(0, e.size());
+    }
+
+    @Test
+    @Order(31)
+    void test31_checkCodeAvailabilityDtoException_dtoWithAvailableCode() {
+        dto.setCode("code");
+        assertTrue(nomenclatureService.checkCodeAvailability(dto, e));
+        assertEquals(0, e.size());
+    }
+
+    @Test
+    @Order(32)
+    void test32_checkCodeAvailabilityDtoException_dtoWithAlreadyTakenCode() {
+        entity.setName("name");
+        entity.setCode("code");
+        dto = mapper.convert(nomenclatureRepository.save(entity));
+        assertFalse(nomenclatureService.checkCodeAvailability(dto, e));
+        assertTrue(e.getExceptions().get(dto.toFormattedString())
+                .contains(NomenclatureAlreadyTakenCodeException.class.getSimpleName()));
+    }
     //endregion
 
     @Test
-    void createNewTestCorrectDataWithCode() {
-        final NomenclatureDTO dto = NAME1_CODE1;
+    @Order(33)
+    void test33_createNew_dtoWithAvailableNameWithAvailableCode() {
+        dto = NAME1_CODE1;
 
-        final NomenclatureDTO result = nomenclatureService.createNew(dto);
+        result = nomenclatureService.createNew(dto);
 
-        Assertions.assertTrue(Objects.nonNull(result));
-        Assertions.assertTrue(Objects.nonNull(result.getId()));
-        Assertions.assertTrue(result.getId() > 0);
-        Assertions.assertTrue(dto.getName().equals(result.getName()));
-        Assertions.assertTrue(dto.getCode().equals(result.getCode()));
-        Assertions.assertTrue(Long.valueOf(0).equals(result.getAmount()));
+        assertTrue(Objects.nonNull(result));
+        assertTrue(result.isNotEmpty());
+        assertTrue(result.getId() > 0);
+        assertEquals(dto.getName(), result.getName());
+        assertEquals(dto.getCode(), result.getCode());
+        assertEquals(0, result.getAmount());
+        assertEquals(0, e.size());
 
 
+    }
+
+    //region createNew()
+    @Test
+    @Order(34)
+    void test34_createNew_dtoWithAvailableNameWithNullCode() {
+        dto = NAME1_NULL_CODE;
+
+        result = nomenclatureService.createNew(dto);
+
+        assertTrue(Objects.nonNull(result));
+        assertTrue(result.isNotEmpty());
+        assertTrue(result.getId() > 0);
+        assertEquals(dto.getName(), result.getName());
+        assertEquals(Strings.EMPTY, result.getCode());
+        assertEquals(0, result.getAmount());
+        assertEquals(0, e.size());
     }
 
     @Test
-    void createNewTestCorrectDataWithNullCode() {
-        final NomenclatureDTO dto = NAME1_NULL_CODE;
+    @Order(35)
+    void test35_createNew_dtoWithAvailableNameWithEmptyCode() {
+        dto = NAME1_EMPTY_CODE;
 
-        final NomenclatureDTO result = nomenclatureService.createNew(dto);
+        result = nomenclatureService.createNew(dto);
 
-        System.out.println();
-
-        Assertions.assertTrue(Objects.nonNull(result));
-        Assertions.assertTrue(Objects.nonNull(result.getId()));
-        Assertions.assertTrue(result.getId() > 0);
-        Assertions.assertTrue(dto.getName().equals(result.getName()));
-        Assertions.assertTrue(Strings.EMPTY.equals(result.getCode()));
-        Assertions.assertTrue(Long.valueOf(0).equals(result.getAmount()));
+        assertTrue(Objects.nonNull(result));
+        assertTrue(result.isNotEmpty());
+        assertTrue(result.getId() > 0);
+        assertEquals(dto.getName(), result.getName());
+        assertEquals(Strings.EMPTY, result.getCode());
+        assertEquals(0, result.getAmount());
+        assertEquals(0, e.size());
     }
 
     @Test
-    void createNewTestCorrectDataWithEmptyCode() {
-        final NomenclatureDTO dto = NAME1_EMPTY_CODE;
+    @Order(36)
+    void test36_createNew_dtoWithAvailableNameWithBlankCode() {
+        dto = NAME1_BLANK_CODE;
 
-        final NomenclatureDTO result = nomenclatureService.createNew(dto);
+        result = nomenclatureService.createNew(dto);
 
-        Assertions.assertTrue(Objects.nonNull(result));
-        Assertions.assertTrue(Objects.nonNull(result.getId()));
-        Assertions.assertTrue(result.getId() > 0);
-        Assertions.assertTrue(dto.getName().equals(result.getName()));
-        Assertions.assertTrue(Strings.EMPTY.equals(result.getCode()));
-        Assertions.assertTrue(Long.valueOf(0).equals(result.getAmount()));
+        assertTrue(Objects.nonNull(result));
+        assertTrue(result.isNotEmpty());
+        assertTrue(result.getId() > 0);
+        assertEquals(dto.getName(), result.getName());
+        assertEquals(Strings.EMPTY, result.getCode());
+        assertEquals(0, result.getAmount());
+        assertEquals(0, e.size());
     }
 
     @Test
-    void createNewTestCorrectDataWithBlankCode() {
-        final NomenclatureDTO dto = NAME1_BLANK_CODE;
+    @Order(37)
+    void test37_createNew_dtoWithAvailableNameWithAlreadyTakenCode() {
+        dto = NAME1_CODE1;
+        entity.setName(dto.getName() + "ent");
+        entity.setCode(dto.getCode());
 
-        final NomenclatureDTO result = nomenclatureService.createNew(dto);
+        dto.setCode(nomenclatureRepository.save(entity).getCode());
 
-        Assertions.assertTrue(Objects.nonNull(result));
-        Assertions.assertTrue(Objects.nonNull(result.getId()));
-        Assertions.assertTrue(result.getId() > 0);
-        Assertions.assertTrue(dto.getName().equals(result.getName()));
-        Assertions.assertTrue(Strings.EMPTY.equals(result.getCode()));
-        Assertions.assertTrue(Long.valueOf(0).equals(result.getAmount()));
+        e = assertThrows(NomenclatureException.class,
+                () -> {
+                    nomenclatureService.createNew(dto);
+                });
+        assertTrue(e.getExceptions().get(dto.toFormattedString())
+                .contains(NomenclatureAlreadyTakenCodeException.class.getSimpleName()));
     }
 
-    //TODO
-//    @Test
-//    void createNewTestAlreadyTakenCode() {
-//        NomenclatureDTO dto1 = NAME1_CODE1;
-//        final NomenclatureDTO dto2 = NAME2_CODE1;
-//        NomenclatureException e = null;
-//
-//        dto1 = nomenclatureService.createNew(dto1);
-//
-//        final NomenclatureAlreadyTakenCodeException codeException =
-//                new NomenclatureAlreadyTakenCodeException(
-//                        "Code : " + dto2.getCode() + " belongs to id : " + dto1.getId()
-//                );
-//
-//        boolean wasCaught = false;
-//        NomenclatureDTO result = null;
-//        try {
-//            log.info(dto1.toFormattedString());
-//            result = nomenclatureService.createNew(dto2);
-//            log.info(result.toFormattedString());
-//        } catch (NomenclatureException ex) {
-//            wasCaught = true;
-//            e = ex;
-//        }
-//
-//        Assertions.assertTrue(Objects.isNull(result));
-//        Assertions.assertTrue(wasCaught);
-//        Assertions.assertTrue(Objects.nonNull(e));
-//        Assertions.assertTrue(Objects.nonNull(e.getExceptions()));
-//        Assertions.assertTrue(e.size() == 1);
-//        Assertions.assertTrue("NomenclatureException".equals(e.getException()));
-//        Assertions.assertTrue(e.getExceptions().containsKey(dto2.toFormattedString()));
-//        Assertions.assertTrue(
-//                e.getExceptions()
-//                        .get(dto2.toFormattedString())
-//                        .equals(
-//                                codeException.getClass().getSimpleName()
-//                                        + " : " + codeException.getMessage()
-//                        )
-//        );
-//    }
+    @Test
+    @Order(38)
+    void test38_createNew_dtoWithBlankNameWithAvailableCode() {
+        dto.setName(null);
+        dto.setCode("code1");
+
+        e = assertThrows(NomenclatureException.class,
+                () -> {
+                    nomenclatureService.createNew(dto);
+                });
+        assertTrue(e.getExceptions().get(dto.toFormattedString())
+                .contains(NomenclatureBlankNameException.class.getSimpleName()));
+
+        dto.setName(Strings.EMPTY);
+        dto.setCode("code2");
+
+        e = assertThrows(NomenclatureException.class,
+                () -> {
+                    nomenclatureService.createNew(dto);
+                });
+        assertTrue(e.getExceptions().get(dto.toFormattedString())
+                .contains(NomenclatureBlankNameException.class.getSimpleName()));
+
+        dto.setName("\t");
+        dto.setCode("code3");
+
+        e = assertThrows(NomenclatureException.class,
+                () -> {
+                    nomenclatureService.createNew(dto);
+                });
+        assertTrue(e.getExceptions().get(dto.toFormattedString())
+                .contains(NomenclatureBlankNameException.class.getSimpleName()));
+    }
+
+    @Test
+    @Order(39)
+    void test39_createNew_dtoWithAlreadyTakenNameWithAvailableCode() {
+        dto.setName("name");
+        dto.setCode("code1");
+
+        entity.setName(dto.getName());
+        entity.setCode("code2");
+
+        nomenclatureRepository.save(entity);
+
+        e = assertThrows(NomenclatureException.class,
+                () -> {
+                    nomenclatureService.createNew(dto);
+                });
+        assertTrue(e.getExceptions().get(dto.toFormattedString())
+                .contains(NomenclatureAlreadyTakenNameException.class.getSimpleName()));
+    }
+
+    @Test
+    @Order(40)
+    void test40_createNew_dtoWithAlreadyTakenNameWithAlreadyTakenCode() {
+        dto.setName("name");
+        dto.setCode("code");
+
+        entity.setName(dto.getName());
+        entity.setCode(dto.getCode());
+
+        nomenclatureRepository.save(entity);
+
+        e = assertThrows(NomenclatureException.class,
+                () -> {
+                    nomenclatureService.createNew(dto);
+                });
+        assertTrue(e.getExceptions().get(dto.toFormattedString())
+                .contains(NomenclatureAlreadyTakenNameException.class.getSimpleName()));
+        assertTrue(e.getExceptions().get(dto.toFormattedString())
+                .contains(NomenclatureAlreadyTakenCodeException.class.getSimpleName()));
+    }
+
+    @Test
+    @Order(41)
+    void test41_createNew_dtoWithBlankNameWithAlreadyTakenCode() {
+        dto.setName("\t");
+        dto.setCode("code");
+
+        entity.setName("name");
+        entity.setCode(dto.getCode());
+
+        nomenclatureRepository.save(entity);
+
+        e = assertThrows(NomenclatureException.class,
+                () -> {
+                    nomenclatureService.createNew(dto);
+                });
+        assertTrue(e.getExceptions().get(dto.toFormattedString())
+                .contains(NomenclatureBlankNameException.class.getSimpleName()));
+        assertTrue(e.getExceptions().get(dto.toFormattedString())
+                .contains(NomenclatureAlreadyTakenCodeException.class.getSimpleName()));
+    }
+
+    @Test
+    @Order(41)
+    void test41_createNew_dtoWithBlankNameWithAlreadyTakenCode() {
+        dto.setName("\t");
+        dto.setCode("code");
+
+        entity.setName("name");
+        entity.setCode(dto.getCode());
+
+        nomenclatureRepository.save(entity);
+
+        e = assertThrows(NomenclatureException.class,
+                () -> {
+                    nomenclatureService.createNew(dto);
+                });
+        assertTrue(e.getExceptions().get(dto.toFormattedString())
+                .contains(NomenclatureBlankNameException.class.getSimpleName()));
+        assertTrue(e.getExceptions().get(dto.toFormattedString())
+                .contains(NomenclatureAlreadyTakenCodeException.class.getSimpleName()));
+    }
+    //endregion
 
 }

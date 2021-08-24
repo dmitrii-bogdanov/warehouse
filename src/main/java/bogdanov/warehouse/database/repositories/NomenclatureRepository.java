@@ -10,9 +10,9 @@ import java.util.Optional;
 @Repository
 public interface NomenclatureRepository extends JpaRepository<NomenclatureEntity, Long> {
 
-    public NomenclatureEntity getByCode(String code);
+    public Optional<NomenclatureEntity> findByCode(String code);
 
-    public NomenclatureEntity getByName(String name);
+    public Optional<NomenclatureEntity> findByName(String name);
 
     public List<NomenclatureEntity> findAllByCode(String code);
     //TODO Check what it does

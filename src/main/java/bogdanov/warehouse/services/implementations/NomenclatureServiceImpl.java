@@ -76,8 +76,8 @@ public class NomenclatureServiceImpl implements NomenclatureService {
     @Override
     public NomenclatureDTO getById(long id) {
         try {
-            return mapper.convert(nomenclatureRepository.getById(id));
-        } catch (EntityNotFoundException e) {
+            return mapper.convert(nomenclatureRepository.findById(id).orElseThrow());
+        } catch (NoSuchElementException e) {
             throw new ResourceNotFoundException(
                     "Nomenclature with id : " + id + " not found"
             );
@@ -90,8 +90,8 @@ public class NomenclatureServiceImpl implements NomenclatureService {
             throw new NomenclatureBlankNameException();
         }
         try {
-            return mapper.convert(nomenclatureRepository.getByName(name));
-        } catch (EntityNotFoundException e) {
+            return mapper.convert(nomenclatureRepository.findByName(name).orElseThrow());
+        } catch (NoSuchElementException e) {
             throw new ResourceNotFoundException(
                     "Nomenclature with name : " + name + " not found"
             );
@@ -104,8 +104,8 @@ public class NomenclatureServiceImpl implements NomenclatureService {
             throw new NomenclatureBlankCodeException();
         }
         try {
-            return mapper.convert(nomenclatureRepository.getByCode(code));
-        } catch (EntityNotFoundException e) {
+            return mapper.convert(nomenclatureRepository.findByCode(code).orElseThrow());
+        } catch (NoSuchElementException e) {
             throw new ResourceNotFoundException(
                     "Nomenclature with code : " + code + " not found"
             );
@@ -301,10 +301,9 @@ public class NomenclatureServiceImpl implements NomenclatureService {
         if (dto.getId() == null) {
             throw new NullIdException();
         }
-        try {
-            nomenclatureRepository.getById(dto.getId());
+        if (nomenclatureRepository.existsById(dto.getId())) {
             return true;
-        } catch (EntityNotFoundException e) {
+        } else {
             throw new ResourceNotFoundException("Nomenclature with id : " + dto.getId() + " not found");
         }
     }
@@ -325,8 +324,8 @@ public class NomenclatureServiceImpl implements NomenclatureService {
             throw new NullIdException();
         }
         try {
-            return nomenclatureRepository.getById(dto.getId());
-        } catch (EntityNotFoundException e) {
+            return nomenclatureRepository.findById(dto.getId()).orElseThrow();
+        } catch (NoSuchElementException | EntityNotFoundException e) {
             throw new ResourceNotFoundException("Nomenclature with id : " + dto.getId() + " not found");
         }
     }
@@ -346,20 +345,21 @@ public class NomenclatureServiceImpl implements NomenclatureService {
         if (Strings.isBlank(dto.getName())) {
             throw new NomenclatureBlankNameException("Name is blank");
         }
-        NomenclatureEntity entity = nomenclatureRepository.getByName(dto.getName());
-        if (entity != null) {
+        try {
+            NomenclatureEntity entity = nomenclatureRepository.findByName(dto.getName()).orElseThrow();
             throw new NomenclatureAlreadyTakenNameException(
                     "Name : " + dto.getName() + " belongs to id : " + entity.getId()
             );
+        } catch (NoSuchElementException e) {
+            return true;
         }
-        return true;
     }
 
     @Override
     public boolean checkNameAvailability(NomenclatureDTO dto, NomenclatureException e) {
         try {
             return checkNameAvailability(dto);
-        } catch (NomenclatureAlreadyTakenNameException ex) {
+        } catch (NomenclatureAlreadyTakenNameException | NomenclatureBlankNameException ex) {
             e.add(dto, ex);
             return false;
         }
@@ -368,11 +368,13 @@ public class NomenclatureServiceImpl implements NomenclatureService {
     @Override
     public boolean checkCodeAvailability(NomenclatureDTO dto) {
         if (Strings.isNotBlank(dto.getCode())) {
-            NomenclatureEntity entity = nomenclatureRepository.getByCode(dto.getCode());
-            if (entity != null) {
+            try {
+                NomenclatureEntity entity = nomenclatureRepository.findByCode(dto.getCode()).orElseThrow();
                 throw new NomenclatureAlreadyTakenCodeException(
                         "Code : " + dto.getCode() + " belongs to id : " + entity.getId()
                 );
+            } catch (NoSuchElementException e) {
+                return true;
             }
         }
         return true;

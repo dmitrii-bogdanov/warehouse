@@ -1,8 +1,6 @@
 package bogdanov.warehouse.database.entities;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.apache.logging.log4j.util.Strings;
 
 import javax.persistence.*;
@@ -11,6 +9,9 @@ import javax.persistence.*;
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
+@EqualsAndHashCode
+@ToString
 @Table(name = "nomenclature")
 public class NomenclatureEntity {
 
@@ -27,9 +28,6 @@ public class NomenclatureEntity {
     @Column(nullable = false)
     private long amount = 0L;
 
-    public NomenclatureEntity() {
-    }
-
     public void add(long amount) {
         this.amount += amount;
     }
@@ -42,6 +40,10 @@ public class NomenclatureEntity {
             }
         }
         return false;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public void setCode(String code) {

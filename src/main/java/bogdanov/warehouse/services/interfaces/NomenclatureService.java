@@ -103,7 +103,5 @@ public interface NomenclatureService {
 
 //    List<NomenclatureDTO> checkData(List<NomenclatureDTO nomenclature>);
 
-    //TODO for test
-    void deleteAll();
 
 }

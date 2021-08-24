@@ -4,15 +4,12 @@ import bogdanov.warehouse.dto.NomenclatureDTO;
 import lombok.Data;
 import org.apache.logging.log4j.util.Strings;
 
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 @Data
 public class NomenclatureException extends RuntimeException {
 
-    private final Collection<NomenclatureDTO> accepted = new LinkedList<>();
+    private final List<NomenclatureDTO> accepted = new LinkedList<>();
     private final String exception = getClass().getSimpleName();
     private final Map<String, String> exceptions = new TreeMap<>();
 

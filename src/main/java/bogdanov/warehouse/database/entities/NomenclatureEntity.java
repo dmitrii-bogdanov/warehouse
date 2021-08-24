@@ -4,6 +4,7 @@ import lombok.*;
 import org.apache.logging.log4j.util.Strings;
 
 import javax.persistence.*;
+import java.util.Locale;
 
 //TODO
 @Entity
@@ -42,15 +43,15 @@ public class NomenclatureEntity {
         return false;
     }
 
-    public String getName() {
-        return name;
+    public void setName(String name) {
+        this.name = name.toUpperCase(Locale.ROOT);
     }
 
     public void setCode(String code) {
         if (Strings.isBlank(code)) {
             this.code = Strings.EMPTY;
         } else {
-            this.code = code;
+            this.code = code.toUpperCase(Locale.ROOT);
         }
     }
 }

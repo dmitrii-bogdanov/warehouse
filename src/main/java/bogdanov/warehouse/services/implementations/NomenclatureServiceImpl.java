@@ -90,6 +90,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
             throw new NomenclatureBlankNameException();
         }
         try {
+            name = name.toUpperCase(Locale.ROOT);
             return mapper.convert(nomenclatureRepository.findByName(name).orElseThrow());
         } catch (NoSuchElementException e) {
             throw new ResourceNotFoundException(
@@ -104,6 +105,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
             throw new NomenclatureBlankCodeException();
         }
         try {
+            code = code.toUpperCase(Locale.ROOT);
             return mapper.convert(nomenclatureRepository.findByCode(code).orElseThrow());
         } catch (NoSuchElementException e) {
             throw new ResourceNotFoundException(
@@ -117,6 +119,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
         if (Strings.isBlank(partialName)) {
             throw new NomenclatureBlankNameException("Name is blank");
         }
+        partialName = partialName.toUpperCase(Locale.ROOT);
         return nomenclatureRepository
                 .findAllByNameContaining(partialName)
                 .stream()
@@ -130,6 +133,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
         if (Strings.isBlank(partialCode)) {
             entities = nomenclatureRepository.findAllByCode(Strings.EMPTY);
         } else {
+            partialCode= partialCode.toUpperCase(Locale.ROOT);
             entities = nomenclatureRepository.findAllByCodeContaining(partialCode);
         }
         return entities.stream().map(mapper::convert).toList();
@@ -473,9 +477,4 @@ public class NomenclatureServiceImpl implements NomenclatureService {
         return false;
     }
 
-    //TODO Change to check operations and data(For tests)
-    @Override
-    public void deleteAll() {
-        nomenclatureRepository.deleteAll();
-    }
 }

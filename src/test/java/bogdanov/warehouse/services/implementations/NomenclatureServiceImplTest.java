@@ -14,13 +14,16 @@ import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.Objects;
+import java.lang.reflect.Method;
+import java.util.*;
 
 @Slf4j
 @SpringBootTest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@AutoConfigureTestDatabase
 class NomenclatureServiceImplTest {
 
     @Autowired
@@ -34,37 +37,37 @@ class NomenclatureServiceImplTest {
 
     //region NomenclatureDTO constants
     private final NomenclatureDTO NAME1_CODE1 =
-            new NomenclatureDTO(null, "name1", "code1", null);
+            new NomenclatureDTO(null, "NAME1", "CODE1", null);
 
     private final NomenclatureDTO NAME1_NULL_CODE =
-            new NomenclatureDTO(null, "name1", null, null);
+            new NomenclatureDTO(null, "NAME1", null, null);
 
     private final NomenclatureDTO NAME1_EMPTY_CODE =
-            new NomenclatureDTO(null, "name1", Strings.EMPTY, null);
+            new NomenclatureDTO(null, "NAME1", Strings.EMPTY, null);
 
     private final NomenclatureDTO NAME1_BLANK_CODE =
-            new NomenclatureDTO(null, "name1", "\t", null);
+            new NomenclatureDTO(null, "NAME1", "\t", null);
 
     private final NomenclatureDTO NAME2_CODE1 =
-            new NomenclatureDTO(null, "name2", "code1", null);
+            new NomenclatureDTO(null, "NAME2", "CODE1", null);
 
     private final NomenclatureDTO NAME2_CODE2 =
-            new NomenclatureDTO(null, "name2", "code2", null);
+            new NomenclatureDTO(null, "NAME2", "CODE2", null);
 
     private final NomenclatureDTO NAME2_NULL_CODE =
-            new NomenclatureDTO(null, "name2", null, null);
+            new NomenclatureDTO(null, "NAME2", null, null);
 
     private final NomenclatureDTO NAME3_CODE3 =
-            new NomenclatureDTO(null, "name3", "code3", null);
+            new NomenclatureDTO(null, "NAME3", "CODE3", null);
 
     private final NomenclatureDTO NAME3_NULL_CODE =
-            new NomenclatureDTO(null, "name3", null, null);
+            new NomenclatureDTO(null, "NAME3", null, null);
 
     private final NomenclatureDTO NAME3_CODE1 =
-            new NomenclatureDTO(null, "name3", "code1", null);
+            new NomenclatureDTO(null, "NAME3", "CODE1", null);
 
     private final NomenclatureDTO NAME3_CODE2 =
-            new NomenclatureDTO(null, "name3", "code2", null);
+            new NomenclatureDTO(null, "NAME3", "CODE2", null);
     //endregion
 
     private NomenclatureException e;
@@ -73,7 +76,7 @@ class NomenclatureServiceImplTest {
 
     @BeforeEach
     private void clear() {
-        nomenclatureService.deleteAll();
+        nomenclatureRepository.deleteAll();
     }
 
     @BeforeEach
@@ -477,7 +480,8 @@ class NomenclatureServiceImplTest {
     @Test
     @Order(37)
     void test37_createNew_dtoWithAvailableNameWithAlreadyTakenCode() {
-        dto = NAME1_CODE1;
+        dto.setName("name");
+        dto.setCode("code");
         entity.setName(dto.getName() + "ent");
         entity.setCode(dto.getCode());
 
@@ -587,24 +591,177 @@ class NomenclatureServiceImplTest {
     }
 
     @Test
-    @Order(41)
-    void test41_createNew_dtoWithBlankNameWithAlreadyTakenCode() {
-        dto.setName("\t");
-        dto.setCode("code");
-
-        entity.setName("name");
-        entity.setCode(dto.getCode());
-
-        nomenclatureRepository.save(entity);
+    @Order(42)
+    void test42_createNewFromList_withException() {
+        List<NomenclatureDTO> list = new ArrayList<>();
+        list.add(new NomenclatureDTO(null, "name1", null, null));//0 ok
+        list.add(new NomenclatureDTO(null, "name2", Strings.EMPTY, null));//1 ok
+        list.add(new NomenclatureDTO(null, "name3", "\t", null));//2 ok
+        list.add(new NomenclatureDTO(null, "name4", "code4", null));//3 ok
+        list.add(new NomenclatureDTO(null, "name5", "code4", null));//4 same code
+        list.add(new NomenclatureDTO(null, null, null, null));//5 blank name
+        list.add(new NomenclatureDTO(null, Strings.EMPTY, null, null));//6 blank name
+        list.add(new NomenclatureDTO(null, "\t", null, null));//7 blank name
+        list.add(new NomenclatureDTO(null, "name1", "code9", null));//8 same name
+        list.add(new NomenclatureDTO(null, "name10", "code10", null));//9 ok
+        list.add(new NomenclatureDTO(null, "name4", "code4", null));//10 same name same code
+        list.add(new NomenclatureDTO(null, "\t", "code10", null));//11 blank name same code
+        list.add(new NomenclatureDTO(null, "name13", "code13", null));//12 ok
 
         e = assertThrows(NomenclatureException.class,
                 () -> {
-                    nomenclatureService.createNew(dto);
+                    nomenclatureService.createNew(list);
                 });
-        assertTrue(e.getExceptions().get(dto.toFormattedString())
-                .contains(NomenclatureBlankNameException.class.getSimpleName()));
-        assertTrue(e.getExceptions().get(dto.toFormattedString())
+        List<NomenclatureDTO> distinctList = list.stream().distinct().toList();
+        List<NomenclatureDTO> accepted = e.getAccepted();
+        Map<String, String> exceptions = e.getExceptions();
+
+        assertNotNull(accepted);
+        assertNotNull(exceptions);
+        assertEquals(6, e.countAccepted());
+        assertEquals(distinctList.size() - e.countAccepted(), e.size());
+        int[] ok = new int[]{0, 1, 2, 3, 9, 12};
+        for (int i = 0; i < ok.length; i++) {
+            assertNotNull(accepted.get(i));
+            assertTrue(accepted.get(i).isNotEmpty());
+            assertTrue(accepted.get(i).getId() > 0);
+            assertEquals(list.get(ok[i]).getName(), accepted.get(i).getName());
+            assertEquals(list.get(ok[i]).getCode(), accepted.get(i).getCode());
+            assertEquals(0, accepted.get(i).getAmount());
+        }
+        assertTrue(exceptions.get(list.get(4).toFormattedString())
                 .contains(NomenclatureAlreadyTakenCodeException.class.getSimpleName()));
+        assertTrue(exceptions.get(list.get(5).toFormattedString())
+                .contains(NomenclatureBlankNameException.class.getSimpleName()));
+        assertTrue(exceptions.get(list.get(6).toFormattedString())
+                .contains(NomenclatureBlankNameException.class.getSimpleName()));
+        assertTrue(exceptions.get(list.get(7).toFormattedString())
+                .contains(NomenclatureBlankNameException.class.getSimpleName()));
+        assertTrue(exceptions.get(list.get(8).toFormattedString())
+                .contains(NomenclatureAlreadyTakenNameException.class.getSimpleName()));
+        assertTrue(exceptions
+                .get((new NomenclatureDTO(null, "name4", "code4", null)).toFormattedString())
+                .contains(NomenclatureAlreadyTakenNameException.class.getSimpleName()));
+        assertTrue(exceptions
+                .get((new NomenclatureDTO(null, "name4", "code4", null)).toFormattedString())
+                .contains(NomenclatureAlreadyTakenCodeException.class.getSimpleName()));
+        assertTrue(exceptions.get(list.get(11).toFormattedString())
+                .contains(NomenclatureBlankNameException.class.getSimpleName()));
+        assertTrue(exceptions.get(list.get(11).toFormattedString())
+                .contains(NomenclatureAlreadyTakenCodeException.class.getSimpleName()));
+    }
+
+    @Test
+    @Order(43)
+    void test43_createNewFromList_correct() {
+        List<NomenclatureDTO> list = new ArrayList<>();
+        list.add(new NomenclatureDTO(null, "name1", null, null));//0 ok
+        list.add(new NomenclatureDTO(null, "name2", Strings.EMPTY, null));//1 ok
+        list.add(new NomenclatureDTO(null, "name3", "\t", null));//2 ok
+        list.add(new NomenclatureDTO(null, "name4", "code4", null));//3 ok
+        list.add(new NomenclatureDTO(null, "name10", "code10", null));//4 ok
+        list.add(new NomenclatureDTO(null, "name13", "code13", null));//5 ok
+
+        List<NomenclatureDTO> result = nomenclatureService.createNew(list);
+        assertNotNull(result);
+        assertEquals(list.size(), result.size());
+        for (int i = 0; i < list.size(); i++) {
+            assertNotNull(result.get(i));
+            assertTrue(result.get(i).isNotEmpty());
+            assertTrue(result.get(i).getId() > 0);
+            assertEquals(list.get(i).getName(), result.get(i).getName());
+            assertEquals(list.get(i).getCode(), result.get(i).getCode());
+            assertEquals(0, result.get(i).getAmount());
+        }
+    }
+
+    @Test
+    @Order(44)
+    void test44_createNewFromArray_withException() {
+        NomenclatureDTO[] array = new NomenclatureDTO[13];
+        array[0] = (new NomenclatureDTO(null, "name1", null, null));//0 ok
+        array[1] = (new NomenclatureDTO(null, "name2", Strings.EMPTY, null));//1 ok
+        array[2] = (new NomenclatureDTO(null, "name3", "\t", null));//2 ok
+        array[3] = (new NomenclatureDTO(null, "name4", "code4", null));//3 ok
+        array[4] = (new NomenclatureDTO(null, "name5", "code4", null));//4 same code
+        array[5] = (new NomenclatureDTO(null, null, null, null));//5 blank name
+        array[6] = (new NomenclatureDTO(null, Strings.EMPTY, null, null));//6 blank name
+        array[7] = (new NomenclatureDTO(null, "\t", null, null));//7 blank name
+        array[8] = (new NomenclatureDTO(null, "name1", "code9", null));//8 same name
+        array[9] = (new NomenclatureDTO(null, "name10", "code10", null));//9 ok
+        array[10] = (new NomenclatureDTO(null, "name4", "code4", null));//10 same name same code
+        array[11] = (new NomenclatureDTO(null, "\t", "code10", null));//11 blank name same code
+        array[12] = (new NomenclatureDTO(null, "name13", "code13", null));//12 ok
+
+        List<NomenclatureDTO> list = Arrays.asList(array);
+        e = assertThrows(NomenclatureException.class,
+                () -> {
+                    nomenclatureService.createNew(array);
+                });
+        List<NomenclatureDTO> distinctList = list.stream().distinct().toList();
+        List<NomenclatureDTO> accepted = e.getAccepted();
+        Map<String, String> exceptions = e.getExceptions();
+
+        assertNotNull(list);
+        assertNotNull(accepted);
+        assertNotNull(exceptions);
+        assertEquals(6, e.countAccepted());
+        assertEquals(distinctList.size() - e.countAccepted(), e.size());
+        int[] ok = new int[]{0, 1, 2, 3, 9, 12};
+        for (int i = 0; i < ok.length; i++) {
+            assertNotNull(accepted.get(i));
+            assertTrue(accepted.get(i).isNotEmpty());
+            assertTrue(accepted.get(i).getId() > 0);
+            assertEquals(list.get(ok[i]).getName(), accepted.get(i).getName());
+            assertEquals(list.get(ok[i]).getCode(), accepted.get(i).getCode());
+            assertEquals(0, accepted.get(i).getAmount());
+        }
+        assertTrue(exceptions.get(list.get(4).toFormattedString())
+                .contains(NomenclatureAlreadyTakenCodeException.class.getSimpleName()));
+        assertTrue(exceptions.get(list.get(5).toFormattedString())
+                .contains(NomenclatureBlankNameException.class.getSimpleName()));
+        assertTrue(exceptions.get(list.get(6).toFormattedString())
+                .contains(NomenclatureBlankNameException.class.getSimpleName()));
+        assertTrue(exceptions.get(list.get(7).toFormattedString())
+                .contains(NomenclatureBlankNameException.class.getSimpleName()));
+        assertTrue(exceptions.get(list.get(8).toFormattedString())
+                .contains(NomenclatureAlreadyTakenNameException.class.getSimpleName()));
+        assertTrue(exceptions
+                .get((new NomenclatureDTO(null, "name4", "code4", null)).toFormattedString())
+                .contains(NomenclatureAlreadyTakenNameException.class.getSimpleName()));
+        assertTrue(exceptions
+                .get((new NomenclatureDTO(null, "name4", "code4", null)).toFormattedString())
+                .contains(NomenclatureAlreadyTakenCodeException.class.getSimpleName()));
+        assertTrue(exceptions.get(list.get(11).toFormattedString())
+                .contains(NomenclatureBlankNameException.class.getSimpleName()));
+        assertTrue(exceptions.get(list.get(11).toFormattedString())
+                .contains(NomenclatureAlreadyTakenCodeException.class.getSimpleName()));
+    }
+
+    @Test
+    @Order(45)
+    void test45_createNewFromArray_correct() {
+        NomenclatureDTO[] array = new NomenclatureDTO[6];
+        array[0] = (new NomenclatureDTO(null, "name1", null, null));//0 ok
+        array[1] = (new NomenclatureDTO(null, "name2", Strings.EMPTY, null));//1 ok
+        array[2] = (new NomenclatureDTO(null, "name3", "\t", null));//2 ok
+        array[3] = (new NomenclatureDTO(null, "name4", "code4", null));//3 ok
+        array[4] = (new NomenclatureDTO(null, "name10", "code10", null));//4 ok
+        array[5] = (new NomenclatureDTO(null, "name13", "code13", null));//5 ok
+
+        List<NomenclatureDTO> list = Arrays.asList(array);
+        List<NomenclatureDTO> result = nomenclatureService.createNew(list);
+
+        assertNotNull(result);
+        assertEquals(array.length, result.size());
+        for (int i = 0; i < array.length; i++) {
+            assertNotNull(result.get(i));
+            assertTrue(result.get(i).isNotEmpty());
+            assertTrue(result.get(i).getId() > 0);
+            assertEquals(array[i].getName(), result.get(i).getName());
+            assertEquals(array[i].getCode(), result.get(i).getCode());
+            assertEquals(0, result.get(i).getAmount());
+        }
     }
     //endregion
 

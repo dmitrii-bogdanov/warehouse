@@ -272,14 +272,28 @@ public class NomenclatureServiceImpl implements NomenclatureService {
 
     @Override
     public NomenclatureDTO addAmount(NomenclatureDTO nomenclature) {
-        return null;
+        NomenclatureException exception = new NomenclatureException();
+        NomenclatureEntity entity;
+        boolean isAmountPositive = checkAmount(nomenclature, exception);
+        boolean isIdCorrect = null != (entity = checkIdAndRetrieve(nomenclature, exception));
+        if (isIdCorrect && isAmountPositive) {
+            boolean isNameCorrect = checkIdAndNamePair(nomenclature, entity, exception);
+            boolean isCodeCorrect = checkIdAndCodePair(nomenclature, entity, exception);
+            if (isNameCorrect && isCodeCorrect) {
+                entity.add(nomenclature.getAmount());
+                return mapper.convert(nomenclatureRepository.save(entity));
+            }
+        }
+        throw exception;
     }
 
+    //TODO is it necessary?
     @Override
     public List<NomenclatureDTO> addAmount(List<NomenclatureDTO> nomenclature) {
         return null;
     }
 
+    //TODO is it necessary?
     @Override
     public List<NomenclatureDTO> addAmount(NomenclatureDTO[] nomenclature) {
         return null;
@@ -287,14 +301,28 @@ public class NomenclatureServiceImpl implements NomenclatureService {
 
     @Override
     public NomenclatureDTO subtractAmount(NomenclatureDTO nomenclature) {
-        return null;
+        NomenclatureException exception = new NomenclatureException();
+        NomenclatureEntity entity;
+        boolean isIdCorrect = null != (entity = checkIdAndRetrieve(nomenclature, exception));
+        if (isIdCorrect) {
+            boolean isAmountPositiveAndAvailable = checkAmountAvailability(nomenclature, entity, exception);
+            boolean isNameCorrect = checkIdAndNamePair(nomenclature, entity, exception);
+            boolean isCodeCorrect = checkIdAndCodePair(nomenclature, entity, exception);
+            if (isNameCorrect && isCodeCorrect && isAmountPositiveAndAvailable) {
+                entity.take(nomenclature.getAmount());
+                return mapper.convert(nomenclatureRepository.save(entity));
+            }
+        }
+        throw exception;
     }
 
+    //TODO is it necessary?
     @Override
     public List<NomenclatureDTO> subtractAmount(List<NomenclatureDTO> nomenclature) {
         return null;
     }
 
+    //TODO is it necessary?
     @Override
     public List<NomenclatureDTO> subtractAmount(NomenclatureDTO[] nomenclature) {
         return null;

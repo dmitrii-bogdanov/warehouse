@@ -604,7 +604,7 @@ class NomenclatureServiceImplTest {
         list.add(new NomenclatureDTO(null, "\t", null, null));//7 blank name
         list.add(new NomenclatureDTO(null, "name1", "code9", null));//8 same name
         list.add(new NomenclatureDTO(null, "name10", "code10", null));//9 ok
-        list.add(new NomenclatureDTO(null, "name4", "code4", null));//10 same name same code
+        list.add(new NomenclatureDTO(null, "name4", "code10", null));//10 same name same code
         list.add(new NomenclatureDTO(null, "\t", "code10", null));//11 blank name same code
         list.add(new NomenclatureDTO(null, "name13", "code13", null));//12 ok
 
@@ -639,11 +639,9 @@ class NomenclatureServiceImplTest {
                 .contains(NomenclatureBlankNameException.class.getSimpleName()));
         assertTrue(exceptions.get(list.get(8).toFormattedString())
                 .contains(NomenclatureAlreadyTakenNameException.class.getSimpleName()));
-        assertTrue(exceptions
-                .get((new NomenclatureDTO(null, "name4", "code4", null)).toFormattedString())
+        assertTrue(exceptions.get(list.get(10).toFormattedString())
                 .contains(NomenclatureAlreadyTakenNameException.class.getSimpleName()));
-        assertTrue(exceptions
-                .get((new NomenclatureDTO(null, "name4", "code4", null)).toFormattedString())
+        assertTrue(exceptions.get(list.get(10).toFormattedString())
                 .contains(NomenclatureAlreadyTakenCodeException.class.getSimpleName()));
         assertTrue(exceptions.get(list.get(11).toFormattedString())
                 .contains(NomenclatureBlankNameException.class.getSimpleName()));
@@ -689,7 +687,7 @@ class NomenclatureServiceImplTest {
         array[7] = (new NomenclatureDTO(null, "\t", null, null));//7 blank name
         array[8] = (new NomenclatureDTO(null, "name1", "code9", null));//8 same name
         array[9] = (new NomenclatureDTO(null, "name10", "code10", null));//9 ok
-        array[10] = (new NomenclatureDTO(null, "name4", "code4", null));//10 same name same code
+        array[10] = (new NomenclatureDTO(null, "name4", "code10", null));//10 same name same code
         array[11] = (new NomenclatureDTO(null, "\t", "code10", null));//11 blank name same code
         array[12] = (new NomenclatureDTO(null, "name13", "code13", null));//12 ok
 
@@ -726,11 +724,9 @@ class NomenclatureServiceImplTest {
                 .contains(NomenclatureBlankNameException.class.getSimpleName()));
         assertTrue(exceptions.get(list.get(8).toFormattedString())
                 .contains(NomenclatureAlreadyTakenNameException.class.getSimpleName()));
-        assertTrue(exceptions
-                .get((new NomenclatureDTO(null, "name4", "code4", null)).toFormattedString())
+        assertTrue(exceptions.get(list.get(10).toFormattedString())
                 .contains(NomenclatureAlreadyTakenNameException.class.getSimpleName()));
-        assertTrue(exceptions
-                .get((new NomenclatureDTO(null, "name4", "code4", null)).toFormattedString())
+        assertTrue(exceptions.get(list.get(10).toFormattedString())
                 .contains(NomenclatureAlreadyTakenCodeException.class.getSimpleName()));
         assertTrue(exceptions.get(list.get(11).toFormattedString())
                 .contains(NomenclatureBlankNameException.class.getSimpleName()));

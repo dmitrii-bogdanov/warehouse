@@ -92,14 +92,9 @@ public interface NomenclatureService {
     boolean checkAmount(NomenclatureDTO dto, NomenclatureException e);
 
 
-    boolean checkAmountAvailability(NomenclatureDTO dto);
+    boolean checkAmountAvailability(NomenclatureDTO dto, NomenclatureEntity entity);
 
-    boolean checkAmountAvailability(NomenclatureDTO dto, NomenclatureException e);
-
-
-    boolean checkData(NomenclatureDTO dto);
-
-    boolean checkData(NomenclatureDTO dto, NomenclatureException e);
+    boolean checkAmountAvailability(NomenclatureDTO dto, NomenclatureEntity entity, NomenclatureException e);
 
 //    List<NomenclatureDTO> checkData(List<NomenclatureDTO nomenclature>);
 

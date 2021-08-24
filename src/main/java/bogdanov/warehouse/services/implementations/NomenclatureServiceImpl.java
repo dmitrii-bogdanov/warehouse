@@ -133,7 +133,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
         if (Strings.isBlank(partialCode)) {
             entities = nomenclatureRepository.findAllByCode(Strings.EMPTY);
         } else {
-            partialCode= partialCode.toUpperCase(Locale.ROOT);
+            partialCode = partialCode.toUpperCase(Locale.ROOT);
             entities = nomenclatureRepository.findAllByCodeContaining(partialCode);
         }
         return entities.stream().map(mapper::convert).toList();
@@ -442,7 +442,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
     @Override
     public boolean checkAmount(NomenclatureDTO dto) {
         if (dto.getAmount() == null || (dto.getAmount() < 0)) {
-            throw new NomenclatureNotPositiveAmount();
+            throw new NomenclatureNegativeOrNullAmountInput();
         }
         return true;
     }
@@ -451,30 +451,36 @@ public class NomenclatureServiceImpl implements NomenclatureService {
     public boolean checkAmount(NomenclatureDTO dto, NomenclatureException e) {
         try {
             return checkAmount(dto);
-        } catch (NomenclatureNotPositiveAmount ex) {
+        } catch (NomenclatureNegativeOrNullAmountInput ex) {
             e.add(dto, ex);
             return false;
         }
     }
 
     @Override
-    public boolean checkAmountAvailability(NomenclatureDTO dto) {
-        return false;
+    public boolean checkAmountAvailability(NomenclatureDTO dto, NomenclatureEntity entity) {
+        checkAmount(dto);
+        if (dto.getAmount() > entity.getAmount()) {
+            throw new NomenclatureNotEnoughNumberAvailable(
+                    "Nomenclature ( id : " + entity.getId()
+                            + " ; name = " + entity.getName()
+                            + " ) amount is " + entity.getAmount()
+                            + ". Not enough to write-off " + dto.getAmount()
+            );
+        } else {
+            return true;
+        }
     }
 
     @Override
-    public boolean checkAmountAvailability(NomenclatureDTO dto, NomenclatureException e) {
-        return false;
+    public boolean checkAmountAvailability(NomenclatureDTO dto, NomenclatureEntity entity, NomenclatureException e) {
+        try {
+            return checkAmountAvailability(dto, entity);
+        } catch (NomenclatureNegativeOrNullAmountInput | NomenclatureNotEnoughNumberAvailable ex) {
+            e.add(dto, ex);
+            return false;
+        }
     }
 
-    @Override
-    public boolean checkData(NomenclatureDTO dto) {
-        return false;
-    }
-
-    @Override
-    public boolean checkData(NomenclatureDTO dto, NomenclatureException e) {
-        return false;
-    }
 
 }

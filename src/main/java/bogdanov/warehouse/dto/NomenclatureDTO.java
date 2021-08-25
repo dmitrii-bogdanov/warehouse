@@ -1,5 +1,7 @@
 package bogdanov.warehouse.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.*;
 import org.apache.logging.log4j.util.Strings;
 
@@ -7,6 +9,7 @@ import java.util.Locale;
 
 @Data
 @NoArgsConstructor
+@JsonPropertyOrder({"id", "name", "code", "amount"})
 public class NomenclatureDTO {
 
     private Long id;
@@ -28,6 +31,7 @@ public class NomenclatureDTO {
         setCode(code);
     }
 
+    @JsonIgnore
     public boolean isEmpty() {
         return id == null
                 && name == null
@@ -51,6 +55,7 @@ public class NomenclatureDTO {
         }
     }
 
+    @JsonIgnore
     public boolean isNotEmpty() {
         return !isEmpty();
     }

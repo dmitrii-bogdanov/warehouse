@@ -1,12 +1,15 @@
 package bogdanov.warehouse.exceptions;
 
 import bogdanov.warehouse.dto.NomenclatureDTO;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Data;
 import org.apache.logging.log4j.util.Strings;
 
 import java.util.*;
 
 @Data
+@JsonPropertyOrder({"exception", "accepted", "exceptions"})
 public class NomenclatureException extends RuntimeException {
 
     private final List<NomenclatureDTO> accepted = new LinkedList<>();
@@ -56,10 +59,12 @@ public class NomenclatureException extends RuntimeException {
         this.accepted.removeIf(dto -> this.exceptions.containsKey(dto.toFormattedString()));
     }
 
+    @JsonIgnore
     public boolean isEmpty() {
         return exceptions.isEmpty();
     }
 
+    @JsonIgnore
     public boolean isNotEmpty() {
         return !exceptions.isEmpty();
     }
@@ -80,4 +85,27 @@ public class NomenclatureException extends RuntimeException {
         return exceptions.size();
     }
 
+    @JsonIgnore
+    @Override
+    public String getMessage() {
+        return super.getMessage();
+    }
+
+    @JsonIgnore
+    @Override
+    public String getLocalizedMessage() {
+        return super.getLocalizedMessage();
+    }
+
+    @JsonIgnore
+    @Override
+    public synchronized Throwable getCause() {
+        return super.getCause();
+    }
+
+    @JsonIgnore
+    @Override
+    public StackTraceElement[] getStackTrace() {
+        return super.getStackTrace();
+    }
 }

@@ -20,7 +20,7 @@ public class NomenclatureEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String name;
 
     @Column(nullable = false)
@@ -28,6 +28,13 @@ public class NomenclatureEntity {
 
     @Column(nullable = false)
     private long amount = 0L;
+
+    public NomenclatureEntity(Long id, String name, String code, Long amount) {
+        this.id = id;
+        setName(name);
+        setCode(code);
+        setAmount(amount);
+    }
 
     public void add(long amount) {
         this.amount += amount;
@@ -52,6 +59,14 @@ public class NomenclatureEntity {
             this.code = Strings.EMPTY;
         } else {
             this.code = code.toUpperCase(Locale.ROOT);
+        }
+    }
+
+    public void setAmount(Long amount) {
+        if (amount != null) {
+            this.amount = amount;
+        } else {
+            this.amount = 0L;
         }
     }
 }

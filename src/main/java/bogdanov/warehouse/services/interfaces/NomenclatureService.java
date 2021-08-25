@@ -17,7 +17,7 @@ public interface NomenclatureService {
 
     List<NomenclatureDTO> createNew(NomenclatureDTO[] nomenclature);
 
-    NomenclatureDTO getById(long id);
+    NomenclatureDTO getById(Long id);
 
     NomenclatureDTO getByName(String name);
 

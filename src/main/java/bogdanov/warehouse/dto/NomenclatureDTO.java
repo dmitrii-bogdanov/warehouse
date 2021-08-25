@@ -56,12 +56,13 @@ public class NomenclatureDTO {
     }
 
     public String toFormattedString() {
-        return "\n{\n"
-                + "\t\"id\" : " + id + ",\n"
-                + "\t\"name\" : \"" + name + "\",\n"
-                + "\t\"code\" : \"" + code + "\",\n"
-                + "\t\"amount\" : " + amount + "\n"
-                + "}";
+        return toString();
+//        return "\n{\n"
+//                + "\t\"id\" : " + id + ",\n"
+//                + "\t\"name\" : \"" + name + "\",\n"
+//                + "\t\"code\" : \"" + code + "\",\n"
+//                + "\t\"amount\" : " + amount + "\n"
+//                + "}";
     }
 
 }

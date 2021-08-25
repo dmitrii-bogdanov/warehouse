@@ -74,7 +74,10 @@ public class NomenclatureServiceImpl implements NomenclatureService {
     }
 
     @Override
-    public NomenclatureDTO getById(long id) {
+    public NomenclatureDTO getById(Long id) {
+        if (id == null) {
+            throw new NullIdException();
+        }
         try {
             return mapper.convert(nomenclatureRepository.findById(id).orElseThrow());
         } catch (NoSuchElementException e) {

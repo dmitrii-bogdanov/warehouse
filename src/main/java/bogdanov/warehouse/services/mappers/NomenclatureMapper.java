@@ -22,12 +22,11 @@ public class NomenclatureMapper {
     }
 
     NomenclatureEntity convert(NomenclatureDTO nomenclature) {
-        NomenclatureEntity nomenclatureEntity = new NomenclatureEntity();
-
-        nomenclatureEntity.setName(nomenclature.getName());
-        nomenclatureEntity.setCode(nomenclature.getCode());
-
-        return nomenclatureEntity;
+        return new NomenclatureEntity(
+                null,
+                nomenclature.getName(),
+                nomenclature.getCode(),
+                null);
     }
 
 }

@@ -67,8 +67,8 @@ class NomenclatureDTOTest {
         dto = new NomenclatureDTO(null, null, null, null);
         assertNotNull(dto);
         assertNull(dto.getId());
-        assertNull(dto.getName());
-        assertNull(dto.getCode());
+        assertNotNull(dto.getName());
+        assertNotNull(dto.getCode());
         assertNull(dto.getAmount());
         Long id = 23L;
         String name = "name";

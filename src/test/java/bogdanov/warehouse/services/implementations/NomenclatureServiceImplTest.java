@@ -22,7 +22,7 @@ import java.util.*;
 
 @Slf4j
 @SpringBootTest
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+//@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @AutoConfigureTestDatabase
 class NomenclatureServiceImplTest {
 
@@ -116,8 +116,10 @@ class NomenclatureServiceImplTest {
     @Test
     @Order(3)
     void test3_checkIdDto_dtoWithExistingId() {
-        entity.setName("name");
-        entity.setCode("code");
+        String name = "name".toUpperCase(Locale.ROOT);
+        String code = "code".toUpperCase(Locale.ROOT);
+        entity.setName(name);
+        entity.setCode(code);
         dto = mapper.convert(nomenclatureRepository.save(entity));
         assertTrue(nomenclatureService.checkId(dto));
     }
@@ -141,8 +143,10 @@ class NomenclatureServiceImplTest {
     @Test
     @Order(6)
     void test6_checkIdDtoException_dtoWithExistingId() {
-        entity.setName("name");
-        entity.setCode("code");
+        String name = "name".toUpperCase(Locale.ROOT);
+        String code = "code".toUpperCase(Locale.ROOT);
+        entity.setName(name);
+        entity.setCode(code);
         dto = mapper.convert(nomenclatureRepository.save(entity));
         assertTrue(nomenclatureService.checkId(dto, e));
         assertTrue(e.isEmpty());
@@ -180,8 +184,10 @@ class NomenclatureServiceImplTest {
     @Test
     @Order(9)
     void test9_checkIdAndRetrieveDto_dtoWithExistingId() {
-        entity.setName("name");
-        entity.setCode("code");
+        String name = "name".toUpperCase(Locale.ROOT);
+        String code = "code".toUpperCase(Locale.ROOT);
+        entity.setName(name);
+        entity.setCode(code);
         dto = mapper.convert(nomenclatureRepository.save(entity));
         assertEquals(dto, mapper.convert(nomenclatureService.checkIdAndRetrieve(dto)));
     }
@@ -206,8 +212,10 @@ class NomenclatureServiceImplTest {
     @Test
     @Order(12)
     void test12_checkIdAndRetrieveDtoException_dtoWithExistingId() {
-        entity.setName("name");
-        entity.setCode("code");
+        String name = "name".toUpperCase(Locale.ROOT);
+        String code = "code".toUpperCase(Locale.ROOT);
+        entity.setName(name);
+        entity.setCode(name);
         dto = mapper.convert(nomenclatureRepository.save(entity));
 
         assertEquals(dto, mapper.convert(nomenclatureService.checkIdAndRetrieve(dto, e)));
@@ -262,8 +270,10 @@ class NomenclatureServiceImplTest {
     @Test
     @Order(17)
     void test17_checkNameAvailabilityDto_dtoWithAlreadyTakenName() {
-        entity.setName("name");
-        entity.setCode(null);
+        String name = "name".toUpperCase(Locale.ROOT);
+        String code = Strings.EMPTY;
+        entity.setName(name);
+        entity.setCode(code);
         dto = mapper.convert(nomenclatureRepository.save(entity));
         NomenclatureAlreadyTakenNameException ex = assertThrows(NomenclatureAlreadyTakenNameException.class,
                 () -> {
@@ -312,8 +322,10 @@ class NomenclatureServiceImplTest {
     @Test
     @Order(22)
     void test22_checkNameAvailabilityDtoException_dtoWithAlreadyTakenName() {
-        entity.setName("name");
-        entity.setCode(null);
+        String name = "name".toUpperCase(Locale.ROOT);
+        String code = Strings.EMPTY;
+        entity.setName(name);
+        entity.setCode(code);
         dto = mapper.convert(nomenclatureRepository.save(entity));
         assertFalse(nomenclatureService.checkNameAvailability(dto, e));
         assertTrue(e.getExceptions().get(dto.toFormattedString())
@@ -353,8 +365,10 @@ class NomenclatureServiceImplTest {
     @Test
     @Order(27)
     void test27_checkCodeAvailabilityDto_dtoWithAlreadyTakenCode() {
-        entity.setName("name");
-        entity.setCode("code");
+        String name = "name".toUpperCase(Locale.ROOT);
+        String code = "code".toUpperCase(Locale.ROOT);
+        entity.setName(name);
+        entity.setCode(code);
         dto = mapper.convert(nomenclatureRepository.save(entity));
         NomenclatureAlreadyTakenCodeException ex = assertThrows(
                 NomenclatureAlreadyTakenCodeException.class,
@@ -401,8 +415,10 @@ class NomenclatureServiceImplTest {
     @Test
     @Order(32)
     void test32_checkCodeAvailabilityDtoException_dtoWithAlreadyTakenCode() {
-        entity.setName("name");
-        entity.setCode("code");
+        String name = "name".toUpperCase(Locale.ROOT);
+        String code = "code".toUpperCase(Locale.ROOT);
+        entity.setName(name);
+        entity.setCode(code);
         dto = mapper.convert(nomenclatureRepository.save(entity));
         assertFalse(nomenclatureService.checkCodeAvailability(dto, e));
         assertTrue(e.getExceptions().get(dto.toFormattedString())
@@ -482,15 +498,14 @@ class NomenclatureServiceImplTest {
     void test37_createNew_dtoWithAvailableNameWithAlreadyTakenCode() {
         dto.setName("name");
         dto.setCode("code");
-        entity.setName(dto.getName() + "ent");
+        String name = (dto.getName() + "ent").toUpperCase(Locale.ROOT);
+        entity.setName(name);
         entity.setCode(dto.getCode());
 
         dto.setCode(nomenclatureRepository.save(entity).getCode());
 
         e = assertThrows(NomenclatureException.class,
-                () -> {
-                    nomenclatureService.createNew(dto);
-                });
+                () -> nomenclatureService.createNew(dto));
         assertTrue(e.getExceptions().get(dto.toFormattedString())
                 .contains(NomenclatureAlreadyTakenCodeException.class.getSimpleName()));
     }
@@ -536,7 +551,8 @@ class NomenclatureServiceImplTest {
         dto.setCode("code1");
 
         entity.setName(dto.getName());
-        entity.setCode("code2");
+        String code = "code2".toUpperCase(Locale.ROOT);
+        entity.setCode(code);
 
         nomenclatureRepository.save(entity);
 
@@ -575,7 +591,8 @@ class NomenclatureServiceImplTest {
         dto.setName("\t");
         dto.setCode("code");
 
-        entity.setName("name");
+        String name = "name".toUpperCase(Locale.ROOT);
+        entity.setName(name);
         entity.setCode(dto.getCode());
 
         nomenclatureRepository.save(entity);

@@ -43,4 +43,6 @@ public interface PersonService {
 
     List<PersonDTO> findAllByEmailContaining(String partialEmail);
 
+    List<PersonDTO> findAllByFullName(String firstname, String patronymic, String lastname);
+
 }

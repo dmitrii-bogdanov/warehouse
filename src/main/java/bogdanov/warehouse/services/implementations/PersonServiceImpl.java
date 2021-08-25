@@ -149,4 +149,11 @@ public class PersonServiceImpl implements PersonService {
         return personRepository.findAllByEmailContaining(partialEmail.toUpperCase(Locale.ROOT))
                 .stream().map(mapper::convert).toList();
     }
+
+    @Override
+    public List<PersonDTO> findAllByFullName(String firstname, String patronymic, String lastname) {
+        return personRepository
+                .findAllByFirstnameAndPatronymicAndLastname(firstname, patronymic, lastname)
+                .stream().map(mapper::convert).toList();
+    }
 }

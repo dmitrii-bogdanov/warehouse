@@ -38,4 +38,8 @@ public interface PersonRepository extends JpaRepository<PersonEntity, Long> {
 
     public List<PersonEntity> findAllByBirthBetween(LocalDate start, LocalDate end);
 
+    public List<PersonEntity> findAllByFirstnameAndPatronymicAndLastname(String firstname,
+                                                                         String patronymic,
+                                                                         String lastname);
+
 }

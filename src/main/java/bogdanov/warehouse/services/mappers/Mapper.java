@@ -1,9 +1,6 @@
 package bogdanov.warehouse.services.mappers;
 
-import bogdanov.warehouse.database.entities.NomenclatureEntity;
-import bogdanov.warehouse.database.entities.PersonEntity;
-import bogdanov.warehouse.database.entities.RoleEntity;
-import bogdanov.warehouse.database.entities.UserEntity;
+import bogdanov.warehouse.database.entities.*;
 import bogdanov.warehouse.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -17,6 +14,7 @@ public class Mapper {
     private final UserMapper userMapper;
     private final PersonMapper personMapper;
     private final NomenclatureMapper nomenclatureMapper;
+    private final PositionMapper positionMapper;
 
     //region RoleDTO <--> RoleEntity
     public RoleEntity convert(RoleDTO role) {
@@ -61,6 +59,16 @@ public class Mapper {
 
     public NomenclatureEntity convert(NomenclatureDTO nomenclature) {
         return nomenclatureMapper.convert(nomenclature);
+    }
+    //endregion
+
+    //region PositionDTO <--> PositionEntity
+    public PositionEntity convert(PositionDTO position) {
+        return positionMapper.convert(position);
+    }
+
+    public PositionDTO convert(PositionEntity position) {
+        return positionMapper.convert(position);
     }
     //endregion
 

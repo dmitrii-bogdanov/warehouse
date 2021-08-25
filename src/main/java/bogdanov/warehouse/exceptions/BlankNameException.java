@@ -1,11 +1,11 @@
 package bogdanov.warehouse.exceptions;
 
-public class NomenclatureBlankNameException extends RuntimeException {
-    public NomenclatureBlankNameException(String message) {
+public class BlankNameException extends RuntimeException {
+    public BlankNameException(String message) {
         super(message);
     }
 
-    public NomenclatureBlankNameException() {
+    public BlankNameException() {
 
     }
 

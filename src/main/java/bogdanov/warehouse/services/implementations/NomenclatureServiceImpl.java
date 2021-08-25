@@ -90,7 +90,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
     @Override
     public NomenclatureDTO getByName(String name) {
         if (Strings.isBlank(name)) {
-            throw new NomenclatureBlankNameException();
+            throw new BlankNameException();
         }
         try {
             name = name.toUpperCase(Locale.ROOT);
@@ -120,7 +120,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
     @Override
     public List<NomenclatureDTO> findAllByNameContaining(String partialName) {
         if (Strings.isBlank(partialName)) {
-            throw new NomenclatureBlankNameException("Name is blank");
+            throw new BlankNameException("Name is blank");
         }
         partialName = partialName.toUpperCase(Locale.ROOT);
         return nomenclatureRepository
@@ -378,7 +378,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
     @Override
     public boolean checkNameAvailability(NomenclatureDTO dto) {
         if (Strings.isBlank(dto.getName())) {
-            throw new NomenclatureBlankNameException("Name is blank");
+            throw new BlankNameException("Name is blank");
         }
         try {
             NomenclatureEntity entity = nomenclatureRepository.findByName(dto.getName()).orElseThrow();
@@ -394,7 +394,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
     public boolean checkNameAvailability(NomenclatureDTO dto, NomenclatureException e) {
         try {
             return checkNameAvailability(dto);
-        } catch (NomenclatureAlreadyTakenNameException | NomenclatureBlankNameException ex) {
+        } catch (NomenclatureAlreadyTakenNameException | BlankNameException ex) {
             e.add(dto, ex);
             return false;
         }

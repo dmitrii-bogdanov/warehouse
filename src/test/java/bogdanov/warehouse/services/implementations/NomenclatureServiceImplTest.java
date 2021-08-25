@@ -6,7 +6,6 @@ import bogdanov.warehouse.dto.NomenclatureDTO;
 import bogdanov.warehouse.exceptions.*;
 import bogdanov.warehouse.services.interfaces.NomenclatureService;
 import bogdanov.warehouse.services.mappers.Mapper;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.junit.jupiter.api.*;
@@ -17,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.lang.reflect.Method;
 import java.util.*;
 
 @Slf4j
@@ -228,7 +226,7 @@ class NomenclatureServiceImplTest {
     @Order(13)
     void test13_checkNameAvailabilityDto_dtoWithNullName() {
         dto.setName(null);
-        assertThrows(NomenclatureBlankNameException.class,
+        assertThrows(BlankNameException.class,
                 () -> {
                     nomenclatureService.checkNameAvailability(dto);
                 },
@@ -240,7 +238,7 @@ class NomenclatureServiceImplTest {
     @Order(14)
     void test14_checkNameAvailabilityDto_dtoWithEmptyName() {
         dto.setName(Strings.EMPTY);
-        assertThrows(NomenclatureBlankNameException.class,
+        assertThrows(BlankNameException.class,
                 () -> {
                     nomenclatureService.checkNameAvailability(dto);
                 },
@@ -252,7 +250,7 @@ class NomenclatureServiceImplTest {
     @Order(15)
     void test15_checkNameAvailabilityDto_dtoWithBlankName() {
         dto.setName("\t");
-        assertThrows(NomenclatureBlankNameException.class,
+        assertThrows(BlankNameException.class,
                 () -> {
                     nomenclatureService.checkNameAvailability(dto);
                 },
@@ -290,7 +288,7 @@ class NomenclatureServiceImplTest {
         dto.setName(null);
         assertFalse(nomenclatureService.checkNameAvailability(dto, e));
         assertTrue(e.getExceptions().get(dto.toString())
-                .contains(NomenclatureBlankNameException.class.getSimpleName()));
+                .contains(BlankNameException.class.getSimpleName()));
     }
 
     @Test
@@ -299,7 +297,7 @@ class NomenclatureServiceImplTest {
         dto.setName(Strings.EMPTY);
         assertFalse(nomenclatureService.checkNameAvailability(dto, e));
         assertTrue(e.getExceptions().get(dto.toString())
-                .contains(NomenclatureBlankNameException.class.getSimpleName()));
+                .contains(BlankNameException.class.getSimpleName()));
     }
 
     @Test
@@ -308,7 +306,7 @@ class NomenclatureServiceImplTest {
         dto.setName("\t");
         assertFalse(nomenclatureService.checkNameAvailability(dto, e));
         assertTrue(e.getExceptions().get(dto.toString())
-                .contains(NomenclatureBlankNameException.class.getSimpleName()));
+                .contains(BlankNameException.class.getSimpleName()));
     }
 
     @Test
@@ -521,7 +519,7 @@ class NomenclatureServiceImplTest {
                     nomenclatureService.createNew(dto);
                 });
         assertTrue(e.getExceptions().get(dto.toString())
-                .contains(NomenclatureBlankNameException.class.getSimpleName()));
+                .contains(BlankNameException.class.getSimpleName()));
 
         dto.setName(Strings.EMPTY);
         dto.setCode("code2");
@@ -531,7 +529,7 @@ class NomenclatureServiceImplTest {
                     nomenclatureService.createNew(dto);
                 });
         assertTrue(e.getExceptions().get(dto.toString())
-                .contains(NomenclatureBlankNameException.class.getSimpleName()));
+                .contains(BlankNameException.class.getSimpleName()));
 
         dto.setName("\t");
         dto.setCode("code3");
@@ -541,7 +539,7 @@ class NomenclatureServiceImplTest {
                     nomenclatureService.createNew(dto);
                 });
         assertTrue(e.getExceptions().get(dto.toString())
-                .contains(NomenclatureBlankNameException.class.getSimpleName()));
+                .contains(BlankNameException.class.getSimpleName()));
     }
 
     @Test
@@ -602,7 +600,7 @@ class NomenclatureServiceImplTest {
                     nomenclatureService.createNew(dto);
                 });
         assertTrue(e.getExceptions().get(dto.toString())
-                .contains(NomenclatureBlankNameException.class.getSimpleName()));
+                .contains(BlankNameException.class.getSimpleName()));
         assertTrue(e.getExceptions().get(dto.toString())
                 .contains(NomenclatureAlreadyTakenCodeException.class.getSimpleName()));
     }
@@ -649,11 +647,11 @@ class NomenclatureServiceImplTest {
         assertTrue(exceptions.get(list.get(4).toString())
                 .contains(NomenclatureAlreadyTakenCodeException.class.getSimpleName()));
         assertTrue(exceptions.get(list.get(5).toString())
-                .contains(NomenclatureBlankNameException.class.getSimpleName()));
+                .contains(BlankNameException.class.getSimpleName()));
         assertTrue(exceptions.get(list.get(6).toString())
-                .contains(NomenclatureBlankNameException.class.getSimpleName()));
+                .contains(BlankNameException.class.getSimpleName()));
         assertTrue(exceptions.get(list.get(7).toString())
-                .contains(NomenclatureBlankNameException.class.getSimpleName()));
+                .contains(BlankNameException.class.getSimpleName()));
         assertTrue(exceptions.get(list.get(8).toString())
                 .contains(NomenclatureAlreadyTakenNameException.class.getSimpleName()));
         assertTrue(exceptions.get(list.get(10).toString())
@@ -661,7 +659,7 @@ class NomenclatureServiceImplTest {
         assertTrue(exceptions.get(list.get(10).toString())
                 .contains(NomenclatureAlreadyTakenCodeException.class.getSimpleName()));
         assertTrue(exceptions.get(list.get(11).toString())
-                .contains(NomenclatureBlankNameException.class.getSimpleName()));
+                .contains(BlankNameException.class.getSimpleName()));
         assertTrue(exceptions.get(list.get(11).toString())
                 .contains(NomenclatureAlreadyTakenCodeException.class.getSimpleName()));
     }
@@ -734,11 +732,11 @@ class NomenclatureServiceImplTest {
         assertTrue(exceptions.get(list.get(4).toString())
                 .contains(NomenclatureAlreadyTakenCodeException.class.getSimpleName()));
         assertTrue(exceptions.get(list.get(5).toString())
-                .contains(NomenclatureBlankNameException.class.getSimpleName()));
+                .contains(BlankNameException.class.getSimpleName()));
         assertTrue(exceptions.get(list.get(6).toString())
-                .contains(NomenclatureBlankNameException.class.getSimpleName()));
+                .contains(BlankNameException.class.getSimpleName()));
         assertTrue(exceptions.get(list.get(7).toString())
-                .contains(NomenclatureBlankNameException.class.getSimpleName()));
+                .contains(BlankNameException.class.getSimpleName()));
         assertTrue(exceptions.get(list.get(8).toString())
                 .contains(NomenclatureAlreadyTakenNameException.class.getSimpleName()));
         assertTrue(exceptions.get(list.get(10).toString())
@@ -746,7 +744,7 @@ class NomenclatureServiceImplTest {
         assertTrue(exceptions.get(list.get(10).toString())
                 .contains(NomenclatureAlreadyTakenCodeException.class.getSimpleName()));
         assertTrue(exceptions.get(list.get(11).toString())
-                .contains(NomenclatureBlankNameException.class.getSimpleName()));
+                .contains(BlankNameException.class.getSimpleName()));
         assertTrue(exceptions.get(list.get(11).toString())
                 .contains(NomenclatureAlreadyTakenCodeException.class.getSimpleName()));
     }

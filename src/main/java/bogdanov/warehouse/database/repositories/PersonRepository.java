@@ -4,6 +4,7 @@ import bogdanov.warehouse.database.entities.PersonEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
@@ -28,5 +29,13 @@ public interface PersonRepository extends JpaRepository<PersonEntity, Long> {
     public List<PersonEntity> findAllByFirstnameAndLastnameAndPatronymic(String firstname,
                                                                          String lastname,
                                                                          String patronymic);
+
+    public List<PersonEntity> findAllByBirthEquals(LocalDate date);
+
+    public List<PersonEntity> findAllByBirthBefore(LocalDate date);
+
+    public List<PersonEntity> findAllByBirthAfter(LocalDate date);
+
+    public List<PersonEntity> findAllByBirthBetween(LocalDate start, LocalDate end);
 
 }

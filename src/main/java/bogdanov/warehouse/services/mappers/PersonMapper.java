@@ -2,36 +2,45 @@ package bogdanov.warehouse.services.mappers;
 
 import bogdanov.warehouse.database.entities.PersonEntity;
 import bogdanov.warehouse.dto.PersonDTO;
+import bogdanov.warehouse.dto.PositionDTO;
+import bogdanov.warehouse.services.interfaces.PositionService;
+import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Component;
 
+@RequiredArgsConstructor
 @Component
 public class PersonMapper {
+
+    private final PositionService positionService;
+    private final Mapper mapper;
+
     PersonEntity convert(PersonDTO person) {
-        PersonEntity personEntity = new PersonEntity();
-
-        personEntity.setFirstname(person.getFirstname());
-        personEntity.setLastname(person.getLastname());
-        personEntity.setPatronymic(person.getPatronymic());
-        personEntity.setBirth(person.getBirth());
-        personEntity.setPhoneNumber(person.getPhoneNumber());
-        personEntity.setEmail(person.getEmail());
-
-        return personEntity;
+        return new PersonEntity(
+                person.getId(),
+                person.getFirstname(),
+                person.getLastname(),
+                Strings.isBlank(person.getPatronymic())
+                        ? Strings.EMPTY : person.getPatronymic(),
+                person.getBirth(),
+                person.getPhoneNumber(),
+                person.getEmail(),
+                mapper.convert(positionService
+                        .add(new PositionDTO(person.getPosition())))
+        );
     }
 
     PersonDTO convert(PersonEntity person) {
-        PersonDTO personDTO = new PersonDTO();
-
-        personDTO.setId(person.getId());
-        personDTO.setFirstname(person.getFirstname());
-        personDTO.setLastname(person.getLastname());
-        personDTO.setPatronymic(person.getPatronymic());
-        personDTO.setBirth(person.getBirth());
-        personDTO.setPhoneNumber(person.getPhoneNumber());
-        personDTO.setEmail(person.getEmail());
-        personDTO.setPosition(person.getPosition().getName());
-
-        return personDTO;
+        return new PersonDTO(
+                person.getId(),
+                person.getFirstname(),
+                person.getLastname(),
+                person.getPatronymic(),
+                person.getBirth(),
+                person.getPhoneNumber(),
+                person.getEmail(),
+                person.getPosition().getName()
+        );
     }
 
 //    PersonEntity update(PersonDTO person) {

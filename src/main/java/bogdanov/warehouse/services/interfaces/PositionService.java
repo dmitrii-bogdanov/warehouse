@@ -1,5 +1,6 @@
 package bogdanov.warehouse.services.interfaces;
 
+import bogdanov.warehouse.database.entities.PositionEntity;
 import bogdanov.warehouse.dto.PositionDTO;
 import org.springframework.stereotype.Service;
 

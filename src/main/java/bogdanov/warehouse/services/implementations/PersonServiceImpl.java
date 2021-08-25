@@ -1,89 +1,152 @@
 package bogdanov.warehouse.services.implementations;
 
+import bogdanov.warehouse.database.entities.PersonEntity;
+import bogdanov.warehouse.database.repositories.PersonRepository;
 import bogdanov.warehouse.dto.PersonDTO;
+import bogdanov.warehouse.exceptions.NotAllRequiredFieldsPresentException;
+import bogdanov.warehouse.exceptions.ResourceNotFoundException;
 import bogdanov.warehouse.services.interfaces.PersonService;
+import bogdanov.warehouse.services.mappers.Mapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Optional;
 
-//TODO
+@RequiredArgsConstructor
 @Service
 public class PersonServiceImpl implements PersonService {
 
+    private final PersonRepository personRepository;
+    private final Mapper mapper;
 
     @Override
     public PersonDTO add(PersonDTO person) {
-        return null;
+        if (person.allRequiredFieldsPresent()) {
+            return mapper.convert(personRepository.save(mapper.convert(person)));
+        } else {
+            throw new NotAllRequiredFieldsPresentException(
+                    "Person firstname, lastname and date of birth should be present");
+        }
     }
 
     @Override
     public List<PersonDTO> add(List<PersonDTO> persons) {
-        return null;
+        List<PersonEntity> entities;
+        entities = persons
+                .stream()
+                .filter(PersonDTO::allRequiredFieldsPresent)
+                .distinct()
+                .map(mapper::convert)
+                .toList();
+        entities = personRepository.saveAll(entities);
+        return entities.stream().map(mapper::convert).toList();
     }
 
     @Override
     public PersonDTO update(PersonDTO person) {
-        return null;
+        if (person.allRequiredFieldsPresent()) {
+            Optional<PersonEntity> optionalEntity = personRepository.findById(person.getId());
+            if (optionalEntity.isPresent()) {
+                return mapper.convert(personRepository.save(mapper.convert(person)));
+            } else {
+                throw new ResourceNotFoundException("Person with id : " + person.getId() + " not found");
+            }
+        } else {
+            throw new NotAllRequiredFieldsPresentException(
+                    "Person firstname, lastname and date of birth should be present");
+        }
     }
 
     @Override
-    public List<PersonDTO> update(List<PersonDTO> person) {
-        return null;
+    public List<PersonDTO> update(List<PersonDTO> persons) {
+        List<PersonEntity> entities;
+        entities = persons
+                .stream()
+                .filter(PersonDTO::allRequiredFieldsPresent)
+                .distinct()
+                .map(dto -> personRepository.findById(dto.getId()).orElse(null))
+                .filter(Objects::nonNull)
+                .toList();
+
+        entities = personRepository.saveAll(entities);
+        return entities.stream().map(mapper::convert).toList();
     }
 
     @Override
     public List<PersonDTO> getAll() {
-        return null;
+        return personRepository.findAll().stream().map(mapper::convert).toList();
     }
 
     @Override
     public List<PersonDTO> findAllByFirstname(String firstname) {
-        return null;
+        return personRepository
+                .findAllByFirstname(firstname.toUpperCase(Locale.ROOT))
+                .stream().map(mapper::convert).toList();
     }
 
     @Override
     public List<PersonDTO> findAllByLastname(String lastname) {
-        return null;
+        return personRepository
+                .findAllByLastname(lastname.toUpperCase(Locale.ROOT))
+                .stream().map(mapper::convert).toList();
     }
 
     @Override
     public List<PersonDTO> findAllByPatronymic(String patronymic) {
-        return null;
+        return personRepository
+                .findAllByPatronymic(patronymic.toUpperCase(Locale.ROOT))
+                .stream().map(mapper::convert).toList();
     }
 
     @Override
     public List<PersonDTO> findAllByBirthDate(LocalDate date) {
-        return null;
+        return personRepository.findAllByBirthEquals(date)
+                .stream().map(mapper::convert).toList();
     }
 
     @Override
     public List<PersonDTO> findAllOlderThan(int age) {
-        return null;
+        return personRepository.findAllByBirthBefore(LocalDate.now().minusYears(age))
+                .stream().map(mapper::convert).toList();
     }
 
     @Override
     public List<PersonDTO> findAllYoungerThan(int age) {
-        return null;
+        return personRepository.findAllByBirthAfter(LocalDate.now().minusYears(age))
+                .stream().map(mapper::convert).toList();
+    }
+
+    @Override
+    public List<PersonDTO> findAllWithBirthDateBetween(LocalDate start, LocalDate end) {
+        return personRepository.findAllByBirthBetween(start, end)
+                .stream().map(mapper::convert).toList();
     }
 
     @Override
     public List<PersonDTO> findAllByPhoneNumber(String phoneNumber) {
-        return null;
+        return personRepository.findAllByPhoneNumber(phoneNumber)
+                .stream().map(mapper::convert).toList();
     }
 
     @Override
     public List<PersonDTO> findAllByPhoneNumberStartingWith(String startWith) {
-        return null;
+        return personRepository.findAllByPhoneNumberStartingWith(startWith)
+                .stream().map(mapper::convert).toList();
     }
 
     @Override
     public List<PersonDTO> findAllByEmail(String email) {
-        return null;
+        return personRepository.findAllByEmail(email.toUpperCase(Locale.ROOT))
+                .stream().map(mapper::convert).toList();
     }
 
     @Override
     public List<PersonDTO> findAllByEmailContaining(String partialEmail) {
-        return null;
+        return personRepository.findAllByEmailContaining(partialEmail.toUpperCase(Locale.ROOT))
+                .stream().map(mapper::convert).toList();
     }
 }

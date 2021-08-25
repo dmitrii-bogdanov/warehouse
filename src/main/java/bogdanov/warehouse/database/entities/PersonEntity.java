@@ -1,5 +1,6 @@
 package bogdanov.warehouse.database.entities;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,6 +12,8 @@ import java.time.LocalDate;
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "persons")
 public class PersonEntity {
 
@@ -24,7 +27,7 @@ public class PersonEntity {
     @Column(nullable = false)
     private String lastname;
 
-    @Column(nullable = false)
+    @Column
     private String patronymic = Strings.EMPTY;
 
     @Column(nullable = false)

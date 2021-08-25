@@ -33,6 +33,8 @@ public interface PersonService {
 
     List<PersonDTO> findAllYoungerThan(int age);
 
+    List<PersonDTO> findAllWithBirthDateBetween(LocalDate start, LocalDate end);
+
     List<PersonDTO> findAllByPhoneNumber(String phoneNumber);
 
     List<PersonDTO> findAllByPhoneNumberStartingWith(String startWith);

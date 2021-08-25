@@ -19,11 +19,6 @@ public interface PersonRepository extends JpaRepository<PersonEntity, Long> {
     //TODO Check what it does
     public List<PersonEntity> findAllByPhoneNumberStartingWith(String startWith);
 
-    public List<PersonEntity> findAllByCompany(String company);
-
-    //TODO Check what it does
-    public List<PersonEntity> findAllByCompanyContaining(String partialCompanyName);
-
     public List<PersonEntity> findAllByFirstname(String firstname);
 
     public List<PersonEntity> findAllByLastname(String lastname);

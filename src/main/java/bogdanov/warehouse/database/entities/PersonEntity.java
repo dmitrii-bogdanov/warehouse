@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.apache.logging.log4j.util.Strings;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 
 @Entity
 @Getter
@@ -26,11 +27,12 @@ public class PersonEntity {
     @Column(nullable = false)
     private String patronymic = Strings.EMPTY;
 
+    @Column(nullable = false)
+    private LocalDate birth;
+
     private String phoneNumber;
 
     private String email;
-
-    private String company;
 
     @ManyToOne(fetch = FetchType.EAGER)
     private PositionEntity position;

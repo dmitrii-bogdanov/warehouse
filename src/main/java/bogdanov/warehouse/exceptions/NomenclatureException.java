@@ -33,12 +33,12 @@ public class NomenclatureException extends RuntimeException {
         String tmp = exceptions.getOrDefault(nomenclature, Strings.EMPTY);
         exceptions.put(
                 nomenclature,
-                tmp + (tmp.isBlank() ? "" : "\n") + message
+                tmp + (tmp.isBlank() ? "" : "; ") + message
         );
     }
 
     public void add(NomenclatureDTO n, RuntimeException e) {
-        add(n.toFormattedString(), e.getClass().getSimpleName() + " : " + e.getMessage());
+        add(n.toString(), e.getClass().getSimpleName() + " : " + e.getMessage());
     }
 
     public void add(NomenclatureException e) {
@@ -50,13 +50,13 @@ public class NomenclatureException extends RuntimeException {
         if (!e.accepted.isEmpty()) {
             for (NomenclatureDTO dto : e.accepted) {
                 thisContainsAccepted = this.accepted.contains(dto);
-                thisContainsException = this.exceptions.containsKey(dto.toFormattedString());
+                thisContainsException = this.exceptions.containsKey(dto.toString());
                 if (!(thisContainsAccepted || thisContainsException)) {
                     this.accept(dto);
                 }
             }
         }
-        this.accepted.removeIf(dto -> this.exceptions.containsKey(dto.toFormattedString()));
+        this.accepted.removeIf(dto -> this.exceptions.containsKey(dto.toString()));
     }
 
     @JsonIgnore

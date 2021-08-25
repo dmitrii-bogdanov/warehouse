@@ -60,14 +60,4 @@ public class NomenclatureDTO {
         return !isEmpty();
     }
 
-    public String toFormattedString() {
-        return toString();
-//        return "\n{\n"
-//                + "\t\"id\" : " + id + ",\n"
-//                + "\t\"name\" : \"" + name + "\",\n"
-//                + "\t\"code\" : \"" + code + "\",\n"
-//                + "\t\"amount\" : " + amount + "\n"
-//                + "}";
-    }
-
 }

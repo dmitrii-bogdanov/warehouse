@@ -22,7 +22,7 @@ public class NomenclatureRestController {
         return nomenclatureService.getAll();
     }
 
-    @GetMapping(value = "?id={id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(params = "id", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public NomenclatureDTO getById(@RequestParam("id") Long id) {
         return nomenclatureService.getById(id);
@@ -30,29 +30,29 @@ public class NomenclatureRestController {
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public NomenclatureDTO createNew(@RequestBody NomenclatureDTO nomenclature) {
+    public List<NomenclatureDTO> createNew(@RequestBody List<NomenclatureDTO> nomenclature) {
         return nomenclatureService.createNew(nomenclature);
     }
 
-    @GetMapping(value = "?name={name}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(params = "name", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public NomenclatureDTO getByName(@RequestParam("name") String name) {
         return nomenclatureService.getByName(name);
     }
 
-    @GetMapping(value = "?code={code}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(params = "code", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public NomenclatureDTO getByCode(@RequestParam("code") String code) {
         return nomenclatureService.getByCode(code);
     }
 
-    @GetMapping(value = "/search?name={name}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/search", params = "name", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public List<NomenclatureDTO> findAllByNameContaining(@RequestParam("name") String name) {
         return nomenclatureService.findAllByNameContaining(name);
     }
 
-    @GetMapping(value = "/search?code={code}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/search", params = "code", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public List<NomenclatureDTO> findAllByCodeContaining(@RequestParam("code") String code) {
         return nomenclatureService.findAllByCodeContaining(code);

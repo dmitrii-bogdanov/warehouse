@@ -56,12 +56,12 @@ class NomenclatureExceptionTest {
 
         assertEquals(
                 r1.getClass().getSimpleName() + " : " + r1.getMessage(),
-                e.getExceptions().get(dto1.toFormattedString()),
+                e.getExceptions().get(dto1.toString()),
                 "Incorrect value in map"
         );
         assertEquals(
                 r2.getClass().getSimpleName() + " : " + r2.getMessage(),
-                e.getExceptions().get(dto2.toFormattedString()),
+                e.getExceptions().get(dto2.toString()),
                 "Incorrect value is put in map"
         );
     }
@@ -78,7 +78,7 @@ class NomenclatureExceptionTest {
         assertEquals(
                 r1.getClass().getSimpleName() + " : " + r1.getMessage()
                         + "\n" + r2.getClass().getSimpleName() + " : " + r2.getMessage(),
-                e.getExceptions().get(dto1.toFormattedString()),
+                e.getExceptions().get(dto1.toString()),
                 "Incorrect concatenation in case of putting value with existing key"
         );
     }
@@ -152,11 +152,11 @@ class NomenclatureExceptionTest {
         assertEquals(2, e.size());
         assertEquals(
                 r1.getClass().getSimpleName() + " : " + r1.getMessage(),
-                e.getExceptions().get(dto1.toFormattedString())
+                e.getExceptions().get(dto1.toString())
         );
         assertEquals(
                 r2.getClass().getSimpleName() + " : " + r2.getMessage(),
-                e.getExceptions().get(dto2.toFormattedString())
+                e.getExceptions().get(dto2.toString())
         );
     }
 
@@ -172,7 +172,7 @@ class NomenclatureExceptionTest {
         assertEquals(
                 r1.getClass().getSimpleName() + " : " + r1.getMessage()
                         + "\n" + r2.getClass().getSimpleName() + " : " + r2.getMessage(),
-                e.getExceptions().get(dto1.toFormattedString())
+                e.getExceptions().get(dto1.toString())
         );
     }
 
@@ -194,11 +194,11 @@ class NomenclatureExceptionTest {
         assertEquals(0, e.countAccepted());
         assertEquals(
                 r1.getClass().getSimpleName() + " : " + r1.getMessage(),
-                e.getExceptions().get(dto1.toFormattedString())
+                e.getExceptions().get(dto1.toString())
         );
         assertEquals(
                 r2.getClass().getSimpleName() + " : " + r2.getMessage(),
-                e.getExceptions().get(dto2.toFormattedString())
+                e.getExceptions().get(dto2.toString())
         );
     }
 
@@ -221,7 +221,7 @@ class NomenclatureExceptionTest {
         assertFalse(e.getAccepted().contains(dto2));
         assertEquals(
                 r2.getClass().getSimpleName() + " : " + r2.getMessage(),
-                e.getExceptions().get(dto2.toFormattedString())
+                e.getExceptions().get(dto2.toString())
         );
     }
 
@@ -245,7 +245,7 @@ class NomenclatureExceptionTest {
         assertFalse(e.getAccepted().contains(dto1));
         assertEquals(
                 r1.getClass().getSimpleName() + " : " + r1.getMessage(),
-                e.getExceptions().get(dto1.toFormattedString())
+                e.getExceptions().get(dto1.toString())
         );
     }
 
@@ -265,7 +265,7 @@ class NomenclatureExceptionTest {
         assertFalse(e.getAccepted().contains(dto2));
         assertEquals(
                 r2.getClass().getSimpleName() + " : " + r2.getMessage(),
-                e.getExceptions().get(dto2.toFormattedString())
+                e.getExceptions().get(dto2.toString())
         );
     }
 
@@ -289,7 +289,7 @@ class NomenclatureExceptionTest {
         assertFalse(e.getAccepted().contains(dto3));
         assertEquals(
                 r3.getClass().getSimpleName() + " : " + r3.getMessage(),
-                e.getExceptions().get(dto3.toFormattedString())
+                e.getExceptions().get(dto3.toString())
         );
     }
 

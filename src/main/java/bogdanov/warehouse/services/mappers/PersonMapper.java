@@ -12,6 +12,7 @@ public class PersonMapper {
         personEntity.setFirstname(person.getFirstname());
         personEntity.setLastname(person.getLastname());
         personEntity.setPatronymic(person.getPatronymic());
+        personEntity.setBirth(person.getBirth());
         personEntity.setPhoneNumber(person.getPhoneNumber());
         personEntity.setEmail(person.getEmail());
 
@@ -25,6 +26,7 @@ public class PersonMapper {
         personDTO.setFirstname(person.getFirstname());
         personDTO.setLastname(person.getLastname());
         personDTO.setPatronymic(person.getPatronymic());
+        personDTO.setBirth(person.getBirth());
         personDTO.setPhoneNumber(person.getPhoneNumber());
         personDTO.setEmail(person.getEmail());
         personDTO.setPosition(person.getPosition().getName());
@@ -32,26 +34,26 @@ public class PersonMapper {
         return personDTO;
     }
 
-    PersonEntity update(PersonDTO person) {
-        PersonEntity personEntity = new PersonEntity();
-
-        if (person.getFirstname().isBlank()) {
-            personEntity.setFirstname(person.getFirstname());
-        }
-        if (person.getLastname().isBlank()) {
-            personEntity.setLastname(person.getLastname());
-        }
-        if (person.getPatronymic().isBlank()) {
-            personEntity.setPatronymic(person.getPatronymic());
-        }
-        if (person.getPhoneNumber() != null) {
-            personEntity.setPhoneNumber(person.getPhoneNumber());
-        }
-        if (person.getEmail() != null) {
-            personEntity.setEmail(person.getEmail());
-        }
-
-        return personEntity;
-    }
+//    PersonEntity update(PersonDTO person) {
+//        PersonEntity personEntity = new PersonEntity();
+//
+//        if (person.getFirstname().isBlank()) {
+//            personEntity.setFirstname(person.getFirstname());
+//        }
+//        if (person.getLastname().isBlank()) {
+//            personEntity.setLastname(person.getLastname());
+//        }
+//        if (person.getPatronymic().isBlank()) {
+//            personEntity.setPatronymic(person.getPatronymic());
+//        }
+//        if (person.getPhoneNumber() != null) {
+//            personEntity.setPhoneNumber(person.getPhoneNumber());
+//        }
+//        if (person.getEmail() != null) {
+//            personEntity.setEmail(person.getEmail());
+//        }
+//
+//        return personEntity;
+//    }
 
 }

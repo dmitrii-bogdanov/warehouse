@@ -36,23 +36,27 @@ public class NomenclatureRestController {
     }
 
     @GetMapping(params = "name")
-    public NomenclatureDTO getByName(@RequestParam("name") String name) {
+    public NomenclatureDTO getByName(@RequestParam String name) {
         return nomenclatureService.getByName(name);
     }
 
     @GetMapping(params = "code")
-    public NomenclatureDTO getByCode(@RequestParam("code") String code) {
+    public NomenclatureDTO getByCode(@RequestParam String code) {
         return nomenclatureService.getByCode(code);
     }
 
-    @GetMapping(value = "/search", params = "name")
-    public List<NomenclatureDTO> findAllByNameContaining(@RequestParam("name") String name) {
+    //TODO get name&code
+
+    @GetMapping(params = {"search", "code"})
+    public List<NomenclatureDTO> findAllByNameContaining(@RequestParam String name) {
         return nomenclatureService.findAllByNameContaining(name);
     }
 
-    @GetMapping(value = "/search", params = "code")
+    @GetMapping( params = {"search", "code"})
     public List<NomenclatureDTO> findAllByCodeContaining(@RequestParam("code") String code) {
         return nomenclatureService.findAllByCodeContaining(code);
     }
+
+    //TODO get search name&code
 
 }

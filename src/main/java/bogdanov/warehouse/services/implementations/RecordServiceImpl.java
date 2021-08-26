@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 @RequiredArgsConstructor
@@ -36,7 +37,7 @@ public class RecordServiceImpl implements RecordService {
         entity.setUser((UserEntity) user);
 
         //TODO delete! For Test Only
-        entity.setUser(userRepository.findByUsername("admin"));
+        entity.setUser(userRepository.findByUsername("admin".toUpperCase(Locale.ROOT)));
 
         NomenclatureDTO nomenclatureDTO = mapper.convert(entity.getNomenclature());
         nomenclatureDTO.setAmount(entity.getAmount());

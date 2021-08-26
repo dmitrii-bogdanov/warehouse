@@ -16,10 +16,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -163,6 +160,7 @@ public class UserAccountServiceImpl implements UserAccountService {
 
     @Override
     public UserAccountDTO getByUsername(String username) {
+        username = username.toUpperCase(Locale.ROOT);
         UserEntity entity = userRepository.findByUsername(username);
         if (entity != null) {
             return mapper.convert(entity, UserAccountDTO.class);

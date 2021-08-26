@@ -46,15 +46,7 @@ public class UserAccountServiceImpl implements UserAccountService {
             } else {
                 UserEntity entity = mapper.convert(user);
                 entity.setPerson(person);
-                //TODO delete
-                entity.getRoles().forEach(r -> log.info(r.toString()));
-                //TODO change Back
-//
-                entity = userRepository.save(entity);
-                log.info(entity.toString());
-                return mapper.convert(entity, UserAccountDTO.class);
-//
-//                return mapper.convert(userRepository.save(entity), UserAccountDTO.class);
+                return mapper.convert(userRepository.save(entity), UserAccountDTO.class);
             }
         }
         throw new RuntimeException("Some unforeseen exception in UserAccountServiceImpl.add()!");

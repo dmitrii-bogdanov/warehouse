@@ -49,6 +49,7 @@ public class UserAccountMapper {
         Collection<RoleEntity> roles = userEntity.getRoles();
         for (String role : user.getRoles()) {
             try {
+                //TODO change
                 roles.add(roleRepository.getByName(role.toUpperCase(Locale.ROOT)));
             } catch (IllegalArgumentException e) {
                 continue;
@@ -67,6 +68,7 @@ public class UserAccountMapper {
         for (RoleEntity role : user.getRoles()) {
             roles[i++] = role.getName();
         }
+        regInfo.setRoles(roles);
         return regInfo;
     }
 

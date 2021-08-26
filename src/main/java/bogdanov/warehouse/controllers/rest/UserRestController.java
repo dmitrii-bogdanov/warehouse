@@ -13,7 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping(
         value = "/api/users",
-        consumes = MediaType.APPLICATION_JSON_VALUE,
+//        consumes = MediaType.APPLICATION_JSON_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE)
 @ResponseStatus(HttpStatus.OK)
 public class UserRestController {

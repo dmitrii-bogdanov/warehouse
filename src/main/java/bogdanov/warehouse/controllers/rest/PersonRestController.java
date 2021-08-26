@@ -13,7 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping(
         value = "/api/persons",
-        consumes = MediaType.APPLICATION_JSON_VALUE,
+//        consumes = MediaType.APPLICATION_JSON_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE)
 @ResponseStatus(HttpStatus.OK)
 public class PersonRestController {
@@ -26,12 +26,12 @@ public class PersonRestController {
     }
 
     @PostMapping
-    public List<PersonDTO> add(List<PersonDTO> persons) {
+    public List<PersonDTO> add(@RequestBody List<PersonDTO> persons) {
         return personService.add(persons);
     }
 
     @PutMapping
-    public List<PersonDTO> update(List<PersonDTO> persons) {
+    public List<PersonDTO> update(@RequestBody List<PersonDTO> persons) {
         return personService.update(persons);
     }
 

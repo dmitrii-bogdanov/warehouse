@@ -16,7 +16,8 @@ public class PositionEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    //TODO make unique
+    @Column(nullable = false)
     private String name;
 
     protected PositionEntity() {

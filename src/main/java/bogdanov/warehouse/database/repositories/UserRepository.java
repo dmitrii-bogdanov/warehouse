@@ -18,7 +18,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     //TODO Check what it does
     public List<UserEntity> findAllByUsernameStartingWith(String startsWith);
 
-    public List<UserEntity> findAllByEnabledIs(boolean isEnabled);
+    public List<UserEntity> findAllByIsEnabled(boolean isEnabled);
 
     public List<UserEntity> findAllByRoles_NameEquals(String name);
 

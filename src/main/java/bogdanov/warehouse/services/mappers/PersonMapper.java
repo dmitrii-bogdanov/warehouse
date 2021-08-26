@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 public class PersonMapper {
 
     private final PositionService positionService;
-    private final Mapper mapper;
+    private final PositionMapper positionMapper;
 
     PersonEntity convert(PersonDTO person) {
         return new PersonEntity(
@@ -25,8 +25,7 @@ public class PersonMapper {
                 person.getBirth(),
                 person.getPhoneNumber(),
                 person.getEmail(),
-                mapper.convert(positionService
-                        .add(new PositionDTO(person.getPosition())))
+                positionMapper.convert(positionService.add(person.getPosition()))
         );
     }
 

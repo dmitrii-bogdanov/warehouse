@@ -14,7 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping(
         value = "/api/console/accounts",
-        consumes = MediaType.APPLICATION_JSON_VALUE,
+//        consumes = MediaType.APPLICATION_JSON_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE)
 @ResponseStatus(HttpStatus.OK)
 public class AccountRestController {
@@ -27,7 +27,7 @@ public class AccountRestController {
     }
 
     @PostMapping
-    public UserAccountDTO register(UserAccountWithPasswordDTO user) {
+    public UserAccountDTO register(@RequestBody UserAccountWithPasswordDTO user) {
         return accountService.add(user);
     }
 
@@ -52,27 +52,27 @@ public class AccountRestController {
     }
 
     @PutMapping(params = "password")
-    public UserAccountDTO updatePassword(UserAccountWithPasswordDTO user) {
+    public UserAccountDTO updatePassword(@RequestBody UserAccountWithPasswordDTO user) {
         return accountService.updatePassword(user);
     }
 
     @PutMapping(params = "roles")
-    public UserAccountDTO updateRoles(UserAccountDTO user) {
+    public UserAccountDTO updateRoles(@RequestBody UserAccountDTO user) {
         return accountService.updateRoles(user);
     }
 
     @PutMapping(params = "username")
-    public UserAccountDTO updateUsername(UserAccountDTO user) {
+    public UserAccountDTO updateUsername(@RequestBody UserAccountDTO user) {
         return accountService.updateUsername(user);
     }
 
     @PutMapping(params = "enable")
-    public UserAccountDTO enable(UserAccountDTO user) {
+    public UserAccountDTO enable(@RequestBody UserAccountDTO user) {
         return accountService.enable(user);
     }
 
     @PutMapping(params = "disable")
-    public UserAccountDTO disable(UserAccountDTO user) {
+    public UserAccountDTO disable(@RequestBody UserAccountDTO user) {
         return accountService.disable(user);
     }
 

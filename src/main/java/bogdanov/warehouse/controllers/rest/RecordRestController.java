@@ -15,7 +15,7 @@ import java.util.Locale;
 @RestController
 @RequestMapping(
         value = "/api/nomenclature/records",
-        consumes = MediaType.APPLICATION_JSON_VALUE,
+//        consumes = MediaType.APPLICATION_JSON_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE)
 @ResponseStatus(HttpStatus.OK)
 public class RecordRestController {

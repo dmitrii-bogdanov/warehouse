@@ -9,6 +9,8 @@ import java.util.List;
 @Service
 public interface PositionService {
 
+    PositionDTO add(String name);
+
     PositionDTO add(PositionDTO position);
 
     List<PositionDTO> add(List<PositionDTO> positions);

@@ -10,6 +10,8 @@ import java.util.List;
 @Service
 public interface RoleService {
 
+    public List<RoleDTO> getAll();
+
     public RoleDTO findByName(String name);
 
     public List<RoleDTO> findByName(Collection<String> names);

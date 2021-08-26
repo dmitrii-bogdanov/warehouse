@@ -12,16 +12,19 @@ import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.*;
 
 @Service
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
 public class RecordTypeServiceImpl implements RecordTypeService {
 
     private final RecordTypeRepository recordTypeRepository;
-    private final Mapper mapper;
+    private final Map<String, RecordTypeDTO> types = new HashMap<>();
+
+    public RecordTypeServiceImpl(RecordTypeRepository recordTypeRepository) {
+        this.recordTypeRepository = recordTypeRepository;
+        recordTypeRepository.findAll().forEach(e -> types.put(e.getName(), new RecordTypeDTO(e.getId(), e.getName())));
+    }
 
     @Override
     public RecordTypeDTO getById(Long id) {
@@ -30,7 +33,7 @@ public class RecordTypeServiceImpl implements RecordTypeService {
         }
         Optional<RecordTypeEntity> entity = recordTypeRepository.findById(id);
         if (entity.isPresent()) {
-            return mapper.convert(entity.get());
+            return new RecordTypeDTO(entity.get().getId(), entity.get().getName());
         } else {
             throw new ResourceNotFoundException(
                     "ResourceType with id : " + id + " not found");
@@ -43,9 +46,8 @@ public class RecordTypeServiceImpl implements RecordTypeService {
             throw new BlankNameException("RecordType name is blank");
         }
         name = name.toUpperCase(Locale.ROOT);
-        Optional<RecordTypeEntity> entity = recordTypeRepository.findByName(name);
-        if (entity.isPresent()) {
-            return mapper.convert(entity.get());
+        if (types.containsKey(name)) {
+            return types.get(name);
         } else {
             throw new ResourceNotFoundException(
                     "ResourceType with name : " + name + " not found");
@@ -54,6 +56,6 @@ public class RecordTypeServiceImpl implements RecordTypeService {
 
     @Override
     public List<RecordTypeDTO> getAll() {
-        return recordTypeRepository.findAll().stream().map(mapper::convert).toList();
+        return types.values().stream().toList();
     }
 }

@@ -12,7 +12,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping(value = "/api/positions",
-        consumes = MediaType.APPLICATION_JSON_VALUE,
+//        consumes = MediaType.APPLICATION_JSON_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE)
 @ResponseStatus(HttpStatus.OK)
 public class PositionRestController {
@@ -24,13 +24,14 @@ public class PositionRestController {
         return positionService.getAll();
     }
 
+    //TODO not working can't find List public constructor
     @PostMapping
-    public List<PositionDTO> add(List<PositionDTO> positions) {
+    public List<PositionDTO> add(@RequestBody List<PositionDTO> positions) {
         return positionService.add(positions);
     }
 
     @PutMapping
-    public List<PositionDTO> update(List<PositionDTO> positions) {
+    public List<PositionDTO> update(@RequestBody List<PositionDTO> positions) {
         return positionService.update(positions);
     }
 

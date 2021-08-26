@@ -3,6 +3,7 @@ package bogdanov.warehouse.services.mappers;
 import bogdanov.warehouse.database.entities.RoleEntity;
 import bogdanov.warehouse.database.entities.UserEntity;
 import bogdanov.warehouse.database.enums.Role;
+import bogdanov.warehouse.database.repositories.RoleRepository;
 import bogdanov.warehouse.dto.UserAccountWithPasswordDTO;
 import bogdanov.warehouse.dto.UserAccountDTO;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.util.Collection;
 import java.util.Locale;
 
@@ -18,11 +20,14 @@ public class UserAccountMapper {
 
     private final BCryptPasswordEncoder userEncoder;
     private final BCryptPasswordEncoder adminEncoder;
+    private final RoleRepository roleRepository;
 
     UserAccountMapper(@Qualifier("user") BCryptPasswordEncoder userEncoder,
-                      @Qualifier("admin") BCryptPasswordEncoder adminEncoder) {
+                      @Qualifier("admin") BCryptPasswordEncoder adminEncoder,
+                      RoleRepository roleRepository) {
         this.userEncoder = userEncoder;
         this.adminEncoder = adminEncoder;
+        this.roleRepository = roleRepository;
     }
 
     //TODO CHECK WARNINGS
@@ -44,9 +49,7 @@ public class UserAccountMapper {
         Collection<RoleEntity> roles = userEntity.getRoles();
         for (String role : user.getRoles()) {
             try {
-                roles.add(new RoleEntity(
-                        Role.valueOf(role.toUpperCase(Locale.ROOT))
-                ));
+                roles.add(roleRepository.getByName(role.toUpperCase(Locale.ROOT)));
             } catch (IllegalArgumentException e) {
                 continue;
             }

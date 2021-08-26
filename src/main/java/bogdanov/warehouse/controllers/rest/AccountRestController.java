@@ -4,12 +4,15 @@ import bogdanov.warehouse.dto.UserAccountDTO;
 import bogdanov.warehouse.dto.UserAccountWithPasswordDTO;
 import bogdanov.warehouse.services.interfaces.UserAccountService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.List;
 
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping(
@@ -28,6 +31,9 @@ public class AccountRestController {
 
     @PostMapping
     public UserAccountDTO register(@RequestBody UserAccountWithPasswordDTO user) {
+        //TODO delete
+        log.info(Arrays.toString(user.getRoles()));
+
         return accountService.add(user);
     }
 

@@ -13,14 +13,13 @@ public class OtherExceptionsHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(
             value = {
-            AlreadyRegisteredPersonException.class,
-            BlankNameException.class,
-            NotAllRequiredFieldsPresentException.class,
-            NullIdException.class,
-            PasswordException.class,
-            ResourceNotFoundException.class,
-            UsernameException.class
-    })
+                    AlreadyRegisteredPersonException.class,
+                    BlankNameException.class,
+                    NotAllRequiredFieldsPresentException.class,
+                    NullIdException.class,
+                    PasswordException.class,
+                    UsernameException.class
+            })
     protected ResponseEntity<String> handleException(RuntimeException e) {
         return new ResponseEntity(
                 e.getClass().getSimpleName() + " : " + e.getMessage(),
@@ -28,4 +27,11 @@ public class OtherExceptionsHandler extends ResponseEntityExceptionHandler {
         );
     }
 
+    @ExceptionHandler(value = ResourceNotFoundException.class)
+    protected ResponseEntity<String> handleResourceNotFoundException(ResourceNotFoundException e) {
+        return new ResponseEntity(
+                e.getClass().getSimpleName() + " : " + e.getMessage(),
+                HttpStatus.NOT_FOUND
+        );
+    }
 }

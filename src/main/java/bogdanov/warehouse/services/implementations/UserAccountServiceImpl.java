@@ -10,14 +10,18 @@ import bogdanov.warehouse.services.interfaces.PersonService;
 import bogdanov.warehouse.services.interfaces.UserAccountService;
 import bogdanov.warehouse.services.mappers.Mapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class UserAccountServiceImpl implements UserAccountService {
@@ -42,7 +46,15 @@ public class UserAccountServiceImpl implements UserAccountService {
             } else {
                 UserEntity entity = mapper.convert(user);
                 entity.setPerson(person);
-                return mapper.convert(userRepository.save(entity), UserAccountDTO.class);
+                //TODO delete
+                entity.getRoles().forEach(r -> log.info(r.toString()));
+                //TODO change Back
+//
+                entity = userRepository.save(entity);
+                log.info(entity.toString());
+                return mapper.convert(entity, UserAccountDTO.class);
+//
+//                return mapper.convert(userRepository.save(entity), UserAccountDTO.class);
             }
         }
         throw new RuntimeException("Some unforeseen exception in UserAccountServiceImpl.add()!");

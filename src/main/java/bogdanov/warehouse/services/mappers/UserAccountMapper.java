@@ -65,7 +65,7 @@ public class UserAccountMapper {
         String[] roles = new String[user.getRoles().size()];
         int i = 0;
         for (RoleEntity role : user.getRoles()) {
-            roles[i] = role.getName();
+            roles[i++] = role.getName();
         }
         return regInfo;
     }

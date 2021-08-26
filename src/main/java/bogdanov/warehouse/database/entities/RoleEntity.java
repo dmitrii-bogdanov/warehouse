@@ -1,8 +1,10 @@
 package bogdanov.warehouse.database.entities;
 
 import bogdanov.warehouse.database.enums.Role;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import org.springframework.security.core.GrantedAuthority;
 
 import javax.persistence.*;
@@ -11,6 +13,8 @@ import java.util.Collection;
 @Entity
 @Getter
 @Setter
+@ToString
+@EqualsAndHashCode
 @Table(name = "roles")
 public class RoleEntity implements GrantedAuthority {
 

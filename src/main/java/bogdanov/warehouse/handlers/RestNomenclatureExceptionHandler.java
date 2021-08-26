@@ -11,7 +11,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 public class RestNomenclatureExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = NomenclatureException.class)
-    protected ResponseEntity<NomenclatureException> handleExcepsion(RuntimeException e) {
+    protected ResponseEntity<NomenclatureException> handleException(RuntimeException e) {
         return new ResponseEntity(e, HttpStatus.BAD_REQUEST);
     }
 

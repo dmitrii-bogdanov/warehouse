@@ -4,6 +4,7 @@ import bogdanov.warehouse.database.entities.PersonEntity;
 import bogdanov.warehouse.database.repositories.PersonRepository;
 import bogdanov.warehouse.dto.PersonDTO;
 import bogdanov.warehouse.exceptions.NotAllRequiredFieldsPresentException;
+import bogdanov.warehouse.exceptions.NullIdException;
 import bogdanov.warehouse.exceptions.ResourceNotFoundException;
 import bogdanov.warehouse.services.interfaces.PersonService;
 import bogdanov.warehouse.services.mappers.Mapper;
@@ -74,6 +75,25 @@ public class PersonServiceImpl implements PersonService {
 
         entities = personRepository.saveAll(entities);
         return entities.stream().map(mapper::convert).toList();
+    }
+
+    @Override
+    public PersonDTO getById(Long id) {
+        return mapper.convert(getEntityById(id));
+    }
+
+    @Override
+    public PersonEntity getEntityById(Long id) {
+        if (id == null) {
+            throw new NullIdException("Person id is null");
+        }
+        Optional<PersonEntity> optionalEntity = personRepository.findById(id);
+        if (optionalEntity.isPresent()) {
+            return optionalEntity.get();
+        } else {
+            throw new ResourceNotFoundException(
+                    "Person with id : " + id + " not found");
+        }
     }
 
     @Override

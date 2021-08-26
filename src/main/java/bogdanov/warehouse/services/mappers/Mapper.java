@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 public class Mapper {
 
     private final RoleMapper roleMapper;
-    private final UserRegistrationMapper userRegistrationMapper;
+    private final UserAccountMapper userAccountMapper;
     private final UserMapper userMapper;
     private final PersonMapper personMapper;
     private final NomenclatureMapper nomenclatureMapper;
@@ -28,11 +28,15 @@ public class Mapper {
 
     //region UserRegistrationDTO, UserRegistrationInfoDTO <--> UserEntity
     public UserEntity convert(UserAccountWithPasswordDTO user) {
-        return userRegistrationMapper.convert(user);
+        return userAccountMapper.convert(user);
     }
 
-    public UserAccountDTO convert(UserEntity user, boolean isAdminConsole) {
-        return isAdminConsole ? userRegistrationMapper.convert(user) : null;
+    public UserEntity convert(UserAccountDTO user) {
+        return userAccountMapper.convert(user);
+    }
+
+    public UserAccountDTO convert(UserEntity user, Class<? extends UserAccountDTO> dto) {
+        return userAccountMapper.convert(user);
     }
     //endregion
 

@@ -5,32 +5,21 @@ import bogdanov.warehouse.database.repositories.RoleRepository;
 import bogdanov.warehouse.dto.RoleDTO;
 import bogdanov.warehouse.services.interfaces.RoleService;
 import bogdanov.warehouse.services.mappers.Mapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-//TODO
+@RequiredArgsConstructor
 @Service
 public class RoleServiceImpl implements RoleService {
 
-    private RoleRepository roleRepository;
-    private Mapper mapper;
-
-    //region Autowired setters
-    @Autowired
-    private void setRoleRepository(RoleRepository roleRepository) {
-        this.roleRepository = roleRepository;
-    }
-
-    @Autowired
-    private void setMapper(Mapper mapper) {
-        this.mapper = mapper;
-    }
-    //endregion
-
+    private final RoleRepository roleRepository;
+    private final Mapper mapper;
 
     @Override
     public RoleDTO findByName(String name) {
@@ -38,7 +27,7 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public List<RoleDTO> findByName(List<String> names) {
+    public List<RoleDTO> findByName(Collection<String> names) {
         return names.stream().map(roleRepository::getByName).map(mapper::convert).collect(Collectors.toList());
     }
 

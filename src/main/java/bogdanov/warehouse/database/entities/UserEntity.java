@@ -56,4 +56,12 @@ public class UserEntity implements UserDetails {
     public boolean isCredentialsNonExpired() {
         return true;
     }
+
+    public void enable() {
+        isEnabled = true;
+    }
+
+    public void disable() {
+        isEnabled = false;
+    }
 }

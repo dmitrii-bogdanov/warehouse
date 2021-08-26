@@ -21,6 +21,10 @@ public interface PersonService {
 
     List<PersonDTO> getAll();
 
+    PersonDTO getById(Long id);
+
+    PersonEntity getEntityById(Long id);
+
     List<PersonDTO> findAllByFirstname(String firstname);
 
     List<PersonDTO> findAllByLastname(String lastname);

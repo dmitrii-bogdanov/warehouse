@@ -14,13 +14,13 @@ import java.util.Collection;
 import java.util.Locale;
 
 @Component
-public class UserRegistrationMapper {
+public class UserAccountMapper {
 
     private final BCryptPasswordEncoder userEncoder;
     private final BCryptPasswordEncoder adminEncoder;
 
-    UserRegistrationMapper(@Qualifier("user") BCryptPasswordEncoder userEncoder,
-                           @Qualifier("admin") BCryptPasswordEncoder adminEncoder) {
+    UserAccountMapper(@Qualifier("user") BCryptPasswordEncoder userEncoder,
+                      @Qualifier("admin") BCryptPasswordEncoder adminEncoder) {
         this.userEncoder = userEncoder;
         this.adminEncoder = adminEncoder;
     }

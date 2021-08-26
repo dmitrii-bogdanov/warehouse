@@ -29,4 +29,17 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     public boolean existsByPersonEquals(PersonEntity person);
 
     public boolean existsByUsername(String username);
+
+    public List<UserEntity> findAllByPerson_Firstname(String firstname);
+
+    public List<UserEntity> findAllByPerson_Lastname(String lastname);
+
+    public List<UserEntity> findAllByPerson_Patronymic(String patronymic);
+
+    public List<UserEntity> findAllByPerson_FirstnameAndPerson_PatronymicAndPerson_Lastname(
+            String firstname, String patronymic, String lastname);
+
+    public List<UserEntity> findAllByPerson_Position_Name(String position);
+
+    public Optional<UserEntity> findByPerson_Id(Long id);
 }

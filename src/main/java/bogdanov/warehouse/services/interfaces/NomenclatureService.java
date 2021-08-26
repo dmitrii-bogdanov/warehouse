@@ -19,6 +19,8 @@ public interface NomenclatureService {
 
     NomenclatureDTO getById(Long id);
 
+    NomenclatureEntity getEntityById(Long id);
+
     NomenclatureDTO getByName(String name);
 
     NomenclatureDTO getByCode(String code);
@@ -44,6 +46,8 @@ public interface NomenclatureService {
     List<NomenclatureDTO> getAllAvailable();
 
     NomenclatureDTO addAmount(NomenclatureDTO nomenclature);
+
+    NomenclatureDTO updateAmount(NomenclatureDTO nomenclature);
 
     List<NomenclatureDTO> addAmount(List<NomenclatureDTO> nomenclature);
 

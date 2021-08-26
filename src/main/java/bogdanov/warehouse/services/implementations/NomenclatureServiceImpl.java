@@ -75,11 +75,16 @@ public class NomenclatureServiceImpl implements NomenclatureService {
 
     @Override
     public NomenclatureDTO getById(Long id) {
+        return mapper.convert(getEntityById(id));
+    }
+
+    @Override
+    public NomenclatureEntity getEntityById(Long id) {
         if (id == null) {
             throw new NullIdException();
         }
         try {
-            return mapper.convert(nomenclatureRepository.findById(id).orElseThrow());
+            return nomenclatureRepository.findById(id).orElseThrow();
         } catch (NoSuchElementException e) {
             throw new ResourceNotFoundException(
                     "Nomenclature with id : " + id + " not found"
@@ -215,7 +220,6 @@ public class NomenclatureServiceImpl implements NomenclatureService {
         } else {
             throw exception;
         }
-
     }
 
     @Override
@@ -284,6 +288,23 @@ public class NomenclatureServiceImpl implements NomenclatureService {
             boolean isCodeCorrect = checkIdAndCodePair(nomenclature, entity, exception);
             if (isNameCorrect && isCodeCorrect) {
                 entity.add(nomenclature.getAmount());
+                return mapper.convert(nomenclatureRepository.save(entity));
+            }
+        }
+        throw exception;
+    }
+
+    @Override
+    public NomenclatureDTO updateAmount(NomenclatureDTO nomenclature) {
+        NomenclatureException exception = new NomenclatureException();
+        NomenclatureEntity entity;
+        boolean isAmountPositive = checkAmount(nomenclature, exception);
+        boolean isIdCorrect = null != (entity = checkIdAndRetrieve(nomenclature, exception));
+        if (isIdCorrect && isAmountPositive) {
+            boolean isNameCorrect = checkIdAndNamePair(nomenclature, entity, exception);
+            boolean isCodeCorrect = checkIdAndCodePair(nomenclature, entity, exception);
+            if (isNameCorrect && isCodeCorrect) {
+                entity.setAmount(nomenclature.getAmount());
                 return mapper.convert(nomenclatureRepository.save(entity));
             }
         }

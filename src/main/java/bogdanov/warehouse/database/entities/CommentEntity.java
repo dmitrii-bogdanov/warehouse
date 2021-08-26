@@ -17,12 +17,5 @@ public class CommentEntity {
     @Column(nullable = false)
     private String text;
 
-    @Transient
-    @OneToOne(mappedBy = "comment")
-    private OrderEntity order;
-
-    @Transient
-    @OneToOne(mappedBy = "comment")
-    private OperationEntity operation;
 
 }

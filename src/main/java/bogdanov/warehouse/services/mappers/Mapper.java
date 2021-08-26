@@ -15,6 +15,8 @@ public class Mapper {
     private final PersonMapper personMapper;
     private final NomenclatureMapper nomenclatureMapper;
     private final PositionMapper positionMapper;
+    private final RecordMapper recordMapper;
+    private final RecordTypeMapper recordTypeMapper;
 
     //region RoleDTO <--> RoleEntity
     public RoleEntity convert(RoleDTO role) {
@@ -73,6 +75,26 @@ public class Mapper {
 
     public PositionDTO convert(PositionEntity position) {
         return positionMapper.convert(position);
+    }
+    //endregion
+
+    //region RecordDTO <--> RecordEntity
+    public RecordEntity convert(RecordInputDTO record) {
+        return recordMapper.convert(record);
+    }
+
+    public RecordDTO convert(RecordEntity record) {
+        return recordMapper.convert(record);
+    }
+    //endregion
+
+    //region RecordTypeDTO <--> RecordTypeEntity
+    public RecordTypeEntity convert(RecordTypeDTO recordType) {
+        return recordTypeMapper.convert(recordType);
+    }
+
+    public RecordTypeDTO convert(RecordTypeEntity recordType) {
+        return recordTypeMapper.convert(recordType);
     }
     //endregion
 

@@ -55,5 +55,4 @@ public class NomenclatureRestController {
         return nomenclatureService.findAllByCodeContaining(code);
     }
 
-
 }

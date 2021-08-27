@@ -12,7 +12,7 @@ import java.util.List;
 @Service
 public interface RecordService {
 
-    RecordDTO add(RecordInputDTO record, UserDetails user);
+    RecordDTO add(RecordInputDTO record, String username);
 
     void delete(RecordOutputDTO record);
 

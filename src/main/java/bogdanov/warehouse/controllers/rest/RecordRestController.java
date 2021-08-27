@@ -21,9 +21,6 @@ import java.util.Locale;
 public class RecordRestController {
 
     private final RecordService recordService;
-    private final String receptionType = "RECEPTION";
-    private final String releaseType = "RELEASE";
-    private final String inventoryingType = "INVENTORYING";
 
     @GetMapping
     public List<RecordDTO> getAll() {
@@ -38,17 +35,12 @@ public class RecordRestController {
 
     @GetMapping(params = "reception")
     public List<RecordDTO> getAllReceptionRecords() {
-        return recordService.findAllByType(receptionType);
+        return recordService.findAllByType("RECEPTION");
     }
 
     @GetMapping(params = "release")
     public List<RecordDTO> getAllReleaseRecords() {
-        return recordService.findAllByType(releaseType);
-    }
-
-    @GetMapping(params = "inventorying")
-    public List<RecordDTO> getAllInventoryingRecords() {
-        return recordService.findAllByType(inventoryingType);
+        return recordService.findAllByType("RELEASE");
     }
 
     @GetMapping(params = "type")

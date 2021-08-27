@@ -4,41 +4,35 @@ import bogdanov.warehouse.database.entities.PositionEntity;
 import bogdanov.warehouse.database.repositories.PositionRepository;
 import bogdanov.warehouse.dto.PositionDTO;
 import bogdanov.warehouse.exceptions.BlankNameException;
-import bogdanov.warehouse.exceptions.NullIdException;
 import bogdanov.warehouse.exceptions.ResourceNotFoundException;
 import bogdanov.warehouse.services.interfaces.PositionService;
-import bogdanov.warehouse.services.mappers.Mapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 
-import javax.swing.text.html.parser.Entity;
+import javax.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
-//@RequiredArgsConstructor
+@RequiredArgsConstructor
 @Service
 public class PositionServiceImpl implements PositionService {
 
     private final PositionRepository positionRepository;
     private final Map<String, PositionDTO> positions = new HashMap<>();
 
-    //TODO
-    public PositionServiceImpl(PositionRepository positionRepository) {
-        this.positionRepository = positionRepository;
+    @PostConstruct
+    private void initializeMap() {
         positionRepository.findAll().forEach(e -> positions.put(e.getName(), new PositionDTO(e.getId(), e.getName())));
     }
 
     @Override
     public PositionDTO add(String name) {
-        if (!positions.containsKey(name)) {
-            PositionEntity entity = new PositionEntity(name);
-            entity = positionRepository.findByName(name)
-                    .orElse(positionRepository.save(new PositionEntity(name)));
-            positions.put(name, new PositionDTO(entity.getId(), entity.getName()));
-        }
+        positions.computeIfAbsent(name, n -> {
+            PositionEntity entity = positionRepository.save(new PositionEntity(name));
+            return new PositionDTO(entity.getId(), entity.getName());
+        });
         return positions.get(name);
     }
 

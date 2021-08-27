@@ -10,12 +10,20 @@ import java.util.List;
 @Service
 public interface RoleService {
 
-    public List<RoleDTO> getAll();
+    List<RoleDTO> getAll();
 
-    public RoleDTO findByName(String name);
+    RoleDTO findByName(String name);
 
-    public List<RoleDTO> findByName(Collection<String> names);
+    List<RoleDTO> findByName(Collection<String> names);
 
-    public RoleDTO[] findByName(String[] names);
+    List<RoleDTO> findByName(String[] names);
+
+    List<RoleEntity> getAllEntities();
+
+    RoleEntity findEntityByName(String name);
+
+    List<RoleEntity> findEntitiesByName(Collection<String> names);
+
+    List<RoleEntity> findEntitiesByName(String[] names);
 
 }

@@ -6,6 +6,7 @@ import bogdanov.warehouse.database.enums.Role;
 import bogdanov.warehouse.database.repositories.RoleRepository;
 import bogdanov.warehouse.dto.UserAccountWithPasswordDTO;
 import bogdanov.warehouse.dto.UserAccountDTO;
+import bogdanov.warehouse.services.interfaces.RoleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -20,17 +21,16 @@ public class UserAccountMapper {
 
     private final BCryptPasswordEncoder userEncoder;
     private final BCryptPasswordEncoder adminEncoder;
-    private final RoleRepository roleRepository;
+    private final RoleService roleService;
 
-    UserAccountMapper(@Qualifier("user") BCryptPasswordEncoder userEncoder,
-                      @Qualifier("admin") BCryptPasswordEncoder adminEncoder,
-                      RoleRepository roleRepository) {
+    public UserAccountMapper(@Qualifier("user") BCryptPasswordEncoder userEncoder,
+                             @Qualifier("admin") BCryptPasswordEncoder adminEncoder,
+                             RoleService roleService) {
         this.userEncoder = userEncoder;
         this.adminEncoder = adminEncoder;
-        this.roleRepository = roleRepository;
+        this.roleService = roleService;
     }
 
-    //TODO CHECK WARNINGS
     UserEntity convert(UserAccountWithPasswordDTO user) {
         UserEntity userEntity = convert((UserAccountDTO) user);
         if (userEntity.getRoles().contains(new RoleEntity(Role.ROLE_ADMIN))) {
@@ -41,20 +41,11 @@ public class UserAccountMapper {
         return userEntity;
     }
 
-    //TODO Check adding by new RoleEntity()
     UserEntity convert(UserAccountDTO user) {
         UserEntity userEntity = new UserEntity();
         userEntity.setId(user.getId());
         userEntity.setUsername(user.getUsername());
-        Collection<RoleEntity> roles = userEntity.getRoles();
-        for (String role : user.getRoles()) {
-            try {
-                //TODO change
-                roles.add(roleRepository.getByName(role.toUpperCase(Locale.ROOT)));
-            } catch (IllegalArgumentException e) {
-                continue;
-            }
-        }
+        userEntity.setRoles(roleService.findEntitiesByName(user.getRoles()));
         return userEntity;
     }
 

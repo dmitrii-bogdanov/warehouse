@@ -42,26 +42,5 @@ public class PersonMapper {
         );
     }
 
-//    PersonEntity update(PersonDTO person) {
-//        PersonEntity personEntity = new PersonEntity();
-//
-//        if (person.getFirstname().isBlank()) {
-//            personEntity.setFirstname(person.getFirstname());
-//        }
-//        if (person.getLastname().isBlank()) {
-//            personEntity.setLastname(person.getLastname());
-//        }
-//        if (person.getPatronymic().isBlank()) {
-//            personEntity.setPatronymic(person.getPatronymic());
-//        }
-//        if (person.getPhoneNumber() != null) {
-//            personEntity.setPhoneNumber(person.getPhoneNumber());
-//        }
-//        if (person.getEmail() != null) {
-//            personEntity.setEmail(person.getEmail());
-//        }
-//
-//        return personEntity;
-//    }
 
 }

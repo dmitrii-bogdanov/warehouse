@@ -7,7 +7,6 @@ import bogdanov.warehouse.dto.RoleDTO;
 import bogdanov.warehouse.services.interfaces.RoleService;
 import bogdanov.warehouse.services.mappers.Mapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -15,11 +14,12 @@ import javax.annotation.PostConstruct;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
-@Qualifier("repositoryOnly")
+@Qualifier("repositoryOnlyWithMapper")
 public class RoleServiceImpl implements RoleService {
 
     private final RoleRepository roleRepository;
@@ -46,7 +46,27 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public RoleDTO[] findByName(String[] names) {
-        return findByName(Arrays.asList(names)).toArray(new RoleDTO[0]);
+    public List<RoleDTO> findByName(String[] names) {
+        return findByName(Arrays.asList(names));
+    }
+
+    @Override
+    public List<RoleEntity> getAllEntities() {
+        return roleRepository.findAll();
+    }
+
+    @Override
+    public RoleEntity findEntityByName(String name) {
+        return roleRepository.getByName(name);
+    }
+
+    @Override
+    public List<RoleEntity> findEntitiesByName(Collection<String> names) {
+        return names.stream().map(roleRepository::getByName).filter(Objects::nonNull).toList();
+    }
+
+    @Override
+    public List<RoleEntity> findEntitiesByName(String[] names) {
+        return findEntitiesByName(Arrays.asList(names));
     }
 }

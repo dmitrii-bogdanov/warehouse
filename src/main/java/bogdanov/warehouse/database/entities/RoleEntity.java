@@ -21,7 +21,7 @@ public class RoleEntity implements GrantedAuthority {
     @Id
     private long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String name;
 
     @Transient

@@ -13,6 +13,7 @@ import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -25,6 +26,7 @@ import java.util.*;
 class NomenclatureServiceImplTest {
 
     @Autowired
+    @Qualifier("withInternalUniqueCheck")
     private NomenclatureService nomenclatureService;
 
     @Autowired

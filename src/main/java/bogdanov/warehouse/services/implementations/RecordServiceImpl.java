@@ -42,22 +42,8 @@ public class RecordServiceImpl implements RecordService {
         NomenclatureDTO nomenclatureDTO = mapper.convert(entity.getNomenclature());
         nomenclatureDTO.setAmount(entity.getAmount());
         switch (entity.getType().getName()) {
-
-            case "RECEPTION": {
-                nomenclatureService.addAmount(nomenclatureDTO);
-                break;
-            }
-
-            case "RELEASE": {
-                nomenclatureService.subtractAmount(nomenclatureDTO);
-                break;
-            }
-
-            case "INVENTORYING": {
-                nomenclatureService.updateAmount(nomenclatureDTO);
-                break;
-            }
-
+            case "RECEPTION" -> nomenclatureService.addAmount(nomenclatureDTO);
+            case "RELEASE" -> nomenclatureService.subtractAmount(nomenclatureDTO);
         }
         return mapper.convert(recordRepository.save(entity));
     }

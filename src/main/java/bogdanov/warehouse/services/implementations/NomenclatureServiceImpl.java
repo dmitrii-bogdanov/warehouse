@@ -8,12 +8,13 @@ import bogdanov.warehouse.services.interfaces.NomenclatureService;
 import bogdanov.warehouse.services.mappers.Mapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.*;
 
-//TODO
+@Qualifier("withInternalUniqueCheck")
 @Service
 @RequiredArgsConstructor
 public class NomenclatureServiceImpl implements NomenclatureService {
@@ -314,13 +315,13 @@ public class NomenclatureServiceImpl implements NomenclatureService {
     //TODO is it necessary?
     @Override
     public List<NomenclatureDTO> addAmount(List<NomenclatureDTO> nomenclature) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     //TODO is it necessary?
     @Override
     public List<NomenclatureDTO> addAmount(NomenclatureDTO[] nomenclature) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -343,13 +344,13 @@ public class NomenclatureServiceImpl implements NomenclatureService {
     //TODO is it necessary?
     @Override
     public List<NomenclatureDTO> subtractAmount(List<NomenclatureDTO> nomenclature) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     //TODO is it necessary?
     @Override
     public List<NomenclatureDTO> subtractAmount(NomenclatureDTO[] nomenclature) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override

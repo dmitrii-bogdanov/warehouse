@@ -23,7 +23,7 @@ public class NomenclatureEntity {
     @Column(nullable = false, unique = true)
     private String name;
 
-    @Column(nullable = false)
+    @Column(unique = true)
     private String code;
 
     @Column(nullable = false)
@@ -56,7 +56,7 @@ public class NomenclatureEntity {
 
     public void setCode(String code) {
         if (Strings.isBlank(code)) {
-            this.code = Strings.EMPTY;
+            this.code = null;
         } else {
             this.code = code.toUpperCase(Locale.ROOT);
         }

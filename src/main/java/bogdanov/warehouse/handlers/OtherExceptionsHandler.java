@@ -18,7 +18,9 @@ public class OtherExceptionsHandler extends ResponseEntityExceptionHandler {
                     NotAllRequiredFieldsPresentException.class,
                     NullIdException.class,
                     PasswordException.class,
-                    UsernameException.class
+                    UsernameException.class,
+                    AlreadyRecordedNameOrCodeException.class,
+                    BlankCodeException.class
             })
     protected ResponseEntity<String> handleException(RuntimeException e) {
         return new ResponseEntity(

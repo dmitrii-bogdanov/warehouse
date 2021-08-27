@@ -47,7 +47,7 @@ public class NomenclatureRestController {
 
     //TODO get name&code
 
-    @GetMapping(params = {"search", "code"})
+    @GetMapping(params = {"search", "name"})
     public List<NomenclatureDTO> findAllByNameContaining(@RequestParam String name) {
         return nomenclatureService.findAllByNameContaining(name);
     }

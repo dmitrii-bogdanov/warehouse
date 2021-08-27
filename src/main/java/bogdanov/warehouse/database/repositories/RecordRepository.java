@@ -17,6 +17,8 @@ public interface RecordRepository extends JpaRepository<RecordEntity, Long> {
 
     List<RecordEntity> findAllByUser_Id(long id);
 
+    List<RecordEntity> findAllByUser_UsernameEquals(String name);
+
     List<RecordEntity> findAllByType_NameEquals(String type);
 
 }

@@ -11,6 +11,7 @@ import bogdanov.warehouse.services.mappers.Mapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
@@ -23,6 +24,16 @@ public class PersonServiceImpl implements PersonService {
 
     private final PersonRepository personRepository;
     private final Mapper mapper;
+
+    @PostConstruct
+    private void initializeAdmin() {
+        PersonDTO admin = new PersonDTO();
+        admin.setFirstname("admin");
+        admin.setLastname("admin");
+        admin.setBirth(LocalDate.now());
+        admin.setPosition("ADMINISTRATOR");
+        add(admin);
+    }
 
     @Override
     public PersonDTO add(PersonDTO person) {

@@ -16,6 +16,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.util.*;
 
 @Slf4j
@@ -28,9 +29,21 @@ public class UserAccountServiceImpl implements UserAccountService {
     private final int minPasswordLength = 8;
     private final PersonService personService;
 
+    @PostConstruct
+    private void initializeAdmin() {
+        String[] roles = new String[]{"ROLE_ADMIN"};
+        UserAccountWithPasswordDTO admin = new UserAccountWithPasswordDTO();
+        admin.setUsername("admin");
+        admin.setPassword("password");
+        admin.setRoles(roles);
+        admin.setPersonId(personService.findAllByFirstname("admin").get(0).getId());
+        UserAccountDTO dto = add(admin);
+        enable(dto);
+    }
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByUsername(username);
+        return userRepository.findByUsername(username.toUpperCase(Locale.ROOT));
     }
 
     @Override
@@ -51,6 +64,9 @@ public class UserAccountServiceImpl implements UserAccountService {
 
     @Override
     public UserAccountDTO updatePassword(UserAccountWithPasswordDTO user) {
+        if (user.getId() == null) {
+            throw new NullIdException("Id is missing");
+        }
         UserEntity entity = getEntityById(user.getId());
         if (isIdAndUsernameCorrect(user, entity)) {
             entity.setPassword(mapper.convert(user).getPassword());

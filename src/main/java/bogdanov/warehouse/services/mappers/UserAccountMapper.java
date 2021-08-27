@@ -3,19 +3,15 @@ package bogdanov.warehouse.services.mappers;
 import bogdanov.warehouse.database.entities.RoleEntity;
 import bogdanov.warehouse.database.entities.UserEntity;
 import bogdanov.warehouse.database.enums.Role;
-import bogdanov.warehouse.database.repositories.RoleRepository;
 import bogdanov.warehouse.dto.UserAccountWithPasswordDTO;
 import bogdanov.warehouse.dto.UserAccountDTO;
 import bogdanov.warehouse.services.interfaces.RoleService;
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import java.util.Collection;
-import java.util.Locale;
-
+@Slf4j
 @Component
 public class UserAccountMapper {
 
@@ -45,12 +41,12 @@ public class UserAccountMapper {
         UserEntity userEntity = new UserEntity();
         userEntity.setId(user.getId());
         userEntity.setUsername(user.getUsername());
-        userEntity.setRoles(roleService.findEntitiesByName(user.getRoles()));
+        userEntity.getRoles().addAll(roleService.findEntitiesByName(user.getRoles()));
         return userEntity;
     }
 
     UserAccountDTO convert(UserEntity user) {
-        UserAccountDTO regInfo = new UserAccountWithPasswordDTO();
+        UserAccountDTO regInfo = new UserAccountDTO();
         regInfo.setId(user.getId());
         regInfo.setUsername(user.getUsername());
         regInfo.setPersonId(user.getPerson().getId());

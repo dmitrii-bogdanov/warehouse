@@ -2,12 +2,16 @@ package bogdanov.warehouse.controllers.rest;
 
 import bogdanov.warehouse.dto.RecordDTO;
 import bogdanov.warehouse.dto.RecordInputDTO;
+import bogdanov.warehouse.dto.RecordOutputDTO;
 import bogdanov.warehouse.services.interfaces.RecordService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Locale;
 
@@ -29,8 +33,13 @@ public class RecordRestController {
 
     //TODO add User
     @PostMapping
-    public RecordDTO addRecord(@RequestBody RecordInputDTO record) {
-        return recordService.add(record, null);
+    public RecordDTO addRecord(@RequestBody RecordInputDTO record, Principal user) {
+        return recordService.add(record, user);
+    }
+
+    @DeleteMapping
+    public void deleteRecord(@RequestBody RecordOutputDTO record) {
+        recordService.delete(record);
     }
 
     @GetMapping(params = "reception")
@@ -51,6 +60,16 @@ public class RecordRestController {
     @GetMapping(params = "userId")
     public List<RecordDTO> getAllRecordsByUserId(@RequestParam Long userId) {
         return recordService.findAllByUserId(userId);
+    }
+
+    @GetMapping(params = "username")
+    public List<RecordDTO> getCurrentUserRecords(@RequestParam String username) {
+        return recordService.findAllByUserUsername(username);
+    }
+
+    @GetMapping(params = "my")
+    public List<RecordDTO> getCurrentUserRecords(Principal user) {
+        return recordService.findAllByUserUsername(user.getName());
     }
 
     @GetMapping(params = "nomenclatureId")

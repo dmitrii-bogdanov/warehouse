@@ -7,7 +7,10 @@ import bogdanov.warehouse.database.repositories.UserRepository;
 import bogdanov.warehouse.dto.NomenclatureDTO;
 import bogdanov.warehouse.dto.RecordDTO;
 import bogdanov.warehouse.dto.RecordInputDTO;
+import bogdanov.warehouse.dto.RecordOutputDTO;
+import bogdanov.warehouse.exceptions.IncorectRecordFieldsException;
 import bogdanov.warehouse.exceptions.NullIdException;
+import bogdanov.warehouse.exceptions.ResourceNotFoundException;
 import bogdanov.warehouse.services.interfaces.RecordService;
 import bogdanov.warehouse.services.mappers.Mapper;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +22,7 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -31,14 +35,10 @@ public class RecordServiceImpl implements RecordService {
     private final UserRepository userRepository;
 
     @Override
-    public RecordDTO add(RecordInputDTO record, UserDetails user) {
+    public RecordDTO add(RecordInputDTO record, String username) {
         RecordEntity entity = mapper.convert(record);
         entity.setTime(LocalDateTime.now());
-        entity.setUser((UserEntity) user);
-
-        //TODO delete! For Test Only
-        entity.setUser(userRepository.findByUsername("admin".toUpperCase(Locale.ROOT)));
-
+        entity.setUser(userRepository.findByUsername(username));
         NomenclatureDTO nomenclatureDTO = mapper.convert(entity.getNomenclature());
         nomenclatureDTO.setAmount(entity.getAmount());
         switch (entity.getType().getName()) {
@@ -46,6 +46,30 @@ public class RecordServiceImpl implements RecordService {
             case "RELEASE" -> nomenclatureService.subtractAmount(nomenclatureDTO);
         }
         return mapper.convert(recordRepository.save(entity));
+    }
+
+    @Override
+    public void delete(RecordOutputDTO record) {
+        if (record.getId() == null) {
+            throw new NullIdException("Id is absent");
+        }
+        Optional<RecordEntity> optionalEntity = recordRepository.findById(record.getId());
+        if (optionalEntity.isPresent()) {
+            RecordEntity fromDTO = mapper.convert(record);
+            RecordEntity entity = optionalEntity.get();
+            boolean isNomenclatureCorrect = entity.getNomenclature().getId().equals(fromDTO.getNomenclature().getId());
+            boolean isTimeCorrect = entity.getTime().equals(fromDTO.getTime());
+            boolean isAmountCorrect = entity.getAmount().equals(fromDTO.getAmount());
+            boolean isTypeCorrect = entity.getType().equals(fromDTO.getType());
+            if (isNomenclatureCorrect && isAmountCorrect && isTypeCorrect && isTimeCorrect) {
+                recordRepository.delete(entity);
+            } else {
+                throw new IncorectRecordFieldsException(
+                        "Records fields (id, nomenclature, type, amount, time) are incorrect");
+            }
+        } else {
+            throw new ResourceNotFoundException("Record with id : " + record.getId() + " not found");
+        }
     }
 
     @Override
@@ -59,6 +83,15 @@ public class RecordServiceImpl implements RecordService {
             return Collections.EMPTY_LIST;
         }
         return recordRepository.findAllByUser_Id(id).stream().map(mapper::convert).toList();
+    }
+
+    @Override
+    public List<RecordDTO> findAllByUserUsername(String username) {
+        if (Strings.isBlank(username)) {
+            return Collections.EMPTY_LIST;
+        }
+        return recordRepository.findAllByUser_UsernameEquals(username.toUpperCase(Locale.ROOT))
+                .stream().map(mapper::convert).toList();
     }
 
     @Override

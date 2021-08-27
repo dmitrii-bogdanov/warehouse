@@ -9,6 +9,7 @@ import bogdanov.warehouse.services.mappers.Mapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Primary;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
+@Primary
 @Service
 @Qualifier("withoutInternalChecks")
 @RequiredArgsConstructor
@@ -24,13 +26,14 @@ public class NomenclatureServiceImplWithSaveAll implements NomenclatureService {
 
     private final NomenclatureRepository nomenclatureRepository;
     private final Mapper mapper;
+    private static final String DATA_INTEGRITY_EXCEPTION_SUBSTRING = "ON PUBLIC.NOMENCLATURE(";
 
     @Override
     public NomenclatureDTO createNew(NomenclatureDTO nomenclature) {
         try {
             return mapper.convert(nomenclatureRepository.save(mapper.convert(nomenclature)));
         } catch (DataIntegrityViolationException e) {
-            throw new AlreadyRecordedNameOrCodeException("Name or code is already registered");
+            throw explainException(e);
         }
     }
 
@@ -41,7 +44,29 @@ public class NomenclatureServiceImplWithSaveAll implements NomenclatureService {
             return nomenclatureRepository.saveAll(nomenclature.stream().map(mapper::convert).toList())
                     .stream().map(mapper::convert).toList();
         } catch (DataIntegrityViolationException e) {
-            throw e;
+            throw explainException(e);
+        }
+    }
+
+    private RuntimeException explainException(DataIntegrityViolationException e) {
+        StringBuilder sb = new StringBuilder(e.getMessage());
+        int index;
+        if ((index = sb.indexOf(DATA_INTEGRITY_EXCEPTION_SUBSTRING)) > -1) {
+            String message = null;
+            sb.delete(0, index + DATA_INTEGRITY_EXCEPTION_SUBSTRING.length());
+            long id = Long.parseLong(sb.substring(13, sb.indexOf("\"")));
+            Optional<NomenclatureEntity> entity = nomenclatureRepository.findById(id);
+            if (entity.isPresent()) {
+                switch (sb.substring(0, 4)) {
+                    case "CODE" -> message = "Code : " + entity.get().getCode() + " belongs to nomenclature with id : " + id;
+                    case "NAME" -> message = "Name : " + entity.get().getName() + " belongs to nomenclature with id : " + id;
+                }
+            } else {
+                message = "Sent list contains repeating " + sb.substring(0, 4).toLowerCase(Locale.ROOT) + "s";
+            }
+            return new AlreadyRecordedNameOrCodeException(message);
+        } else {
+            return e;
         }
     }
 

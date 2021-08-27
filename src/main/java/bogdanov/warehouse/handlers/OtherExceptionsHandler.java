@@ -20,6 +20,7 @@ public class OtherExceptionsHandler extends ResponseEntityExceptionHandler {
                     PasswordException.class,
                     UsernameException.class,
                     AlreadyRecordedNameOrCodeException.class,
+                    NomenclatureNotEnoughNumberAvailable.class,
                     BlankCodeException.class
             })
     protected ResponseEntity<String> handleException(RuntimeException e) {

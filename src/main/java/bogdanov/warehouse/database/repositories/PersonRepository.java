@@ -42,4 +42,8 @@ public interface PersonRepository extends JpaRepository<PersonEntity, Long> {
                                                                          String patronymic,
                                                                          String lastname);
 
+    List<PersonEntity> findAllByPosition_NameEquals(String name);
+
+    boolean existsByPosition_NameEquals(String name);
+
 }

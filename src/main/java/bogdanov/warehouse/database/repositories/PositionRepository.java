@@ -14,4 +14,7 @@ public interface PositionRepository extends JpaRepository<PositionEntity, Long> 
 
     public List<PositionEntity> findAllByNameContaining(String partialName);
 
+    public boolean existsByName(String name);
+
+    public void deleteByName(String name);
 }

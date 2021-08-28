@@ -5,6 +5,7 @@ import bogdanov.warehouse.database.repositories.PersonRepository;
 import bogdanov.warehouse.database.repositories.PositionRepository;
 import bogdanov.warehouse.dto.PositionDTO;
 import bogdanov.warehouse.exceptions.BlankNameException;
+import bogdanov.warehouse.exceptions.PositionIsInUseException;
 import bogdanov.warehouse.exceptions.ResourceNotFoundException;
 import bogdanov.warehouse.services.interfaces.PositionService;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 @RequiredArgsConstructor
@@ -30,8 +32,13 @@ public class PositionServiceImpl implements PositionService {
         positionRepository.findAll().forEach(e -> positions.put(e.getName(), new PositionDTO(e.getId(), e.getName())));
     }
 
+    //Should call toUpperCase(...) for name before invoking this method
+    //or use through PositionDTO.getName()
     @Override
     public PositionDTO add(String name) {
+        if (Strings.isBlank(name)) {
+            throw new BlankNameException("Name value is missing");
+        }
         positions.computeIfAbsent(name, n -> {
             PositionEntity entity = positionRepository.save(new PositionEntity(name));
             return new PositionDTO(entity.getId(), entity.getName());
@@ -91,6 +98,14 @@ public class PositionServiceImpl implements PositionService {
 
     @Override
     public void delete(String name) {
-
+        if (Strings.isBlank(name)) {
+            throw new BlankNameException("Names value is missing");
+        }
+        name = name.toUpperCase(Locale.ROOT);
+        if (personRepository.existsByPosition_NameEquals(name)) {
+            throw new PositionIsInUseException("Position with name : " + name + " is in use");
+        }
+        positions.remove(name);
+        positionRepository.deleteByName(name);
     }
 }

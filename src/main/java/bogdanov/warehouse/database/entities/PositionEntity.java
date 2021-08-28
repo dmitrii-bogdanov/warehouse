@@ -16,13 +16,13 @@ public class PositionEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    //TODO make unique
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String name;
 
     protected PositionEntity() {
         super();
     }
+
 
     public PositionEntity(String name) {
         this.name = name;

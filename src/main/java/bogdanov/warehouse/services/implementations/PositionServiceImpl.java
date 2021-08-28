@@ -1,6 +1,7 @@
 package bogdanov.warehouse.services.implementations;
 
 import bogdanov.warehouse.database.entities.PositionEntity;
+import bogdanov.warehouse.database.repositories.PersonRepository;
 import bogdanov.warehouse.database.repositories.PositionRepository;
 import bogdanov.warehouse.dto.PositionDTO;
 import bogdanov.warehouse.exceptions.BlankNameException;
@@ -20,6 +21,7 @@ import java.util.Map;
 public class PositionServiceImpl implements PositionService {
 
     private final PositionRepository positionRepository;
+    private final PersonRepository personRepository;
     private final Map<String, PositionDTO> positions = new HashMap<>();
 
     @PostConstruct
@@ -85,5 +87,10 @@ public class PositionServiceImpl implements PositionService {
     @Override
     public List<PositionDTO> findAllByNameContaining(String partialName) {
         return positions.keySet().stream().filter(name -> name.contains(partialName)).map(positions::get).toList();
+    }
+
+    @Override
+    public void delete(String name) {
+
     }
 }

@@ -7,8 +7,4 @@ public class ResourceNotFoundException extends RuntimeException {
         super(message);
     }
 
-    @Override
-    public synchronized Throwable fillInStackTrace() {
-        return this;
-    }
 }

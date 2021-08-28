@@ -9,9 +9,4 @@ public class NullIdException extends RuntimeException{
     public NullIdException() {
 
     }
-
-    @Override
-    public synchronized Throwable fillInStackTrace() {
-        return this;
-    }
 }

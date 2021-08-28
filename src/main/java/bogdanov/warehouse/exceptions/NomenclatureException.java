@@ -24,11 +24,6 @@ public class NomenclatureException extends RuntimeException {
         super();
     }
 
-    @Override
-    public synchronized Throwable fillInStackTrace() {
-        return this;
-    }
-
     private void add(String nomenclature, String message) {
         String tmp = exceptions.getOrDefault(nomenclature, Strings.EMPTY);
         exceptions.put(

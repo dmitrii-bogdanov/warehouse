@@ -10,9 +10,4 @@ public class NomenclatureNegativeOrNullAmountInput extends RuntimeException{
         super(message);
     }
 
-    @Override
-    public synchronized Throwable fillInStackTrace() {
-        return this;
-    }
-
 }

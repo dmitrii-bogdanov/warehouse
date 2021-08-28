@@ -12,8 +12,4 @@ public class PasswordException extends RuntimeException{
         super(message);
     }
 
-    @Override
-    public synchronized Throwable fillInStackTrace() {
-        return this;
-    }
 }

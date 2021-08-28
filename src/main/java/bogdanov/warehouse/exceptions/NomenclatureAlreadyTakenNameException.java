@@ -6,8 +6,4 @@ public class NomenclatureAlreadyTakenNameException extends RuntimeException{
         super(message);
     }
 
-    @Override
-    public synchronized Throwable fillInStackTrace() {
-        return this;
-    }
 }

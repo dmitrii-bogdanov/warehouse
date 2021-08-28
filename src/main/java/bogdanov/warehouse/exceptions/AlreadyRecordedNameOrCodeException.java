@@ -13,8 +13,4 @@ public class AlreadyRecordedNameOrCodeException extends RuntimeException{
         super(message);
     }
 
-    @Override
-    public synchronized Throwable fillInStackTrace() {
-        return this;
-    }
 }

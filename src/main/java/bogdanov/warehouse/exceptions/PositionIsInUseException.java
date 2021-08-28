@@ -3,13 +3,13 @@ package bogdanov.warehouse.exceptions;
 import org.springframework.stereotype.Component;
 
 @Component
-public class BlankCodeException extends RuntimeException{
+public class PositionIsInUseException extends RuntimeException{
 
-    public BlankCodeException() {
+    public PositionIsInUseException() {
         super();
     }
 
-    public BlankCodeException(String message) {
+    public PositionIsInUseException(String message) {
         super(message);
     }
 

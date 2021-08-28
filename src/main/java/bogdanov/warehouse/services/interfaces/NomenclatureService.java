@@ -29,6 +29,10 @@ public interface NomenclatureService {
 
     List<NomenclatureDTO> findAllByCodeContaining(String partialCode);
 
+    NomenclatureDTO update(NomenclatureDTO nomenclature);
+
+    List<NomenclatureDTO> update(List<NomenclatureDTO> nomenclature);
+
     NomenclatureDTO updateName(NomenclatureDTO nomenclature);
 
     List<NomenclatureDTO> updateName(List<NomenclatureDTO> nomenclature);
@@ -100,7 +104,10 @@ public interface NomenclatureService {
 
     boolean checkAmountAvailability(NomenclatureDTO dto, NomenclatureEntity entity, NomenclatureException e);
 
+    List<NomenclatureDTO> findAllByNameContainingAndCodeContaining(String name, String code);
+
 //    List<NomenclatureDTO> checkData(List<NomenclatureDTO nomenclature>);
 
+    NomenclatureDTO delete(Long id);
 
 }

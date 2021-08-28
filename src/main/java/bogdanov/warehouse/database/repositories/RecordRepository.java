@@ -21,4 +21,5 @@ public interface RecordRepository extends JpaRepository<RecordEntity, Long> {
 
     List<RecordEntity> findAllByType_NameEquals(String type);
 
+    boolean existsByNomenclature_Id(Long id);
 }

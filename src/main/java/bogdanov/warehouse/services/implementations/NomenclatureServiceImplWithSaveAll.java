@@ -2,6 +2,7 @@ package bogdanov.warehouse.services.implementations;
 
 import bogdanov.warehouse.database.entities.NomenclatureEntity;
 import bogdanov.warehouse.database.repositories.NomenclatureRepository;
+import bogdanov.warehouse.database.repositories.RecordRepository;
 import bogdanov.warehouse.dto.NomenclatureDTO;
 import bogdanov.warehouse.exceptions.*;
 import bogdanov.warehouse.services.interfaces.NomenclatureService;
@@ -25,6 +26,7 @@ import java.util.Optional;
 public class NomenclatureServiceImplWithSaveAll implements NomenclatureService {
 
     private final NomenclatureRepository nomenclatureRepository;
+    private final RecordRepository recordRepository;
     private final Mapper mapper;
     private static final String DATA_INTEGRITY_EXCEPTION_SUBSTRING = "ON PUBLIC.NOMENCLATURE(";
 
@@ -325,5 +327,95 @@ public class NomenclatureServiceImplWithSaveAll implements NomenclatureService {
     @Override
     public boolean checkAmountAvailability(NomenclatureDTO dto, NomenclatureEntity entity, NomenclatureException e) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public NomenclatureDTO update(NomenclatureDTO nomenclature) {
+        NomenclatureEntity entity = checkForUpdateAndRetrieveEntity(nomenclature);
+        entity.setName(nomenclature.getName());
+        entity.setName(nomenclature.getName());
+        entity = nomenclatureRepository.save(entity);
+        return mapper.convert(entity);
+    }
+
+    @Override
+    public List<NomenclatureDTO> update(List<NomenclatureDTO> nomenclature) {
+        return nomenclatureRepository.saveAll(
+                nomenclature
+                        .stream()
+                        .map(n -> {
+                            NomenclatureEntity entity = checkForUpdateAndRetrieveEntity(n);
+                            entity.setName(n.getName());
+                            entity.setCode(n.getCode());
+                            return entity;
+                        })
+                        .toList()
+        )
+                .stream()
+                .map(mapper::convert)
+                .toList();
+    }
+
+    //TODO check exceptions without this method
+    private NomenclatureEntity checkForUpdateAndRetrieveEntity(NomenclatureDTO dto) {
+        if (dto.getId() == null) {
+            throw new NullIdException("Id value is missing");
+        }
+        if (Strings.isBlank(dto.getName())) {
+            throw new BlankNameException("Name value is missing");
+        }
+        NomenclatureEntity entity = nomenclatureRepository.getById(dto.getId());
+        if (entity == null) {
+            throw new ResourceNotFoundException("Nomenclature with id : " + dto.getId() + " not found");
+        }
+        return entity;
+    }
+
+    @Override
+    public List<NomenclatureDTO> findAllByNameContainingAndCodeContaining(String name, String code) {
+        List<NomenclatureEntity> entities = null;
+        boolean isNameBlank = Strings.isBlank(name);
+        boolean isCodeBlank = Strings.isBlank(code);
+
+        if (isNameBlank && isCodeBlank) {
+            throw new BlankNameAndCodeException("Name and code values are missing");
+        }
+        name = name.toUpperCase(Locale.ROOT);
+        if (isCodeBlank) {
+            entities = nomenclatureRepository.findAllByNameContaining(name);
+        }
+        code = code.toUpperCase(Locale.ROOT);
+        boolean isLookingForNullCode = "NULL".equals(code);
+        if (isNameBlank) {
+            entities = isLookingForNullCode
+                    ? nomenclatureRepository.findAllByCode(null)
+                    : nomenclatureRepository.findAllByCodeContaining(code);
+        }
+        if (!isNameBlank && !isCodeBlank) {
+            entities = isLookingForNullCode
+                    ? nomenclatureRepository.findAllByNameContainingAndCodeContaining(name, null)
+                    : nomenclatureRepository.findAllByNameContainingAndCodeContaining(name, code);
+        }
+
+        return entities.stream().map(mapper::convert).toList();
+    }
+
+    @Override
+    public NomenclatureDTO delete(Long id) {
+        if (id == null) {
+            throw new NullIdException("Id value is missing");
+        }
+        NomenclatureEntity entity = nomenclatureRepository.getById(id);
+        if (entity == null) {
+            throw new ResourceNotFoundException("Nomenclature with id : " + id + " not found");
+        }
+        if (recordRepository.existsByNomenclature_Id(id)) {
+            throw new ProhibitedRemovingException("Nomenclature has records");
+        }
+        if (entity.getAmount() > 0) {
+            throw new ProhibitedRemovingException("Nomenclature amount is positive");
+        }
+        nomenclatureRepository.delete(entity);
+        return mapper.convert(entity);
     }
 }

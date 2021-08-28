@@ -42,12 +42,12 @@ public class RecordRestController {
         recordService.delete(record);
     }
 
-    @GetMapping(params = "reception")
+    @GetMapping("/reception")
     public List<RecordDTO> getAllReceptionRecords() {
         return recordService.findAllByType("RECEPTION");
     }
 
-    @GetMapping(params = "release")
+    @GetMapping("/release")
     public List<RecordDTO> getAllReleaseRecords() {
         return recordService.findAllByType("RELEASE");
     }
@@ -63,11 +63,11 @@ public class RecordRestController {
     }
 
     @GetMapping(params = "username")
-    public List<RecordDTO> getCurrentUserRecords(@RequestParam String username) {
+    public List<RecordDTO> getAllRecordsByUserUsername(@RequestParam String username) {
         return recordService.findAllByUserUsername(username);
     }
 
-    @GetMapping(params = "my")
+    @GetMapping("/my")
     public List<RecordDTO> getCurrentUserRecords(Principal user) {
         return recordService.findAllByUserUsername(user.getName());
     }

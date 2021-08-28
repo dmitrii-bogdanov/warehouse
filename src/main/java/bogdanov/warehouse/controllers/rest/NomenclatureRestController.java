@@ -25,14 +25,19 @@ public class NomenclatureRestController {
         return nomenclatureService.getAll();
     }
 
-    @GetMapping(params = "id")
-    public NomenclatureDTO getById(@RequestParam("id") Long id) {
+    @GetMapping("/{id}")
+    public NomenclatureDTO getById(@PathVariable Long id) {
         return nomenclatureService.getById(id);
     }
 
     @PostMapping
     public List<NomenclatureDTO> createNew(@RequestBody List<NomenclatureDTO> nomenclature) {
         return nomenclatureService.createNew(nomenclature);
+    }
+
+    @PutMapping
+    public List<NomenclatureDTO> update(@RequestBody List<NomenclatureDTO> nomenclature) {
+        return nomenclatureService.update(nomenclature);
     }
 
     @GetMapping(params = "name")
@@ -47,16 +52,10 @@ public class NomenclatureRestController {
 
     //TODO get name&code
 
-    @GetMapping(params = {"search", "name"})
-    public List<NomenclatureDTO> findAllByNameContaining(@RequestParam String name) {
-        return nomenclatureService.findAllByNameContaining(name);
+    @GetMapping(params = {"search", "name", "code"})
+    public List<NomenclatureDTO> findAllByNameContainingAndCodeContaining(@RequestParam String name,
+                                                                          @RequestParam String code) {
+        return nomenclatureService.findAllByNameContainingAndCodeContaining(name, code);
     }
-
-    @GetMapping( params = {"search", "code"})
-    public List<NomenclatureDTO> findAllByCodeContaining(@RequestParam("code") String code) {
-        return nomenclatureService.findAllByCodeContaining(code);
-    }
-
-    //TODO get search name&code
 
 }

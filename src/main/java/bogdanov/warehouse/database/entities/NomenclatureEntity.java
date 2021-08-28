@@ -51,6 +51,9 @@ public class NomenclatureEntity {
     }
 
     public void setName(String name) {
+        if (Strings.isBlank(name)) {
+            this.name = null;
+        }
         this.name = name.toUpperCase(Locale.ROOT);
     }
 

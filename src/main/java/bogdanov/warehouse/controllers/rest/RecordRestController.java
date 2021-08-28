@@ -31,6 +31,11 @@ public class RecordRestController {
         return recordService.getAll();
     }
 
+    @GetMapping("/{id}")
+    public RecordDTO getById(@PathVariable Long id) {
+        return recordService.getById(id);
+    }
+
     //TODO add User
     @PostMapping
     public RecordDTO addRecord(@RequestBody RecordInputDTO record, Principal user) {

@@ -25,10 +25,14 @@ public class UserMapper {
 
         PersonEntity person = user.getPerson();
 
-        userDTO.setFirstname(person.getFirstname());
-        userDTO.setLastname(person.getLastname());
-        userDTO.setPatronymic(person.getPatronymic());
-        userDTO.setPosition(person.getPosition().getName());
+        if (person != null) {
+            userDTO.setFirstname(person.getFirstname());
+            userDTO.setLastname(person.getLastname());
+            userDTO.setPatronymic(person.getPatronymic());
+            if (person.getPosition() != null) {
+                userDTO.setPosition(person.getPosition().getName());
+            }
+        }
 
         return userDTO;
     }

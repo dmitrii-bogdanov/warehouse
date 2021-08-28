@@ -3,6 +3,7 @@ package bogdanov.warehouse.database.repositories;
 import bogdanov.warehouse.database.entities.PositionEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,5 +17,6 @@ public interface PositionRepository extends JpaRepository<PositionEntity, Long> 
 
     public boolean existsByName(String name);
 
+    @Transactional
     public void deleteByName(String name);
 }

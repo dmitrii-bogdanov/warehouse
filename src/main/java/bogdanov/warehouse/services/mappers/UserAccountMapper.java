@@ -49,7 +49,9 @@ public class UserAccountMapper {
         UserAccountDTO regInfo = new UserAccountDTO();
         regInfo.setId(user.getId());
         regInfo.setUsername(user.getUsername());
-        regInfo.setPersonId(user.getPerson().getId());
+        if (user.getPerson() != null) {
+            regInfo.setPersonId(user.getPerson().getId());
+        }
         String[] roles = new String[user.getRoles().size()];
         int i = 0;
         for (RoleEntity role : user.getRoles()) {

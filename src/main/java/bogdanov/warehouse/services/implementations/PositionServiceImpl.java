@@ -26,12 +26,6 @@ public class PositionServiceImpl implements PositionService {
     private final PersonRepository personRepository;
     private final Map<String, PositionDTO> positions = new HashMap<>();
 
-    @PostConstruct
-    private void initializeMapAndAdmin() {
-        positionRepository.save(new PositionEntity("ADMINISTRATOR"));
-        positionRepository.findAll().forEach(e -> positions.put(e.getName(), new PositionDTO(e.getId(), e.getName())));
-    }
-
     //Should call toUpperCase(...) for name before invoking this method
     //or use through PositionDTO.getName()
     @Override

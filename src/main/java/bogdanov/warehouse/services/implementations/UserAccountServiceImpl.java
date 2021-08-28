@@ -7,13 +7,16 @@ import bogdanov.warehouse.dto.UserAccountDTO;
 import bogdanov.warehouse.dto.UserAccountWithPasswordDTO;
 import bogdanov.warehouse.exceptions.*;
 import bogdanov.warehouse.services.interfaces.PersonService;
+import bogdanov.warehouse.services.interfaces.RoleService;
 import bogdanov.warehouse.services.interfaces.UserAccountService;
 import bogdanov.warehouse.services.mappers.Mapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -26,20 +29,8 @@ public class UserAccountServiceImpl implements UserAccountService {
 
     private final UserRepository userRepository;
     private final Mapper mapper;
-    private final int minPasswordLength = 8;
+    private int minPasswordLength = 8;
     private final PersonService personService;
-
-    @PostConstruct
-    private void initializeAdmin() {
-        String[] roles = new String[]{"ROLE_ADMIN"};
-        UserAccountWithPasswordDTO admin = new UserAccountWithPasswordDTO();
-        admin.setUsername("admin");
-        admin.setPassword("password");
-        admin.setRoles(roles);
-        admin.setPersonId(personService.findAllByFirstname("admin").get(0).getId());
-        UserAccountDTO dto = add(admin);
-        enable(dto);
-    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

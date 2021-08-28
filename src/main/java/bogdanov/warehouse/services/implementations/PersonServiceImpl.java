@@ -25,16 +25,6 @@ public class PersonServiceImpl implements PersonService {
     private final PersonRepository personRepository;
     private final Mapper mapper;
 
-    @PostConstruct
-    private void initializeAdmin() {
-        PersonDTO admin = new PersonDTO();
-        admin.setFirstname("admin");
-        admin.setLastname("admin");
-        admin.setBirth(LocalDate.now());
-        admin.setPosition("ADMINISTRATOR");
-        add(admin);
-    }
-
     @Override
     public PersonDTO add(PersonDTO person) {
         if (person.allRequiredFieldsPresent()) {

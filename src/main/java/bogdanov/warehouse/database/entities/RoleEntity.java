@@ -9,6 +9,7 @@ import org.springframework.security.core.GrantedAuthority;
 
 import javax.persistence.*;
 import java.util.Collection;
+import java.util.Locale;
 
 @Entity
 @Getter
@@ -19,6 +20,7 @@ import java.util.Collection;
 public class RoleEntity implements GrantedAuthority {
 
     @Id
+    @GeneratedValue
     private long id;
 
     @Column(nullable = false, unique = true)
@@ -38,7 +40,11 @@ public class RoleEntity implements GrantedAuthority {
 
     public RoleEntity(long id, String name){
         this.id = id;
-        this.name = name;
+        setName(name);
+    }
+
+    public void setName(String name) {
+        this.name = name.toUpperCase(Locale.ROOT);
     }
 
     @Override

@@ -1,7 +1,6 @@
 package bogdanov.warehouse.services.implementations;
 
 import bogdanov.warehouse.database.entities.RecordEntity;
-import bogdanov.warehouse.database.entities.UserEntity;
 import bogdanov.warehouse.database.repositories.RecordRepository;
 import bogdanov.warehouse.database.repositories.UserRepository;
 import bogdanov.warehouse.dto.NomenclatureDTO;
@@ -15,7 +14,6 @@ import bogdanov.warehouse.services.interfaces.RecordService;
 import bogdanov.warehouse.services.mappers.Mapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;

@@ -5,8 +5,11 @@ import bogdanov.warehouse.database.entities.RoleEntity;
 import bogdanov.warehouse.database.enums.Role;
 import bogdanov.warehouse.database.repositories.RoleRepository;
 import bogdanov.warehouse.dto.RoleDTO;
+import bogdanov.warehouse.exceptions.BlankNameException;
+import bogdanov.warehouse.exceptions.ResourceNotFoundException;
 import bogdanov.warehouse.services.interfaces.RoleService;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
@@ -14,10 +17,10 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.util.*;
 
-@Primary
 
 @RequiredArgsConstructor
 @Service
+@Primary
 @Qualifier("repositoryWithMap")
 public class RoleServiceImplWithMap implements RoleService {
 
@@ -44,12 +47,20 @@ public class RoleServiceImplWithMap implements RoleService {
 
     @Override
     public RoleEntity findEntityByName(String name) {
-        return entities.get(name);
+        if (Strings.isBlank(name)) {
+            throw new BlankNameException("Name value is missing");
+        }
+        name = name.toUpperCase(Locale.ROOT);
+        if (dto.containsKey(name)) {
+            return entities.get(name);
+        }
+        throw new ResourceNotFoundException("Role with name : " + name + " not found");
+
     }
 
     @Override
     public List<RoleEntity> findEntitiesByName(Collection<String> names) {
-        return names.stream().map(entities::get).filter(Objects::nonNull).toList();
+        return names.stream().filter(Strings::isNotBlank).map(n -> entities.get(n.toUpperCase(Locale.ROOT))).filter(Objects::nonNull).toList();
     }
 
     @Override
@@ -64,12 +75,19 @@ public class RoleServiceImplWithMap implements RoleService {
 
     @Override
     public RoleDTO findByName(String name) {
-        return dto.get(name);
+        if (Strings.isBlank(name)) {
+            throw new BlankNameException("Name value is missing");
+        }
+        name = name.toUpperCase(Locale.ROOT);
+        if (dto.containsKey(name)) {
+            return dto.get(name);
+        }
+        throw new ResourceNotFoundException("Role with name : " + name + " not found");
     }
 
     @Override
     public List<RoleDTO> findByName(Collection<String> names) {
-        return names.stream().map(dto::get).filter(Objects::nonNull).toList();
+        return names.stream().filter(Strings::isNotBlank).map(n -> dto.get(n.toUpperCase(Locale.ROOT))).filter(Objects::nonNull).toList();
     }
 
     @Override

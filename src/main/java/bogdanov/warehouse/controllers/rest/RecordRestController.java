@@ -34,7 +34,7 @@ public class RecordRestController {
     //TODO add User
     @PostMapping
     public RecordDTO addRecord(@RequestBody RecordInputDTO record, Principal user) {
-        return recordService.add(record, user);
+        return recordService.add(record, user.getName());
     }
 
     @DeleteMapping

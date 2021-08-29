@@ -25,11 +25,11 @@ public interface UserAccountService extends UserDetailsService {
 
     UserAccountDTO updateUsername(UserAccountDTO user);
 
-    UserAccountDTO enable(UserAccountDTO user);
+    UserAccountDTO enable(Long id);
 
-    UserAccountDTO disable(UserAccountDTO user);
+    UserAccountDTO disable(Long id);
 
-    UserAccountDTO setEnabled(UserAccountDTO user, boolean isEnabled);
+    UserAccountDTO setEnabled(Long id, boolean isEnabled);
 
     List<UserAccountDTO> getAll();
 

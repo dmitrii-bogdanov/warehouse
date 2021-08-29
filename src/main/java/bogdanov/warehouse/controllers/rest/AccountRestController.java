@@ -37,8 +37,8 @@ public class AccountRestController {
         return accountService.add(user);
     }
 
-    @GetMapping(params = "id")
-    public UserAccountDTO getById(@RequestParam Long id) {
+    @GetMapping("/{id}")
+    public UserAccountDTO getById(@PathVariable Long id) {
         return accountService.getById(id);
     }
 
@@ -72,14 +72,14 @@ public class AccountRestController {
         return accountService.updateUsername(user);
     }
 
-    @PutMapping(params = "enable")
-    public UserAccountDTO enable(@RequestBody UserAccountDTO user) {
-        return accountService.enable(user);
+    @PutMapping(value = "/{id}", params = "enable")
+    public UserAccountDTO enable(@PathVariable Long id) {
+        return accountService.enable(id);
     }
 
-    @PutMapping(params = "disable")
-    public UserAccountDTO disable(@RequestBody UserAccountDTO user) {
-        return accountService.disable(user);
+    @PutMapping(value = "/{id}", params = "disable")
+    public UserAccountDTO disable(@PathVariable Long id) {
+        return accountService.disable(id);
     }
 
 }

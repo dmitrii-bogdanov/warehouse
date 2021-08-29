@@ -111,24 +111,24 @@ public class UserAccountServiceImpl implements UserAccountService {
     }
 
     @Override
-    public UserAccountDTO enable(UserAccountDTO user) {
-        return setEnabled(user, true);
+    public UserAccountDTO enable(Long id) {
+        return setEnabled(id, true);
     }
 
     @Override
-    public UserAccountDTO disable(UserAccountDTO user) {
-        return setEnabled(user, false);
+    public UserAccountDTO disable(Long id) {
+        return setEnabled(id, false);
     }
 
     @Override
-    public UserAccountDTO setEnabled(UserAccountDTO user, boolean isEnabled) {
-        UserEntity entity = getEntityById(user.getId());
-        if (entity.getUsername().equals(user.getUsername())) {
-            entity.setEnabled(isEnabled);
-            return mapper.convert(userRepository.save(entity), UserAccountDTO.class);
-        } else {
-            throw new UsernameException("User id/username is incorrect");
+    public UserAccountDTO setEnabled(Long id, boolean isEnabled) {
+        if (id == null) {
+            throw new NullIdException("Id value is missing");
         }
+        UserEntity entity = getEntityById(id);
+        entity.setEnabled(isEnabled);
+        return mapper.convert(userRepository.save(entity), UserAccountDTO.class);
+
     }
 
     @Override

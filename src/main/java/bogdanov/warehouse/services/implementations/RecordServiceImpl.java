@@ -59,6 +59,12 @@ public class RecordServiceImpl implements RecordService {
         Optional<RecordEntity> optionalEntity = recordRepository.findById(id);
         if (optionalEntity.isPresent()) {
             RecordEntity entity = optionalEntity.get();
+            NomenclatureDTO nomenclatureDTO = mapper.convert(entity.getNomenclature());
+            nomenclatureDTO.setAmount(entity.getAmount());
+            switch (entity.getType().getName()) {
+                case "RECEPTION" -> nomenclatureService.subtractAmount(nomenclatureDTO);
+                case "RELEASE" -> nomenclatureService.addAmount(nomenclatureDTO);
+            }
 
             if (LocalDateTime.now().minusHours(24).compareTo(entity.getTime()) > 0) {
                 entity.setType(mapper.convert(recordTypeService.getByName("DELETED")));
@@ -74,7 +80,7 @@ public class RecordServiceImpl implements RecordService {
 
     @Override
     public List<RecordDTO> getAll() {
-        return recordRepository.findAll().stream().filter(this::filterDeletedRecords).map(mapper::convert).toList();
+        return recordRepository.findAll().stream().map(mapper::convert).toList();
     }
 
     @Override

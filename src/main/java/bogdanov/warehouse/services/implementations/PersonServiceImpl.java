@@ -2,7 +2,9 @@ package bogdanov.warehouse.services.implementations;
 
 import bogdanov.warehouse.database.entities.PersonEntity;
 import bogdanov.warehouse.database.repositories.PersonRepository;
+import bogdanov.warehouse.database.repositories.UserRepository;
 import bogdanov.warehouse.dto.PersonDTO;
+import bogdanov.warehouse.exceptions.AlreadyRegisteredPersonException;
 import bogdanov.warehouse.exceptions.NotAllRequiredFieldsPresentException;
 import bogdanov.warehouse.exceptions.NullIdException;
 import bogdanov.warehouse.exceptions.ResourceNotFoundException;
@@ -24,6 +26,7 @@ public class PersonServiceImpl implements PersonService {
 
     private final PersonRepository personRepository;
     private final Mapper mapper;
+    private final UserRepository userRepository;
 
     @Override
     public PersonDTO add(PersonDTO person) {
@@ -76,6 +79,24 @@ public class PersonServiceImpl implements PersonService {
 
         entities = personRepository.saveAll(entities);
         return entities.stream().map(mapper::convert).toList();
+    }
+
+    @Override
+    public PersonDTO delete(Long id) {
+        if (id == null) {
+            throw new NullIdException("Id value is missing");
+        }
+        Optional<PersonEntity> entity = personRepository.findById(id);
+        if (entity.isPresent()) {
+            if (userRepository.existsByPerson_Id(id)) {
+                throw new AlreadyRegisteredPersonException("Person with id : " + id + " already registered as user");
+            } else {
+                personRepository.delete(entity.get());
+                return mapper.convert(entity.get());
+            }
+        } else {
+            throw new ResourceNotFoundException("Person with id : " + id + " not found");
+        }
     }
 
     @Override

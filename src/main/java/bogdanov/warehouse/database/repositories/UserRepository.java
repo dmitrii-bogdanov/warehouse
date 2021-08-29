@@ -42,4 +42,6 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     List<UserEntity> findAllByPerson_Position_Name(String position);
 
     Optional<UserEntity> findByPerson_Id(Long id);
+
+    boolean existsByPerson_Id(Long id);
 }

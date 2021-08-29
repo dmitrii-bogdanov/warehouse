@@ -47,6 +47,11 @@ public class AccountRestController {
         return accountService.getByUsername(username);
     }
 
+    @DeleteMapping("/{id}")
+    public UserAccountDTO delete(@PathVariable Long id) {
+        return accountService.delete(id);
+    }
+
     @GetMapping(params = "personId")
     public UserAccountDTO getByPersonId(@RequestParam Long personId) {
         return accountService.getByPersonId(personId);

@@ -87,9 +87,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
         try {
             return nomenclatureRepository.findById(id).orElseThrow();
         } catch (NoSuchElementException e) {
-            throw new ResourceNotFoundException(
-                    "Nomenclature with id : " + id + " not found"
-            );
+            throw new ResourceNotFoundException("Nomenclature", "id", id);
         }
     }
 
@@ -102,9 +100,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
             name = name.toUpperCase(Locale.ROOT);
             return mapper.convert(nomenclatureRepository.findByName(name).orElseThrow());
         } catch (NoSuchElementException e) {
-            throw new ResourceNotFoundException(
-                    "Nomenclature with name : " + name + " not found"
-            );
+            throw new ResourceNotFoundException("Nomenclature", "name", name);
         }
     }
 
@@ -117,16 +113,14 @@ public class NomenclatureServiceImpl implements NomenclatureService {
             code = code.toUpperCase(Locale.ROOT);
             return mapper.convert(nomenclatureRepository.findByCode(code).orElseThrow());
         } catch (NoSuchElementException e) {
-            throw new ResourceNotFoundException(
-                    "Nomenclature with code : " + code + " not found"
-            );
+            throw new ResourceNotFoundException("Nomenclature", "code", code);
         }
     }
 
     @Override
     public List<NomenclatureDTO> findAllByNameContaining(String partialName) {
         if (Strings.isBlank(partialName)) {
-            throw new BlankNameException("Name is blank");
+            throw new BlankNameException();
         }
         partialName = partialName.toUpperCase(Locale.ROOT);
         return nomenclatureRepository
@@ -361,7 +355,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
         if (nomenclatureRepository.existsById(dto.getId())) {
             return true;
         } else {
-            throw new ResourceNotFoundException("Nomenclature with id : " + dto.getId() + " not found");
+            throw new ResourceNotFoundException("Nomenclature", "id", dto.getId());
         }
     }
 
@@ -383,7 +377,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
         try {
             return nomenclatureRepository.findById(dto.getId()).orElseThrow();
         } catch (NoSuchElementException | EntityNotFoundException e) {
-            throw new ResourceNotFoundException("Nomenclature with id : " + dto.getId() + " not found");
+            throw new ResourceNotFoundException("Nomenclature", "id", dto.getId());
         }
     }
 
@@ -400,7 +394,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
     @Override
     public boolean checkNameAvailability(NomenclatureDTO dto) {
         if (Strings.isBlank(dto.getName())) {
-            throw new BlankNameException("Name is blank");
+            throw new BlankNameException();
         }
         try {
             NomenclatureEntity entity = nomenclatureRepository.findByName(dto.getName()).orElseThrow();
@@ -535,5 +529,27 @@ public class NomenclatureServiceImpl implements NomenclatureService {
         }
     }
 
+    //TODO implement
+    @Override
+    public NomenclatureDTO update(NomenclatureDTO nomenclature) {
+        return null;
+    }
 
+    //TODO implement
+    @Override
+    public List<NomenclatureDTO> update(List<NomenclatureDTO> nomenclature) {
+        return null;
+    }
+
+    //TODO ipement
+    @Override
+    public List<NomenclatureDTO> findAllByNameContainingAndCodeContaining(String name, String code) {
+        return null;
+    }
+
+    //TODO implement
+    @Override
+    public NomenclatureDTO delete(Long id) {
+        return null;
+    }
 }

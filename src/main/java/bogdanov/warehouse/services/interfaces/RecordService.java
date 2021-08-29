@@ -1,5 +1,6 @@
 package bogdanov.warehouse.services.interfaces;
 
+import bogdanov.warehouse.database.entities.RecordEntity;
 import bogdanov.warehouse.dto.RecordDTO;
 import bogdanov.warehouse.dto.RecordInputDTO;
 import bogdanov.warehouse.dto.RecordOutputDTO;
@@ -30,6 +31,8 @@ public interface RecordService {
     List<RecordDTO> findAllByNomenclatureCode(String nomenclatureCode);
 
     RecordDTO getById(Long id);
+
+    RecordEntity getEntityById(Long id);
 
     List<RecordDTO> findAllByDate(LocalDate date);
 

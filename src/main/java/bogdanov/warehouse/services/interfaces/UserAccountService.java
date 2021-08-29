@@ -43,4 +43,5 @@ public interface UserAccountService extends UserDetailsService {
 
     List<UserAccountDTO> findAllByRole(String role);
 
+    UserAccountDTO delete(Long id);
 }

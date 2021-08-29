@@ -37,13 +37,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO getById(Long id) {
         if (id == null) {
-            throw new NullIdException("User id is blank");
+            throw new NullIdException();
         }
         Optional<UserEntity> entity = userRepository.findById(id);
         if (entity.isPresent()) {
             return mapper.convert(entity.get());
         } else {
-            throw new ResourceNotFoundException("User with id : " + id + " not found");
+            throw new ResourceNotFoundException("User", "id", id);
         }
     }
 
@@ -56,20 +56,20 @@ public class UserServiceImpl implements UserService {
         if (entity != null) {
             return mapper.convert(entity);
         } else {
-            throw new ResourceNotFoundException("User with username : " + username + " not found");
+            throw new ResourceNotFoundException("User", "username", username);
         }
     }
 
     @Override
     public UserDTO getByPersonId(Long personId) {
         if (personId == null) {
-            throw new NullIdException("Person id is null");
+            throw new NullIdException();
         }
         Optional<UserEntity> entity = userRepository.findByPerson_Id(personId);
         if (entity.isPresent()) {
             return mapper.convert(entity.get());
         } else {
-            throw new ResourceNotFoundException("Person with id : " + personId + " is not registered");
+            throw new ResourceNotFoundException("Person", "id", personId);
         }
     }
 

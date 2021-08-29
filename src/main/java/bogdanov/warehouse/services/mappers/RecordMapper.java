@@ -33,7 +33,7 @@ public class RecordMapper {
         if (nomenclature.isPresent()) {
             entity.setNomenclature(nomenclature.get());
         } else {
-            throw new ResourceNotFoundException("Nomenclature with id : " + record.getNomenclatureId() + " not found)");
+            throw new ResourceNotFoundException("Nomenclature", "id", record.getNomenclatureId());
         }
         entity.setType(recordTypeMapper.convert(recordTypeService.getByName(record.getType())));
         entity.setAmount(record.getAmount()

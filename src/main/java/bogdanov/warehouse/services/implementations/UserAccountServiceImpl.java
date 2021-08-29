@@ -2,6 +2,7 @@ package bogdanov.warehouse.services.implementations;
 
 import bogdanov.warehouse.database.entities.PersonEntity;
 import bogdanov.warehouse.database.entities.UserEntity;
+import bogdanov.warehouse.database.repositories.RecordRepository;
 import bogdanov.warehouse.database.repositories.UserRepository;
 import bogdanov.warehouse.dto.UserAccountDTO;
 import bogdanov.warehouse.dto.UserAccountWithPasswordDTO;
@@ -31,6 +32,7 @@ public class UserAccountServiceImpl implements UserAccountService {
     private final Mapper mapper;
     private int minPasswordLength = 8;
     private final PersonService personService;
+    private final RecordRepository recordRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -54,9 +56,20 @@ public class UserAccountServiceImpl implements UserAccountService {
     }
 
     @Override
+    public UserAccountDTO delete(Long id) {
+        UserEntity entity = getEntityById(id);
+        if (recordRepository.existsByUser_Id(id)) {
+            throw new ProhibitedRemovingException("User has records");
+        } else {
+            userRepository.delete(entity);
+            return mapper.convert(entity, UserAccountDTO.class);
+        }
+    }
+
+    @Override
     public UserAccountDTO updatePassword(UserAccountWithPasswordDTO user) {
         if (user.getId() == null) {
-            throw new NullIdException("Id is missing");
+            throw new NullIdException();
         }
         UserEntity entity = getEntityById(user.getId());
         if (isIdAndUsernameCorrect(user, entity)) {
@@ -123,7 +136,7 @@ public class UserAccountServiceImpl implements UserAccountService {
     @Override
     public UserAccountDTO setEnabled(Long id, boolean isEnabled) {
         if (id == null) {
-            throw new NullIdException("Id value is missing");
+            throw new NullIdException();
         }
         UserEntity entity = getEntityById(id);
         entity.setEnabled(isEnabled);
@@ -144,24 +157,26 @@ public class UserAccountServiceImpl implements UserAccountService {
     @Override
     public UserEntity getEntityById(Long id) {
         if (id == null) {
-            throw new NullIdException("User id is null");
+            throw new NullIdException();
         }
         Optional<UserEntity> optionalEntity = userRepository.findById(id);
         if (optionalEntity.isPresent()) {
             return optionalEntity.get();
         } else {
-            throw new ResourceNotFoundException("User with id : " + id + " not found");
+            throw new ResourceNotFoundException("User", "id", id);
         }
     }
 
     @Override
     public UserAccountDTO getByPersonId(Long personId) {
-        PersonEntity person = personService.getEntityById(personId);
-        Optional<UserEntity> optionalEntity = userRepository.findByPersonEquals(person);
+        if (personId == null) {
+            throw new NullIdException();
+        }
+        Optional<UserEntity> optionalEntity = userRepository.findByPerson_Id(personId);
         if (optionalEntity.isPresent()) {
             return mapper.convert(optionalEntity.get(), UserAccountDTO.class);
         } else {
-            throw new ResourceNotFoundException("Person with id : " + personId + " is not registered");
+            throw new ResourceNotFoundException("Person", "id", personId);
         }
     }
 
@@ -172,7 +187,7 @@ public class UserAccountServiceImpl implements UserAccountService {
         if (entity != null) {
             return mapper.convert(entity, UserAccountDTO.class);
         } else {
-            throw new ResourceNotFoundException("User with username : " + username + " not found");
+            throw new ResourceNotFoundException("User", "username", username);
         }
     }
 

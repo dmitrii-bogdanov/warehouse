@@ -35,8 +35,8 @@ public class PositionRestController {
         return positionService.update(positions);
     }
 
-    @GetMapping(params = "id")
-    public PositionDTO getById(@RequestParam Long id) {
+    @GetMapping("/{id}")
+    public PositionDTO getById(@PathVariable Long id) {
         return positionService.getById(id);
     }
 
@@ -45,7 +45,7 @@ public class PositionRestController {
         return positionService.getByName(name);
     }
 
-    @GetMapping(value = "/find", params = "name")
+    @GetMapping(params = {"search", "name"})
     public List<PositionDTO> findAllByNameContaining(@RequestParam String name) {
         return positionService.findAllByNameContaining(name);
     }

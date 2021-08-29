@@ -20,7 +20,7 @@ import java.util.Locale;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping(
-        value = "/api/nomenclature/records",
+        value = "/api/records",
 //        consumes = MediaType.APPLICATION_JSON_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE)
 @ResponseStatus(HttpStatus.OK)
@@ -110,7 +110,7 @@ public class RecordRestController {
         return recordService.findAllByDateBetween(start, end);
     }
 
-    @GetMapping(params = "today")
+    @GetMapping("/today")
     public List<RecordDTO> getAllRecordsForToday() {
         return recordService.findAllByDate(LocalDate.now());
     }

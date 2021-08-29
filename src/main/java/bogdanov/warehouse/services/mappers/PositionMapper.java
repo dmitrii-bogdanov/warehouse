@@ -11,7 +11,7 @@ public class PositionMapper {
 
     PositionEntity convert(PositionDTO position) {
         if (Strings.isBlank(position.getName())) {
-            throw new BlankNameException(position + " Name is blank");
+            throw new BlankNameException(PositionEntity.class);
         }
         return new PositionEntity(position.getId(), position.getName());
     }

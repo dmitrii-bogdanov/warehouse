@@ -48,13 +48,13 @@ public class RoleServiceImplWithMap implements RoleService {
     @Override
     public RoleEntity findEntityByName(String name) {
         if (Strings.isBlank(name)) {
-            throw new BlankNameException("Name value is missing");
+            throw new BlankNameException(RoleEntity.class);
         }
         name = name.toUpperCase(Locale.ROOT);
         if (dto.containsKey(name)) {
             return entities.get(name);
         }
-        throw new ResourceNotFoundException("Role with name : " + name + " not found");
+        throw new ResourceNotFoundException("Role", "name", name);
 
     }
 
@@ -76,13 +76,13 @@ public class RoleServiceImplWithMap implements RoleService {
     @Override
     public RoleDTO findByName(String name) {
         if (Strings.isBlank(name)) {
-            throw new BlankNameException("Name value is missing");
+            throw new BlankNameException(RoleEntity.class);
         }
         name = name.toUpperCase(Locale.ROOT);
         if (dto.containsKey(name)) {
             return dto.get(name);
         }
-        throw new ResourceNotFoundException("Role with name : " + name + " not found");
+        throw new ResourceNotFoundException("Role", "name", name);
     }
 
     @Override

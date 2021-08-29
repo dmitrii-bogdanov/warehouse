@@ -53,29 +53,21 @@ public class RecordServiceImpl implements RecordService {
 
     @Override
     public RecordDTO delete(Long id) {
-        if (id == null) {
-            throw new NullIdException("Id is absent");
+        RecordEntity entity = getEntityById(id);
+        NomenclatureDTO nomenclatureDTO = mapper.convert(entity.getNomenclature());
+        nomenclatureDTO.setAmount(entity.getAmount());
+        switch (entity.getType().getName()) {
+            case "RECEPTION" -> nomenclatureService.subtractAmount(nomenclatureDTO);
+            case "RELEASE" -> nomenclatureService.addAmount(nomenclatureDTO);
         }
-        Optional<RecordEntity> optionalEntity = recordRepository.findById(id);
-        if (optionalEntity.isPresent()) {
-            RecordEntity entity = optionalEntity.get();
-            NomenclatureDTO nomenclatureDTO = mapper.convert(entity.getNomenclature());
-            nomenclatureDTO.setAmount(entity.getAmount());
-            switch (entity.getType().getName()) {
-                case "RECEPTION" -> nomenclatureService.subtractAmount(nomenclatureDTO);
-                case "RELEASE" -> nomenclatureService.addAmount(nomenclatureDTO);
-            }
 
-            if (LocalDateTime.now().minusHours(24).compareTo(entity.getTime()) > 0) {
-                entity.setType(mapper.convert(recordTypeService.getByName("DELETED")));
-                entity = recordRepository.save(entity);
-            } else {
-                recordRepository.delete(entity);
-            }
-            return mapper.convert(entity);
+        if (LocalDateTime.now().minusHours(24).compareTo(entity.getTime()) > 0) {
+            entity.setType(mapper.convert(recordTypeService.getByName("DELETED")));
+            entity = recordRepository.save(entity);
         } else {
-            throw new ResourceNotFoundException("Record with id : " + id + " not found");
+            recordRepository.delete(entity);
         }
+        return mapper.convert(entity);
     }
 
     @Override
@@ -138,12 +130,17 @@ public class RecordServiceImpl implements RecordService {
 
     @Override
     public RecordDTO getById(Long id) {
+        return mapper.convert(getEntityById(id));
+    }
+
+    @Override
+    public RecordEntity getEntityById(Long id) {
         if (id == null) {
-            throw new NullIdException("Id value is missing");
+            throw new NullIdException();
         }
         Optional<RecordEntity> entity = recordRepository.findById(id);
         if (entity.isPresent()) {
-            return mapper.convert(entity.get());
+            return entity.get();
         } else {
             throw new ResourceNotFoundException("Record with id : " + id + " not found");
         }

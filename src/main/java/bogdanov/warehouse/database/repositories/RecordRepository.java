@@ -24,5 +24,7 @@ public interface RecordRepository extends JpaRepository<RecordEntity, Long> {
 
     boolean existsByNomenclature_Id(Long id);
 
+    boolean existsByUser_Id(Long id);
+
     List<RecordEntity> findAllByTimeBetween(LocalDateTime start, LocalDateTime end);
 }

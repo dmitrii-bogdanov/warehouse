@@ -25,8 +25,8 @@ public class UserRestController {
         return userService.getAll();
     }
 
-    @GetMapping(params = "id")
-    public UserDTO getById(@RequestParam Long id) {
+    @GetMapping("/{id}")
+    public UserDTO getById(@PathVariable Long id) {
         return userService.getById(id);
     }
 
@@ -60,7 +60,7 @@ public class UserRestController {
         return userService.findAllByPosition(position);
     }
 
-    @GetMapping(params = {"firstname", "patronymic", "lastname"})
+    @GetMapping(params = {"search","firstname", "patronymic", "lastname"})
     public List<UserDTO> getAllByFullName(@RequestParam String firstname,
                                           @RequestParam String patronymic,
                                           @RequestParam String lastname) {

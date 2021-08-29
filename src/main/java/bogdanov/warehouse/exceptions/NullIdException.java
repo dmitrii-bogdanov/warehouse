@@ -7,6 +7,7 @@ public class NullIdException extends RuntimeException{
     }
 
     public NullIdException() {
-
+        this("Id value is missing");
     }
+
 }

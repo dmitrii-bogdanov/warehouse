@@ -25,6 +25,11 @@ public class PersonRestController {
         return personService.getAll();
     }
 
+    @GetMapping("/{id}")
+    public PersonDTO getById(@PathVariable Long id) {
+        return personService.getById(id);
+    }
+
     @PostMapping
     public List<PersonDTO> add(@RequestBody List<PersonDTO> persons) {
         return personService.add(persons);
@@ -33,6 +38,11 @@ public class PersonRestController {
     @PutMapping
     public List<PersonDTO> update(@RequestBody List<PersonDTO> persons) {
         return personService.update(persons);
+    }
+
+    @DeleteMapping("/{id}")
+    public PersonDTO delete(@PathVariable Long id) {
+        return personService.delete(id);
     }
 
     @GetMapping(params = "firstname")

@@ -58,7 +58,7 @@ public class PersonServiceImpl implements PersonService {
             if (optionalEntity.isPresent()) {
                 return mapper.convert(personRepository.save(mapper.convert(person)));
             } else {
-                throw new ResourceNotFoundException("Person with id : " + person.getId() + " not found");
+                throw new ResourceNotFoundException("Person", "id", person.getId());
             }
         } else {
             throw new NotAllRequiredFieldsPresentException(
@@ -83,20 +83,13 @@ public class PersonServiceImpl implements PersonService {
 
     @Override
     public PersonDTO delete(Long id) {
-        if (id == null) {
-            throw new NullIdException("Id value is missing");
-        }
-        Optional<PersonEntity> entity = personRepository.findById(id);
-        if (entity.isPresent()) {
+        PersonEntity entity = getEntityById(id);
             if (userRepository.existsByPerson_Id(id)) {
                 throw new AlreadyRegisteredPersonException("Person with id : " + id + " already registered as user");
             } else {
-                personRepository.delete(entity.get());
-                return mapper.convert(entity.get());
+                personRepository.delete(entity);
+                return mapper.convert(entity);
             }
-        } else {
-            throw new ResourceNotFoundException("Person with id : " + id + " not found");
-        }
     }
 
     @Override
@@ -107,14 +100,13 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public PersonEntity getEntityById(Long id) {
         if (id == null) {
-            throw new NullIdException("Person id is null");
+            throw new NullIdException();
         }
         Optional<PersonEntity> optionalEntity = personRepository.findById(id);
         if (optionalEntity.isPresent()) {
             return optionalEntity.get();
         } else {
-            throw new ResourceNotFoundException(
-                    "Person with id : " + id + " not found");
+            throw new ResourceNotFoundException("Person", "id", id);
         }
     }
 

@@ -31,7 +31,7 @@ public class PositionServiceImpl implements PositionService {
     @Override
     public PositionDTO add(String name) {
         if (Strings.isBlank(name)) {
-            throw new BlankNameException("Name value is missing");
+            throw new BlankNameException(PositionEntity.class);
         }
         positions.computeIfAbsent(name, n -> {
             PositionEntity entity = positionRepository.save(new PositionEntity(name));
@@ -76,12 +76,12 @@ public class PositionServiceImpl implements PositionService {
     @Override
     public PositionDTO getByName(String name) {
         if (Strings.isBlank(name)) {
-            throw new BlankNameException("Name is blank");
+            throw new BlankNameException(PositionEntity.class);
         }
         if (positions.containsKey(name)) {
             return positions.get(name);
         } else {
-            throw new ResourceNotFoundException("Position with name : " + name + " not found");
+            throw new ResourceNotFoundException("Position", "name", name);
         }
     }
 
@@ -93,7 +93,7 @@ public class PositionServiceImpl implements PositionService {
     @Override
     public void delete(String name) {
         if (Strings.isBlank(name)) {
-            throw new BlankNameException("Names value is missing");
+            throw new BlankNameException();
         }
         name = name.toUpperCase(Locale.ROOT);
         if (personRepository.existsByPosition_NameEquals(name)) {

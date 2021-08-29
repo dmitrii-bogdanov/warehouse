@@ -378,7 +378,7 @@ public class NomenclatureServiceImplWithSaveAll implements NomenclatureService {
         boolean isCodeBlank = Strings.isBlank(code);
 
         if (isNameBlank && isCodeBlank) {
-            throw new BlankNameAndCodeException("Name and code values are missing");
+            throw new BlankNameAndCodeException();
         }
         name = name.toUpperCase(Locale.ROOT);
         if (isCodeBlank) {

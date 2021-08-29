@@ -13,7 +13,7 @@ public class PositionIsInUseException extends RuntimeException{
         super(message);
     }
 
-    public PositionIsInUseException(String field, String value) {
-        this("Position with " + field + " : " + value + " is in use");
+    public PositionIsInUseException(String field, Object value) {
+        this("Position with " + field + " : " + value.toString() + " is in use");
     }
 }

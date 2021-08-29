@@ -44,8 +44,7 @@ public class UserAccountServiceImpl implements UserAccountService {
         if (isUsernameAvailable(user.getUsername()) && isPasswordValid(user.getPassword())) {
             PersonEntity person = personService.getEntityById(user.getPersonId());
             if (userRepository.existsByPersonEquals(person)) {
-                throw new AlreadyRegisteredPersonException(
-                        "Person with id : " + user.getPersonId() + " has already been registered");
+                throw new AlreadyRegisteredPersonException(user.getPersonId());
             } else {
                 UserEntity entity = mapper.convert(user);
                 entity.setPerson(person);

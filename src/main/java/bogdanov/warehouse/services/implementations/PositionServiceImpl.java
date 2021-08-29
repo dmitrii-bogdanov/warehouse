@@ -97,7 +97,7 @@ public class PositionServiceImpl implements PositionService {
         }
         name = name.toUpperCase(Locale.ROOT);
         if (personRepository.existsByPosition_NameEquals(name)) {
-            throw new PositionIsInUseException("Position with name : " + name + " is in use");
+            throw new PositionIsInUseException("name", name);
         }
         positions.remove(name);
         positionRepository.deleteByName(name);

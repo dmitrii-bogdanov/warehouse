@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 public class BlankNameAndCodeException extends RuntimeException{
 
     public BlankNameAndCodeException() {
-        super();
+        super("Name and code values are missing");
     }
 
     public BlankNameAndCodeException(String message) {

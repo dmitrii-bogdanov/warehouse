@@ -13,4 +13,8 @@ public class AlreadyRegisteredPersonException extends RuntimeException{
         super(message);
     }
 
+    public AlreadyRegisteredPersonException(Long id) {
+        this("Person with id : " + id + " has already been registered as user");
+    }
+
 }

@@ -99,7 +99,7 @@ class PersonServiceImplTest {
     }
 
     @Test
-    void addDto_FirstameLastnameWithoutBirthDate() {
+    void addDto_FirstnameLastnameWithoutBirthDate() {
         dto.setFirstname(FIRSTNAME);
         dto.setLastname(LASTNAME);
         dto.setBirth(null);

@@ -85,7 +85,7 @@ public class PersonServiceImpl implements PersonService {
     public PersonDTO delete(Long id) {
         PersonEntity entity = getEntityById(id);
             if (userRepository.existsByPerson_Id(id)) {
-                throw new AlreadyRegisteredPersonException("Person with id : " + id + " already registered as user");
+                throw new AlreadyRegisteredPersonException(id);
             } else {
                 personRepository.delete(entity);
                 return mapper.convert(entity);

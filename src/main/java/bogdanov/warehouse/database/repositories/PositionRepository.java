@@ -11,12 +11,12 @@ import java.util.Optional;
 @Repository
 public interface PositionRepository extends JpaRepository<PositionEntity, Long> {
 
-    public Optional<PositionEntity> findByName(String name);
+    Optional<PositionEntity> findByName(String name);
 
-    public List<PositionEntity> findAllByNameContaining(String partialName);
+    List<PositionEntity> findAllByNameContaining(String partialName);
 
-    public boolean existsByName(String name);
+    boolean existsByName(String name);
 
     @Transactional
-    public void deleteByName(String name);
+    void deleteByName(String name);
 }

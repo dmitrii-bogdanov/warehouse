@@ -13,33 +13,33 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
-    public UserEntity findByUsername(String username);
+    UserEntity findByUsername(String username);
 
     //TODO Check what it does
-    public List<UserEntity> findAllByUsernameStartingWith(String startsWith);
+    List<UserEntity> findAllByUsernameStartingWith(String startsWith);
 
-    public List<UserEntity> findAllByIsEnabled(boolean isEnabled);
+    List<UserEntity> findAllByIsEnabled(boolean isEnabled);
 
-    public List<UserEntity> findAllByRoles_NameEquals(String name);
+    List<UserEntity> findAllByRoles_NameEquals(String name);
 
-    public List<UserEntity> findAllByRoles_IdEquals(Long id);
+    List<UserEntity> findAllByRoles_IdEquals(Long id);
 
-    public Optional<UserEntity> findByPersonEquals(PersonEntity person);
+    Optional<UserEntity> findByPersonEquals(PersonEntity person);
 
-    public boolean existsByPersonEquals(PersonEntity person);
+    boolean existsByPersonEquals(PersonEntity person);
 
-    public boolean existsByUsername(String username);
+    boolean existsByUsername(String username);
 
-    public List<UserEntity> findAllByPerson_Firstname(String firstname);
+    List<UserEntity> findAllByPerson_Firstname(String firstname);
 
-    public List<UserEntity> findAllByPerson_Lastname(String lastname);
+    List<UserEntity> findAllByPerson_Lastname(String lastname);
 
-    public List<UserEntity> findAllByPerson_Patronymic(String patronymic);
+    List<UserEntity> findAllByPerson_Patronymic(String patronymic);
 
-    public List<UserEntity> findAllByPerson_FirstnameAndPerson_PatronymicAndPerson_Lastname(
+    List<UserEntity> findAllByPerson_FirstnameAndPerson_PatronymicAndPerson_Lastname(
             String firstname, String patronymic, String lastname);
 
-    public List<UserEntity> findAllByPerson_Position_Name(String position);
+    List<UserEntity> findAllByPerson_Position_Name(String position);
 
-    public Optional<UserEntity> findByPerson_Id(Long id);
+    Optional<UserEntity> findByPerson_Id(Long id);
 }

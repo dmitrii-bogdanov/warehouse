@@ -12,6 +12,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
 
@@ -42,9 +44,9 @@ public class RecordRestController {
         return recordService.add(record, user.getName());
     }
 
-    @DeleteMapping
-    public void deleteRecord(@RequestBody RecordOutputDTO record) {
-        recordService.delete(record);
+    @DeleteMapping("/{id}")
+    public RecordDTO deleteRecord(@PathVariable Long id) {
+        return recordService.delete(id);
     }
 
     @GetMapping("/reception")
@@ -55,6 +57,11 @@ public class RecordRestController {
     @GetMapping("/release")
     public List<RecordDTO> getAllReleaseRecords() {
         return recordService.findAllByType("RELEASE");
+    }
+
+    @GetMapping("/deleted")
+    public List<RecordDTO> getAllDeletedRecords() {
+        return recordService.findAllByType("DELETED");
     }
 
     @GetMapping(params = "type")
@@ -90,6 +97,22 @@ public class RecordRestController {
     @GetMapping(params = "nomenclatureCode")
     public List<RecordDTO> getAllRecordsByNomenclatureCode(@RequestParam String nomenclatureCode) {
         return recordService.findAllByNomenclatureCode(nomenclatureCode);
+    }
+
+    @GetMapping(params = "date")
+    public List<RecordDTO> getAllRecordByDate(@RequestParam LocalDate date) {
+        return recordService.findAllByDate(date);
+    }
+
+    @GetMapping(params = {"date", "start", "end"})
+    public List<RecordDTO> getAllRecordsByDateBetween(@RequestParam LocalDate start,
+                                                      @RequestParam LocalDate end) {
+        return recordService.findAllByDateBetween(start, end);
+    }
+
+    @GetMapping(params = "today")
+    public List<RecordDTO> getAllRecordsForToday() {
+        return recordService.findAllByDate(LocalDate.now());
     }
 
 }

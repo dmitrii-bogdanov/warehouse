@@ -4,6 +4,7 @@ import bogdanov.warehouse.database.entities.RecordEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -22,4 +23,6 @@ public interface RecordRepository extends JpaRepository<RecordEntity, Long> {
     List<RecordEntity> findAllByType_NameEquals(String type);
 
     boolean existsByNomenclature_Id(Long id);
+
+    List<RecordEntity> findAllByTimeBetween(LocalDateTime start, LocalDateTime end);
 }

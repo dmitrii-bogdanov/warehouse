@@ -3,7 +3,7 @@ package bogdanov.warehouse.database.enums;
 public enum RecordType {
     RECEPTION(1L),
     RELEASE(2L),
-    INVENTORYING(3L);
+    DELETED(3L);
 
 
     private final long id;

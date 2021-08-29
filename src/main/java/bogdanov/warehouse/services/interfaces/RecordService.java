@@ -7,14 +7,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
 public interface RecordService {
 
     RecordDTO add(RecordInputDTO record, String username);
-
-    void delete(RecordOutputDTO record);
 
     List<RecordDTO> getAll();
 
@@ -30,4 +29,11 @@ public interface RecordService {
 
     List<RecordDTO> findAllByNomenclatureCode(String nomenclatureCode);
 
+    RecordDTO getById(Long id);
+
+    List<RecordDTO> findAllByDate(LocalDate date);
+
+    List<RecordDTO> findAllByDateBetween(LocalDate start, LocalDate end);
+
+    RecordDTO delete(Long id);
 }

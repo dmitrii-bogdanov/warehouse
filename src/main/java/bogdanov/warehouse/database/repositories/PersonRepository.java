@@ -9,38 +9,37 @@ import java.util.List;
 
 @Repository
 public interface PersonRepository extends JpaRepository<PersonEntity, Long> {
-
-    public List<PersonEntity> findAllByEmail(String email);
-
-    //TODO Check what it does
-    public List<PersonEntity> findAllByEmailContaining(String partialEmail);
-
-    public List<PersonEntity> findAllByPhoneNumber(String phoneNumber);
+    List<PersonEntity> findAllByEmail(String email);
 
     //TODO Check what it does
-    public List<PersonEntity> findAllByPhoneNumberStartingWith(String startWith);
+    List<PersonEntity> findAllByEmailContaining(String partialEmail);
 
-    public List<PersonEntity> findAllByFirstname(String firstname);
+    List<PersonEntity> findAllByPhoneNumber(String phoneNumber);
 
-    public List<PersonEntity> findAllByLastname(String lastname);
+    //TODO Check what it does
+    List<PersonEntity> findAllByPhoneNumberStartingWith(String startWith);
 
-    public List<PersonEntity> findAllByPatronymic(String patronymic);
+    List<PersonEntity> findAllByFirstname(String firstname);
 
-    public List<PersonEntity> findAllByFirstnameAndLastnameAndPatronymic(String firstname,
-                                                                         String lastname,
-                                                                         String patronymic);
+    List<PersonEntity> findAllByLastname(String lastname);
 
-    public List<PersonEntity> findAllByBirthEquals(LocalDate date);
+    List<PersonEntity> findAllByPatronymic(String patronymic);
 
-    public List<PersonEntity> findAllByBirthBefore(LocalDate date);
+    List<PersonEntity> findAllByFirstnameAndLastnameAndPatronymic(String firstname,
+                                                                  String lastname,
+                                                                  String patronymic);
 
-    public List<PersonEntity> findAllByBirthAfter(LocalDate date);
+    List<PersonEntity> findAllByBirthEquals(LocalDate date);
 
-    public List<PersonEntity> findAllByBirthBetween(LocalDate start, LocalDate end);
+    List<PersonEntity> findAllByBirthBefore(LocalDate date);
 
-    public List<PersonEntity> findAllByFirstnameAndPatronymicAndLastname(String firstname,
-                                                                         String patronymic,
-                                                                         String lastname);
+    List<PersonEntity> findAllByBirthAfter(LocalDate date);
+
+    List<PersonEntity> findAllByBirthBetween(LocalDate start, LocalDate end);
+
+    List<PersonEntity> findAllByFirstnameAndPatronymicAndLastname(String firstname,
+                                                                  String patronymic,
+                                                                  String lastname);
 
     List<PersonEntity> findAllByPosition_NameEquals(String name);
 

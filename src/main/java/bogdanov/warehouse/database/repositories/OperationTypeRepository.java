@@ -7,6 +7,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface OperationTypeRepository extends JpaRepository<OperationTypeEntity, Long> {
 
-    public OperationTypeEntity findByName(String name);
+    OperationTypeEntity findByName(String name);
 
 }

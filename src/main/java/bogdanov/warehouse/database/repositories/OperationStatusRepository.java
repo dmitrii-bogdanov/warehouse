@@ -7,6 +7,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface OperationStatusRepository extends JpaRepository<OperationStatusEntity, Long> {
 
-    public OperationStatusEntity findByName(String name);
+    OperationStatusEntity findByName(String name);
 
 }

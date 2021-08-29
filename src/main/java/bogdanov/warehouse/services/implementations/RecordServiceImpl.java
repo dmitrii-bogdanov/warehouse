@@ -9,19 +9,23 @@ import bogdanov.warehouse.dto.RecordInputDTO;
 import bogdanov.warehouse.dto.RecordOutputDTO;
 import bogdanov.warehouse.exceptions.IncorectRecordFieldsException;
 import bogdanov.warehouse.exceptions.NullIdException;
+import bogdanov.warehouse.exceptions.ProhibitedRemovingException;
 import bogdanov.warehouse.exceptions.ResourceNotFoundException;
 import bogdanov.warehouse.services.interfaces.RecordService;
+import bogdanov.warehouse.services.interfaces.RecordTypeService;
 import bogdanov.warehouse.services.mappers.Mapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
+//TODO hide deleted records from usual call of getAll()
 @Service
 @RequiredArgsConstructor
 public class RecordServiceImpl implements RecordService {
@@ -31,6 +35,7 @@ public class RecordServiceImpl implements RecordService {
     private final NomenclatureServiceImpl nomenclatureService;
     //TODO delete! For Test Only
     private final UserRepository userRepository;
+    private final RecordTypeService recordTypeService;
 
     @Override
     public RecordDTO add(RecordInputDTO record, String username) {
@@ -47,32 +52,29 @@ public class RecordServiceImpl implements RecordService {
     }
 
     @Override
-    public void delete(RecordOutputDTO record) {
-        if (record.getId() == null) {
+    public RecordDTO delete(Long id) {
+        if (id == null) {
             throw new NullIdException("Id is absent");
         }
-        Optional<RecordEntity> optionalEntity = recordRepository.findById(record.getId());
+        Optional<RecordEntity> optionalEntity = recordRepository.findById(id);
         if (optionalEntity.isPresent()) {
-            RecordEntity fromDTO = mapper.convert(record);
             RecordEntity entity = optionalEntity.get();
-            boolean isNomenclatureCorrect = entity.getNomenclature().getId().equals(fromDTO.getNomenclature().getId());
-            boolean isTimeCorrect = entity.getTime().equals(fromDTO.getTime());
-            boolean isAmountCorrect = entity.getAmount().equals(fromDTO.getAmount());
-            boolean isTypeCorrect = entity.getType().equals(fromDTO.getType());
-            if (isNomenclatureCorrect && isAmountCorrect && isTypeCorrect && isTimeCorrect) {
-                recordRepository.delete(entity);
+
+            if (LocalDateTime.now().minusHours(24).compareTo(entity.getTime()) > 0) {
+                entity.setType(mapper.convert(recordTypeService.getByName("DELETED")));
+                entity = recordRepository.save(entity);
             } else {
-                throw new IncorectRecordFieldsException(
-                        "Records fields (id, nomenclature, type, amount, time) are incorrect");
+                recordRepository.delete(entity);
             }
+            return mapper.convert(entity);
         } else {
-            throw new ResourceNotFoundException("Record with id : " + record.getId() + " not found");
+            throw new ResourceNotFoundException("Record with id : " + id + " not found");
         }
     }
 
     @Override
     public List<RecordDTO> getAll() {
-        return recordRepository.findAll().stream().map(mapper::convert).toList();
+        return recordRepository.findAll().stream().filter(this::filterDeletedRecords).map(mapper::convert).toList();
     }
 
     @Override
@@ -122,5 +124,34 @@ public class RecordServiceImpl implements RecordService {
             return Collections.EMPTY_LIST;
         }
         return recordRepository.findAllByNomenclature_CodeEquals(nomenclatureCode).stream().map(mapper::convert).toList();
+    }
+
+    private boolean filterDeletedRecords(RecordEntity entity) {
+        return !entity.getType().getName().equals("DELETED");
+    }
+
+    @Override
+    public RecordDTO getById(Long id) {
+        if (id == null) {
+            throw new NullIdException("Id value is missing");
+        }
+        Optional<RecordEntity> entity = recordRepository.findById(id);
+        if (entity.isPresent()) {
+            return mapper.convert(entity.get());
+        } else {
+            throw new ResourceNotFoundException("Record with id : " + id + " not found");
+        }
+    }
+
+    @Override
+    public List<RecordDTO> findAllByDate(LocalDate date) {
+        return findAllByDateBetween(date, date.plusDays(1));
+    }
+
+    @Override
+    public List<RecordDTO> findAllByDateBetween(LocalDate start, LocalDate end) {
+        return recordRepository.
+                findAllByTimeBetween(start.atStartOfDay(), end.atStartOfDay())
+                .stream().map(mapper::convert).toList();
     }
 }

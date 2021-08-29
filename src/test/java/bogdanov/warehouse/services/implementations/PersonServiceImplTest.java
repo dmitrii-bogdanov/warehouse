@@ -15,9 +15,14 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDate;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.*;
+
+
+//TODO Position is also required
 
 @SpringBootTest
 @AutoConfigureTestDatabase
@@ -75,6 +80,7 @@ class PersonServiceImplTest {
 
     }
 
+
     @Test
     void addDto_NotAllRequiredFields() {
         dto.setFirstname(null);
@@ -128,7 +134,38 @@ class PersonServiceImplTest {
                 () -> personService.add(dto));
     }
 
+    @Test
+    void addDtoList() {
+        //ok
+        dto.setFirstname(FIRSTNAME);
+        dto.setLastname(LASTNAME);
+        dto.setPatronymic(PATRONYMIC);
+        dto.setPosition(POSITION);
+        dto.setBirth(DATE);
+        dto.setPhoneNumber(PHONE_NUMBER);
+        dto.setEmail(EMAIL);
+        //ok
+        PersonDTO dto1 = new PersonDTO();
+        dto1.setFirstname("firstname1");
+        dto1.setLastname("lastname1");
+        dto1.setBirth(LocalDate.now());
+        //not ok
+        PersonDTO dto2 = new PersonDTO();
+        dto2.setFirstname("firstname2");
+        dto2.setLastname("lastname2");
+        dto2.setBirth(null);
+        //not ok
+        PersonDTO dto3 = new PersonDTO();
+        dto3.setFirstname("firstname3");
+        dto3.setLastname(null);
+        dto3.setBirth(LocalDate.now());
+        //ok
+        Person dto4
 
+        List<PersonDTO> list = new LinkedList<>();
+        list.add(dto);
+
+    }
 
 
 }

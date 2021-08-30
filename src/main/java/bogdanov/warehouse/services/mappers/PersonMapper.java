@@ -20,8 +20,7 @@ public class PersonMapper {
                 person.getId(),
                 person.getFirstname(),
                 person.getLastname(),
-                Strings.isBlank(person.getPatronymic())
-                        ? Strings.EMPTY : person.getPatronymic(),
+                person.getPatronymic(),
                 person.getBirth(),
                 person.getPhoneNumber(),
                 person.getEmail(),

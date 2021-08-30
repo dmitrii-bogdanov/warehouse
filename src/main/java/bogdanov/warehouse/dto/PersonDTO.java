@@ -1,5 +1,6 @@
 package bogdanov.warehouse.dto;
 
+import bogdanov.warehouse.exceptions.NotAllRequiredFieldsPresentException;
 import lombok.*;
 import org.apache.logging.log4j.util.Strings;
 
@@ -22,9 +23,26 @@ public class PersonDTO {
     private String position;
 
     public boolean allRequiredFieldsPresent() {
-        return Strings.isNotBlank(firstname)
+        if (Strings.isNotBlank(firstname)
                 && Strings.isNotBlank(lastname)
-                && birth != null;
+                && birth != null
+                && Strings.isNotBlank(position)) {
+            return true;
+        } else {
+            throw new NotAllRequiredFieldsPresentException(
+                    "Person firstname, lastname and date of birth should be present");
+        }
+    }
+
+    public PersonDTO(PersonDTO dto) {
+        this.id = dto.id;
+        this.firstname = dto.firstname;
+        this.lastname = dto.lastname;
+        this.patronymic = dto.patronymic;
+        this.birth = dto.birth;
+        this.position = dto.position;
+        this.phoneNumber = dto.phoneNumber;
+        this.email = dto.email;
     }
 
     public void setFirstname(String firstname) {
@@ -42,10 +60,10 @@ public class PersonDTO {
     }
 
     public void setPatronymic(String patronymic) {
-        if (patronymic != null) {
+        if (Strings.isNotBlank(patronymic)) {
             patronymic = patronymic.toUpperCase(Locale.ROOT);
         }
-        this.patronymic = patronymic;
+        this.patronymic = Strings.EMPTY;
     }
 
     public void setEmail(String email) {

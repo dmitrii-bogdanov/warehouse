@@ -11,14 +11,12 @@ import bogdanov.warehouse.exceptions.ResourceNotFoundException;
 import bogdanov.warehouse.services.interfaces.PersonService;
 import bogdanov.warehouse.services.mappers.Mapper;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Service
@@ -53,17 +51,10 @@ public class PersonServiceImpl implements PersonService {
 
     @Override
     public PersonDTO update(PersonDTO person) {
-        if (person.allRequiredFieldsPresent()) {
-            Optional<PersonEntity> optionalEntity = personRepository.findById(person.getId());
-            if (optionalEntity.isPresent()) {
-                return mapper.convert(personRepository.save(mapper.convert(person)));
-            } else {
-                throw new ResourceNotFoundException("Person", "id", person.getId());
-            }
-        } else {
-            throw new NotAllRequiredFieldsPresentException(
-                    "Person firstname, lastname and date of birth should be present");
-        }
+        person.allRequiredFieldsPresent();
+        getEntityById(person.getId());
+        return mapper.convert(personRepository.save(mapper.convert(person)));
+
     }
 
     @Override
@@ -72,9 +63,8 @@ public class PersonServiceImpl implements PersonService {
         entities = persons
                 .stream()
                 .filter(PersonDTO::allRequiredFieldsPresent)
-                .distinct()
-                .map(dto -> personRepository.findById(dto.getId()).orElse(null))
-                .filter(Objects::nonNull)
+                .filter(dto -> getEntityById(dto.getId()) != null)
+                .map(mapper::convert)
                 .toList();
 
         entities = personRepository.saveAll(entities);
@@ -84,12 +74,12 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public PersonDTO delete(Long id) {
         PersonEntity entity = getEntityById(id);
-            if (userRepository.existsByPerson_Id(id)) {
-                throw new AlreadyRegisteredPersonException(id);
-            } else {
-                personRepository.delete(entity);
-                return mapper.convert(entity);
-            }
+        if (userRepository.existsByPerson_Id(id)) {
+            throw new AlreadyRegisteredPersonException(id);
+        } else {
+            personRepository.delete(entity);
+            return mapper.convert(entity);
+        }
     }
 
     @Override
@@ -117,6 +107,9 @@ public class PersonServiceImpl implements PersonService {
 
     @Override
     public List<PersonDTO> findAllByFirstname(String firstname) {
+        if (Strings.isBlank(firstname)) {
+            return Collections.emptyList();
+        }
         return personRepository
                 .findAllByFirstname(firstname.toUpperCase(Locale.ROOT))
                 .stream().map(mapper::convert).toList();
@@ -124,6 +117,9 @@ public class PersonServiceImpl implements PersonService {
 
     @Override
     public List<PersonDTO> findAllByLastname(String lastname) {
+        if (Strings.isBlank(lastname)) {
+            return Collections.emptyList();
+        }
         return personRepository
                 .findAllByLastname(lastname.toUpperCase(Locale.ROOT))
                 .stream().map(mapper::convert).toList();
@@ -131,6 +127,9 @@ public class PersonServiceImpl implements PersonService {
 
     @Override
     public List<PersonDTO> findAllByPatronymic(String patronymic) {
+        if (Strings.isBlank(patronymic)) {
+            return Collections.emptyList();
+        }
         return personRepository
                 .findAllByPatronymic(patronymic.toUpperCase(Locale.ROOT))
                 .stream().map(mapper::convert).toList();

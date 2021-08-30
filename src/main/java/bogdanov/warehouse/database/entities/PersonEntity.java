@@ -37,7 +37,7 @@ public class PersonEntity {
 
     private String email;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     private PositionEntity position;
 
 }

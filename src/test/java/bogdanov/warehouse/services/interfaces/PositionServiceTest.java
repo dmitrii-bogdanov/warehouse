@@ -77,6 +77,7 @@ class PositionServiceTest {
         dtoList.add(dto);
         dtoList.add(new PositionDTO(dto.getName()));
         assertEquals(dtoList.get(0).getName(), dtoList.get(1).getName());
+        resultList = new LinkedList<>();
         resultList.add(positionService.add(dtoList.get(0).getName()));
         resultList.add(positionService.add(dtoList.get(1).getName()));
         assertNotNull(resultList.get(0));
@@ -115,6 +116,7 @@ class PositionServiceTest {
         dtoList.add(dto);
         dtoList.add(new PositionDTO("user"));
         assertNotEquals(dtoList.get(0).getName(), dtoList.get(1).getName());
+        resultList = new LinkedList<>();
         resultList.add(positionService.add(dtoList.get(0)));
         resultList.add(positionService.add(dtoList.get(1)));
         assertNotNull(resultList.get(0));
@@ -133,6 +135,7 @@ class PositionServiceTest {
         dtoList.add(dto);
         dtoList.add(new PositionDTO(dto.getName()));
         assertEquals(dtoList.get(0).getName(), dtoList.get(1).getName());
+        resultList = new LinkedList<>();
         resultList.add(positionService.add(dtoList.get(0)));
         resultList.add(positionService.add(dtoList.get(1)));
         assertNotNull(resultList.get(0));

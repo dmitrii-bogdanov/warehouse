@@ -9,6 +9,7 @@ import bogdanov.warehouse.dto.PersonDTO;
 import bogdanov.warehouse.dto.UserAccountDTO;
 import bogdanov.warehouse.exceptions.*;
 import bogdanov.warehouse.services.interfaces.PersonService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.aspectj.lang.annotation.Before;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,9 +28,10 @@ import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Slf4j
 @SpringBootTest
 @AutoConfigureTestDatabase
-class PersonServiceImplTest {
+class PersonServiceTest {
 
     @Autowired
     private PersonService personService;
@@ -40,6 +42,7 @@ class PersonServiceImplTest {
 
     @BeforeEach
     private void clear() {
+        userRepository.deleteAll();
         personRepository.deleteAll();
     }
 
@@ -256,8 +259,10 @@ class PersonServiceImplTest {
         dto15.setBirth(DATE);
         dto15.setPosition(POSITION);
 
-        List<PersonDTO> list = Arrays.asList(
-                dto, dto1, dto2, dto3, dto4, dto5, dto6, dto7, dto8, dto9, dto10, dto11, dto12, dto13, dto14, dto15);
+        List<PersonDTO> list = new LinkedList<>();
+        list.addAll(Arrays.asList(
+                dto, dto1, dto2, dto3, dto4, dto5, dto6, dto7, dto8,
+                dto9, dto10, dto11, dto12, dto13, dto14, dto15));
 
         assertThrows(NotAllRequiredFieldsPresentException.class,
                 () -> personService.add(list));
@@ -268,7 +273,7 @@ class PersonServiceImplTest {
         assertThrows(NotAllRequiredFieldsPresentException.class,
                 () -> personService.add(list));
         list.remove(dto4);
-        assertThrows(BlankNameException.class,
+        assertThrows(NotAllRequiredFieldsPresentException.class,
                 () -> personService.add(list));
         list.remove(dto5);
         assertThrows(NotAllRequiredFieldsPresentException.class,
@@ -277,7 +282,7 @@ class PersonServiceImplTest {
         assertThrows(NotAllRequiredFieldsPresentException.class,
                 () -> personService.add(list));
         list.remove(dto7);
-        assertThrows(BlankNameException.class,
+        assertThrows(NotAllRequiredFieldsPresentException.class,
                 () -> personService.add(list));
         list.remove(dto8);
         assertThrows(NotAllRequiredFieldsPresentException.class,
@@ -286,7 +291,7 @@ class PersonServiceImplTest {
         assertThrows(NotAllRequiredFieldsPresentException.class,
                 () -> personService.add(list));
         list.remove(dto10);
-        assertThrows(BlankNameException.class,
+        assertThrows(NotAllRequiredFieldsPresentException.class,
                 () -> personService.add(list));
         list.remove(dto11);
         assertThrows(NotAllRequiredFieldsPresentException.class,
@@ -295,7 +300,7 @@ class PersonServiceImplTest {
         assertThrows(NotAllRequiredFieldsPresentException.class,
                 () -> personService.add(list));
         list.remove(dto13);
-        assertThrows(BlankNameException.class,
+        assertThrows(NotAllRequiredFieldsPresentException.class,
                 () -> personService.add(list));
         list.remove(dto14);
 
@@ -354,7 +359,10 @@ class PersonServiceImplTest {
     @Test
     void updateDTO_NotExistingIdAllFieldsCorrect() {
         dto = setFieldsAndSave();
-        dto.setId(dto.getId() + 355553);
+        log.info(dto.toString());
+        dto.setId(dto.getId() + 353);
+        log.info(dto.toString());
+        assertFalse(personRepository.existsById(dto.getId()));
         assertThrows(ResourceNotFoundException.class,
                 () -> personService.update(dto));
     }
@@ -564,9 +572,10 @@ class PersonServiceImplTest {
         dto16.setPosition(POSITION);
 
 
-        List<PersonDTO> list = Arrays.asList(
+        List<PersonDTO> list = new LinkedList<>();
+        list.addAll(Arrays.asList(
                 dto, dto1, dto2, dto3, dto4, dto5, dto6, dto7, dto8,
-                dto9, dto10, dto11, dto12, dto13, dto14, dto15, dto16);
+                dto9, dto10, dto11, dto12, dto13, dto14, dto15, dto16));
 
         assertThrows(NotAllRequiredFieldsPresentException.class,
                 () -> personService.update(list));
@@ -577,7 +586,7 @@ class PersonServiceImplTest {
         assertThrows(NotAllRequiredFieldsPresentException.class,
                 () -> personService.update(list));
         list.remove(dto4);
-        assertThrows(BlankNameException.class,
+        assertThrows(NotAllRequiredFieldsPresentException.class,
                 () -> personService.update(list));
         list.remove(dto5);
         assertThrows(NotAllRequiredFieldsPresentException.class,
@@ -586,7 +595,7 @@ class PersonServiceImplTest {
         assertThrows(NotAllRequiredFieldsPresentException.class,
                 () -> personService.update(list));
         list.remove(dto7);
-        assertThrows(BlankNameException.class,
+        assertThrows(NotAllRequiredFieldsPresentException.class,
                 () -> personService.update(list));
         list.remove(dto8);
         assertThrows(NotAllRequiredFieldsPresentException.class,
@@ -595,7 +604,7 @@ class PersonServiceImplTest {
         assertThrows(NotAllRequiredFieldsPresentException.class,
                 () -> personService.update(list));
         list.remove(dto10);
-        assertThrows(BlankNameException.class,
+        assertThrows(NotAllRequiredFieldsPresentException.class,
                 () -> personService.update(list));
         list.remove(dto11);
         assertThrows(NotAllRequiredFieldsPresentException.class,
@@ -604,7 +613,7 @@ class PersonServiceImplTest {
         assertThrows(NotAllRequiredFieldsPresentException.class,
                 () -> personService.update(list));
         list.remove(dto13);
-        assertThrows(BlankNameException.class,
+        assertThrows(NotAllRequiredFieldsPresentException.class,
                 () -> personService.update(list));
         list.remove(dto14);
         assertThrows(NullIdException.class,
@@ -744,6 +753,10 @@ class PersonServiceImplTest {
         dto2 = personService.add(dto2);
         assertTrue(personRepository.existsById(dto.getId()));
         assertTrue(personRepository.existsById(dto2.getId()));
+        //log.info
+        for (PersonEntity e : personRepository.findAll()) {
+            log.info(e.toString());
+        }
         List<PersonDTO> result = personService.getAll();
         assertNotNull(result);
         assertEquals(2, result.size());
@@ -810,6 +823,76 @@ class PersonServiceImplTest {
         assertNotEquals(dto2.getFirstname(), firstname);
 
         List<PersonDTO> result = personService.findAllByFirstname(firstname);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void findAllByLastname_Exist() {
+        dto = setFieldsAndSave();
+        log.info(dto.toString());
+        PersonDTO dto1 = new PersonDTO(dto);
+        dto1.setFirstname("firstname1");
+        dto1 = personService.add(dto1);
+        log.info(dto1.toString());
+        PersonDTO dto2 = new PersonDTO(dto);
+        dto2.setLastname("lastname2");
+        dto2 = personService.add(dto2);
+        log.info(dto2.toString());
+
+        //log.info
+        personRepository.findAll().forEach(e -> log.info(e.toString()));
+
+        List<PersonDTO> result = personService.findAllByLastname(dto.getLastname());
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertTrue(result.contains(dto));
+        assertTrue(result.contains(dto1));
+        assertFalse(result.contains(dto2));
+    }
+
+    @Test
+    void findAllByLastname_Blank() {
+        dto = setFieldsAndSave();
+        PersonDTO dto1 = new PersonDTO(dto);
+        dto1.setFirstname("firstname1");
+        dto1 = personService.add(dto1);
+        PersonDTO dto2 = new PersonDTO(dto);
+        dto2.setLastname("lastname2");
+        dto2 = personService.add(dto2);
+
+        List<PersonDTO> result = personService.findAllByLastname(null);
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        result = personService.findAllByLastname(Strings.EMPTY);
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        result = personService.findAllByLastname(" ");
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        result = personService.findAllByLastname("\t");
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void findAllByLastname_NotExist() {
+        dto = setFieldsAndSave();
+        PersonDTO dto1 = new PersonDTO(dto);
+        dto1.setFirstname("firstname1");
+        dto1 = personService.add(dto1);
+        PersonDTO dto2 = new PersonDTO(dto);
+        dto2.setLastname("lastname2");
+        dto2 = personService.add(dto2);
+
+        String lastname = "something";
+        assertFalse(Strings.isBlank(lastname));
+        assertNotEquals(dto.getLastname(), lastname);
+        assertNotEquals(dto1.getLastname(), lastname);
+        assertNotEquals(dto2.getLastname(), lastname);
+
+        List<PersonDTO> result = personService.findAllByLastname(lastname);
 
         assertNotNull(result);
         assertTrue(result.isEmpty());

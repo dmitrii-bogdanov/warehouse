@@ -17,7 +17,7 @@ public interface PersonRepository extends JpaRepository<PersonEntity, Long> {
     List<PersonEntity> findAllByPhoneNumber(String phoneNumber);
 
     //TODO Check what it does
-    List<PersonEntity> findAllByPhoneNumberStartingWith(String startWith);
+    List<PersonEntity> findAllByPhoneNumberContaining(String partialPhoneNumber);
 
     List<PersonEntity> findAllByFirstname(String firstname);
 
@@ -40,6 +40,12 @@ public interface PersonRepository extends JpaRepository<PersonEntity, Long> {
     List<PersonEntity> findAllByFirstnameAndPatronymicAndLastname(String firstname,
                                                                   String patronymic,
                                                                   String lastname);
+
+    List<PersonEntity> findAllByFirstnameAndLastname(String firstname, String lastname);
+
+    List<PersonEntity> findAllByFirstnameAndPatronymic(String firstname, String patronymic);
+
+    List<PersonEntity> findAllByLastnameAndPatronymic(String lastname, String patronymic);
 
     List<PersonEntity> findAllByPosition_NameEquals(String name);
 

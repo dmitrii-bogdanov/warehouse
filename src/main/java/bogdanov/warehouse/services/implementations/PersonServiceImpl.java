@@ -29,7 +29,14 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public PersonDTO add(PersonDTO person) {
         if (person.allRequiredFieldsPresent()) {
-            return mapper.convert(personRepository.save(mapper.convert(person)));
+            /*TODO check alternatives
+            *TODO implement additional convert() method
+            *TODO in mapper to add new records
+            */
+            PersonEntity entity = mapper.convert(person);
+            entity.setId(null);
+            return mapper.convert(personRepository.save(entity));
+//            return mapper.convert(personRepository.save(mapper.convert(person)));
         } else {
             throw new NotAllRequiredFieldsPresentException(
                     "Person firstname, lastname and date of birth should be present");
@@ -42,8 +49,13 @@ public class PersonServiceImpl implements PersonService {
         entities = persons
                 .stream()
                 .filter(PersonDTO::allRequiredFieldsPresent)
-                .distinct()
                 .map(mapper::convert)
+                //TODO check alternative
+                .map(e -> {
+                    e.setId(null);
+                    return e;
+                })
+                //
                 .toList();
         entities = personRepository.saveAll(entities);
         return entities.stream().map(mapper::convert).toList();
@@ -126,67 +138,128 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public List<PersonDTO> findAllByPatronymic(String patronymic) {
-        if (Strings.isBlank(patronymic)) {
+    public List<PersonDTO> findAllByBirthDate(LocalDate date) {
+        if (date == null) {
             return Collections.emptyList();
         }
-        return personRepository
-                .findAllByPatronymic(patronymic.toUpperCase(Locale.ROOT))
-                .stream().map(mapper::convert).toList();
-    }
-
-    @Override
-    public List<PersonDTO> findAllByBirthDate(LocalDate date) {
         return personRepository.findAllByBirthEquals(date)
                 .stream().map(mapper::convert).toList();
     }
 
     @Override
-    public List<PersonDTO> findAllOlderThan(int age) {
+    public List<PersonDTO> findAllOlderThan(Integer age) {
+        if (age == null) {
+            return Collections.emptyList();
+        }
         return personRepository.findAllByBirthBefore(LocalDate.now().minusYears(age))
                 .stream().map(mapper::convert).toList();
     }
 
     @Override
-    public List<PersonDTO> findAllYoungerThan(int age) {
+    public List<PersonDTO> findAllYoungerThan(Integer age) {
+        if (age == null) {
+            return Collections.emptyList();
+        }
         return personRepository.findAllByBirthAfter(LocalDate.now().minusYears(age))
                 .stream().map(mapper::convert).toList();
     }
 
     @Override
     public List<PersonDTO> findAllWithBirthDateBetween(LocalDate start, LocalDate end) {
-        return personRepository.findAllByBirthBetween(start, end)
-                .stream().map(mapper::convert).toList();
+        boolean isStartAbsent = start == null;
+        boolean isEndAbsent = end == null;
+        if (isStartAbsent && isEndAbsent) {
+            return Collections.emptyList();
+        }
+        List<PersonEntity> entities;
+        if (isStartAbsent) {
+            entities = personRepository.findAllByBirthBefore(end);
+        } else if (isEndAbsent) {
+            entities = personRepository.findAllByBirthAfter(start);
+        } else if (start.equals(end)) {
+            return findAllByBirthDate(start);
+        } else {
+            entities = personRepository.findAllByBirthBetween(start, end);
+        }
+        return entities.stream().map(mapper::convert).toList();
     }
 
     @Override
     public List<PersonDTO> findAllByPhoneNumber(String phoneNumber) {
+        if (Strings.isBlank(phoneNumber)) {
+            return Collections.emptyList();
+        }
         return personRepository.findAllByPhoneNumber(phoneNumber)
                 .stream().map(mapper::convert).toList();
     }
 
     @Override
-    public List<PersonDTO> findAllByPhoneNumberStartingWith(String startWith) {
-        return personRepository.findAllByPhoneNumberStartingWith(startWith)
+    public List<PersonDTO> findAllByPhoneNumberContaining(String partialPhoneNumber) {
+        if (Strings.isBlank(partialPhoneNumber)) {
+            return Collections.emptyList();
+        }
+        return personRepository.findAllByPhoneNumberContaining(partialPhoneNumber)
                 .stream().map(mapper::convert).toList();
     }
 
     @Override
     public List<PersonDTO> findAllByEmail(String email) {
+        if (Strings.isBlank(email)) {
+            return Collections.emptyList();
+        }
         return personRepository.findAllByEmail(email.toUpperCase(Locale.ROOT))
                 .stream().map(mapper::convert).toList();
     }
 
     @Override
     public List<PersonDTO> findAllByEmailContaining(String partialEmail) {
+        if (Strings.isBlank(partialEmail)) {
+            return Collections.emptyList();
+        }
         return personRepository.findAllByEmailContaining(partialEmail.toUpperCase(Locale.ROOT))
                 .stream().map(mapper::convert).toList();
     }
 
     @Override
     public List<PersonDTO> findAllByFullName(String firstname, String patronymic, String lastname) {
-        return personRepository
-                .findAllByFirstnameAndPatronymicAndLastname(firstname, patronymic, lastname)
-                .stream().map(mapper::convert).toList();
+        boolean isFirstnameBlank = Strings.isBlank(firstname);
+        boolean isLastnameBlank = Strings.isBlank(lastname);
+        boolean isPatronymicBlank = Strings.isBlank(patronymic);
+
+        List<PersonEntity> entities;
+
+        if (!isFirstnameBlank) {
+            firstname = firstname.toUpperCase(Locale.ROOT);
+        }
+        if (!isLastnameBlank) {
+            lastname = lastname.toUpperCase(Locale.ROOT);
+        }
+        if (!isPatronymicBlank) {
+            patronymic = patronymic.toUpperCase(Locale.ROOT);
+            if ("NULL".equals(patronymic)) {
+                patronymic = Strings.EMPTY;
+            }
+        }
+
+        if (isFirstnameBlank && isLastnameBlank && isPatronymicBlank) {
+            return Collections.emptyList();
+        }
+        if (isFirstnameBlank && isPatronymicBlank) {
+            entities = personRepository.findAllByLastname(lastname);
+        } else if (isLastnameBlank && isPatronymicBlank) {
+            entities = personRepository.findAllByFirstname(firstname);
+        } else if (isFirstnameBlank && isLastnameBlank) {
+            entities = personRepository.findAllByPatronymic(patronymic);
+        } else if (isPatronymicBlank) {
+            entities = personRepository.findAllByFirstnameAndLastname(firstname, lastname);
+        } else if (isFirstnameBlank) {
+            entities = personRepository.findAllByLastnameAndPatronymic(lastname, patronymic);
+        } else if (isLastnameBlank) {
+            entities = personRepository.findAllByFirstnameAndPatronymic(firstname, patronymic);
+        } else {
+            entities = personRepository.findAllByFirstnameAndLastnameAndPatronymic(firstname, lastname, patronymic);
+        }
+
+        return entities.stream().map(mapper::convert).toList();
     }
 }

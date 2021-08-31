@@ -15,8 +15,8 @@ public class PersonDTO {
 
     private Long id;
     private String firstname;
-    private String patronymic;
     private String lastname;
+    private String patronymic;
     private LocalDate birth;
     private String phoneNumber;
     private String email;
@@ -61,9 +61,10 @@ public class PersonDTO {
 
     public void setPatronymic(String patronymic) {
         if (Strings.isNotBlank(patronymic)) {
-            patronymic = patronymic.toUpperCase(Locale.ROOT);
+            this.patronymic = patronymic.toUpperCase(Locale.ROOT);
+        } else {
+            this.patronymic = Strings.EMPTY;
         }
-        this.patronymic = Strings.EMPTY;
     }
 
     public void setEmail(String email) {

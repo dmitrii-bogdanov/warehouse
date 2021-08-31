@@ -31,19 +31,17 @@ public interface PersonService {
 
     List<PersonDTO> findAllByLastname(String lastname);
 
-    List<PersonDTO> findAllByPatronymic(String patronymic);
-
     List<PersonDTO> findAllByBirthDate(LocalDate date);
 
-    List<PersonDTO> findAllOlderThan(int age);
+    List<PersonDTO> findAllOlderThan(Integer age);
 
-    List<PersonDTO> findAllYoungerThan(int age);
+    List<PersonDTO> findAllYoungerThan(Integer age);
 
     List<PersonDTO> findAllWithBirthDateBetween(LocalDate start, LocalDate end);
 
     List<PersonDTO> findAllByPhoneNumber(String phoneNumber);
 
-    List<PersonDTO> findAllByPhoneNumberStartingWith(String startWith);
+    List<PersonDTO> findAllByPhoneNumberContaining(String partialPhoneNumber);
 
     List<PersonDTO> findAllByEmail(String email);
 

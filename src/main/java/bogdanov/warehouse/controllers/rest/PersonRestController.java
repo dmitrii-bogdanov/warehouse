@@ -55,11 +55,6 @@ public class PersonRestController {
         return personService.findAllByLastname(lastname);
     }
 
-    @GetMapping(params = "patronymic")
-    public List<PersonDTO> findAllByPatronymic(@RequestParam String patronymic) {
-        return personService.findAllByPatronymic(patronymic);
-    }
-
     @GetMapping(params = {"firstname", "patronymic", "lastname"})
     public List<PersonDTO> findAllByFullName(@RequestParam String firstname,
                                              @RequestParam String patronymic,

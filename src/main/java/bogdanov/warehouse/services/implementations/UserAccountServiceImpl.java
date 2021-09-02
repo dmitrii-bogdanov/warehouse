@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.util.*;
 
+@Primary
 @Slf4j
 @RequiredArgsConstructor
 @Service
@@ -64,6 +66,7 @@ public class UserAccountServiceImpl implements UserAccountService {
             return mapper.convert(entity, UserAccountDTO.class);
         }
     }
+
 
     @Override
     public UserAccountDTO updatePassword(UserAccountWithPasswordDTO user) {
@@ -194,6 +197,12 @@ public class UserAccountServiceImpl implements UserAccountService {
     public List<UserAccountDTO> findAllByRole(String role) {
         return userRepository.findAllByRoles_NameEquals(role)
                 .stream().map(e -> mapper.convert(e, UserAccountDTO.class)).toList();
+    }
+
+    //TODO delete (for test)
+    @Override
+    public UserEntity getByIdWithoutNullCheck(Long id) {
+        return userRepository.getById(id);
     }
 
 }

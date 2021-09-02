@@ -33,6 +33,7 @@ public class PositionEntity {
         this.name = name;
     }
 
+    //TODO
 //    @Transient
 //    @OneToMany(mappedBy = "position", fetch = FetchType.LAZY)
 //    private Collection<PersonEntity> persons;

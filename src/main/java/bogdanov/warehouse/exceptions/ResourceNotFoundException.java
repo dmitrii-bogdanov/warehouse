@@ -2,7 +2,6 @@ package bogdanov.warehouse.exceptions;
 
 import java.util.Locale;
 
-//TODO
 public class ResourceNotFoundException extends RuntimeException {
 
     public ResourceNotFoundException(String message) {

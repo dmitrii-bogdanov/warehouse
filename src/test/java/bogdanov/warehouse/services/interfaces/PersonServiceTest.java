@@ -1,4 +1,4 @@
-package bogdanov.warehouse.services.implementations;
+package bogdanov.warehouse.services.interfaces;
 
 import bogdanov.warehouse.database.entities.PersonEntity;
 import bogdanov.warehouse.database.entities.PositionEntity;

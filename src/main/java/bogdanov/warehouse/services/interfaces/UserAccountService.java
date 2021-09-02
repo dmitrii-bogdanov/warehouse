@@ -1,5 +1,6 @@
 package bogdanov.warehouse.services.interfaces;
 
+import bogdanov.warehouse.database.entities.PersonEntity;
 import bogdanov.warehouse.database.entities.UserEntity;
 import bogdanov.warehouse.database.repositories.UserRepository;
 import bogdanov.warehouse.dto.UserAccountDTO;
@@ -44,4 +45,7 @@ public interface UserAccountService extends UserDetailsService {
     List<UserAccountDTO> findAllByRole(String role);
 
     UserAccountDTO delete(Long id);
+
+    //TODO delete (for test)
+    UserEntity getByIdWithoutNullCheck(Long id);
 }

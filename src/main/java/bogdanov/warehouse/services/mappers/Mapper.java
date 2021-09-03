@@ -17,6 +17,7 @@ public class Mapper {
     private final PositionMapper positionMapper;
     private final RecordMapper recordMapper;
     private final RecordTypeMapper recordTypeMapper;
+    private final ReverseRecordMapper reverseRecordMapper;
 
     //region RoleDTO <--> RoleEntity
     public RoleEntity convert(RoleDTO role) {
@@ -99,6 +100,12 @@ public class Mapper {
 
     public RecordTypeDTO convert(RecordTypeEntity recordType) {
         return recordTypeMapper.convert(recordType);
+    }
+    //endregion
+
+    //region ReverseRecordDTO <-- ReverseRecordEntity
+    public ReverseRecordDTO convert(ReverseRecordEntity reverseRecord) {
+        return reverseRecordMapper.convert(reverseRecord);
     }
     //endregion
 

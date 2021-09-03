@@ -4,6 +4,7 @@ import bogdanov.warehouse.database.entities.RecordEntity;
 import bogdanov.warehouse.dto.RecordDTO;
 import bogdanov.warehouse.dto.RecordInputDTO;
 import bogdanov.warehouse.dto.RecordOutputDTO;
+import bogdanov.warehouse.dto.ReverseRecordDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -38,5 +39,9 @@ public interface RecordService {
 
     List<RecordDTO> findAllByDateBetween(LocalDate start, LocalDate end);
 
-    RecordDTO delete(Long id);
+    RecordDTO revert(Long id, String username);
+
+    RecordDTO update(Long id, String username, RecordInputDTO record);
+
+    List<ReverseRecordDTO> getAllReverseRecords();
 }

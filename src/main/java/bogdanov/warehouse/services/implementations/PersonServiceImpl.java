@@ -6,7 +6,6 @@ import bogdanov.warehouse.database.repositories.UserRepository;
 import bogdanov.warehouse.dto.PersonDTO;
 import bogdanov.warehouse.exceptions.AlreadyRegisteredPersonException;
 import bogdanov.warehouse.exceptions.NotAllRequiredFieldsPresentException;
-import bogdanov.warehouse.exceptions.NullIdException;
 import bogdanov.warehouse.exceptions.ResourceNotFoundException;
 import bogdanov.warehouse.services.interfaces.PersonService;
 import bogdanov.warehouse.services.mappers.Mapper;
@@ -101,9 +100,6 @@ public class PersonServiceImpl implements PersonService {
 
     @Override
     public PersonEntity getEntityById(Long id) {
-        if (id == null) {
-            throw new NullIdException();
-        }
         Optional<PersonEntity> optionalEntity = personRepository.findById(id);
         if (optionalEntity.isPresent()) {
             return optionalEntity.get();

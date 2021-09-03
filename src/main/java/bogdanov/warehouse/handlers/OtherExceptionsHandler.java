@@ -1,6 +1,7 @@
 package bogdanov.warehouse.handlers;
 
 import bogdanov.warehouse.exceptions.*;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -21,7 +22,9 @@ public class OtherExceptionsHandler extends ResponseEntityExceptionHandler {
                     UsernameException.class,
                     AlreadyRecordedNameOrCodeException.class,
                     NomenclatureNotEnoughNumberAvailable.class,
-                    BlankCodeException.class
+                    BlankCodeException.class,
+                    InvalidDataAccessApiUsageException.class,
+                    IllegalArgumentException.class
             })
     protected ResponseEntity<String> handleException(RuntimeException e) {
         return new ResponseEntity(

@@ -44,18 +44,18 @@ public class RecordMapper {
     RecordDTO convert(RecordEntity record) {
         RecordOutputDTO dto = new RecordOutputDTO();
         dto.setId(record.getId());
-        dto.setNomenclature(nomenclatureMapper.convert(record.getNomenclature()));
+        dto.setNomenclatureId(record.getNomenclature().getId());
         dto.setType(record.getType().getName());
         dto.setAmount(record.getAmount());
         dto.setTime(record.getTime());
-        dto.setUser(userMapper.convert(record.getUser()));
+        dto.setUsername(record.getUser().getUsername());
         return dto;
     }
 
     RecordEntity convert(RecordOutputDTO record) {
         RecordEntity entity = new RecordEntity();
         entity.setId(record.getId());
-        entity.setNomenclature(nomenclatureRepository.getById(record.getNomenclature().getId()));
+        entity.setNomenclature(nomenclatureRepository.getById(record.getNomenclatureId()));
         entity.setType(recordTypeMapper.convert(recordTypeService.getByName(record.getType())));
         entity.setAmount(record.getAmount());
         entity.setTime(record.getTime());

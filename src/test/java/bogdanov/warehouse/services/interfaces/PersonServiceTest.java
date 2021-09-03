@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.LocalDate;
@@ -372,7 +373,7 @@ class PersonServiceTest {
     void updateDTO_NullIdAllFieldsCorrect() {
         dto = setFieldsAndSave();
         dto.setId(null);
-        assertThrows(NullIdException.class,
+        assertThrows(InvalidDataAccessApiUsageException.class,
                 () -> personService.update(dto));
     }
 
@@ -616,7 +617,7 @@ class PersonServiceTest {
         assertThrows(NotAllRequiredFieldsPresentException.class,
                 () -> personService.update(list));
         list.remove(dto14);
-        assertThrows(NullIdException.class,
+        assertThrows(InvalidDataAccessApiUsageException.class,
                 () -> personService.update(list));
         list.remove(dto15);
         assertThrows(ResourceNotFoundException.class,
@@ -654,7 +655,7 @@ class PersonServiceTest {
     @Test
     void deleteId_NullId() {
         dto = setFieldsAndSave();
-        assertThrows(NullIdException.class,
+        assertThrows(InvalidDataAccessApiUsageException.class,
                 () -> personService.delete(null));
     }
 
@@ -705,7 +706,7 @@ class PersonServiceTest {
     void getById_NullId() {
         dto = setFieldsAndSave();
         assertTrue(personRepository.existsById(dto.getId()));
-        assertThrows(NullIdException.class,
+        assertThrows(InvalidDataAccessApiUsageException.class,
                 () -> personService.getById(null));
     }
 
@@ -734,7 +735,7 @@ class PersonServiceTest {
     void getEntityById_NullId() {
         dto = setFieldsAndSave();
         assertTrue(personRepository.existsById(dto.getId()));
-        assertThrows(NullIdException.class,
+        assertThrows(InvalidDataAccessApiUsageException.class,
                 () -> personService.getEntityById(null));
     }
 

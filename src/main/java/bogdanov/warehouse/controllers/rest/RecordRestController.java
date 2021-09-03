@@ -3,6 +3,7 @@ package bogdanov.warehouse.controllers.rest;
 import bogdanov.warehouse.dto.RecordDTO;
 import bogdanov.warehouse.dto.RecordInputDTO;
 import bogdanov.warehouse.dto.RecordOutputDTO;
+import bogdanov.warehouse.dto.ReverseRecordDTO;
 import bogdanov.warehouse.services.interfaces.RecordService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -38,15 +39,19 @@ public class RecordRestController {
         return recordService.getById(id);
     }
 
-    //TODO add User
     @PostMapping
     public RecordDTO addRecord(@RequestBody RecordInputDTO record, Principal user) {
         return recordService.add(record, user.getName());
     }
 
     @DeleteMapping("/{id}")
-    public RecordDTO deleteRecord(@PathVariable Long id) {
-        return recordService.delete(id);
+    public RecordDTO revertRecord(@PathVariable Long id, Principal user) {
+        return recordService.revert(id, user.getName());
+    }
+
+    @PutMapping("/{id}")
+    public RecordDTO updateRecord(@PathVariable Long id, Principal user, @RequestBody RecordInputDTO record) {
+        return recordService.update(id, user.getName(), record);
     }
 
     @GetMapping("/reception")
@@ -115,4 +120,8 @@ public class RecordRestController {
         return recordService.findAllByDate(LocalDate.now());
     }
 
+    @GetMapping("/reverse")
+    public List<ReverseRecordDTO> getAllReverseRecords() {
+        return recordService.getAllReverseRecords();
+    }
 }

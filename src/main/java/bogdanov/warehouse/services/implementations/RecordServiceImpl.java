@@ -1,14 +1,12 @@
 package bogdanov.warehouse.services.implementations;
 
 import bogdanov.warehouse.database.entities.RecordEntity;
+import bogdanov.warehouse.database.entities.ReverseRecordEntity;
 import bogdanov.warehouse.database.repositories.RecordRepository;
+import bogdanov.warehouse.database.repositories.ReverseRecordRepository;
 import bogdanov.warehouse.database.repositories.UserRepository;
-import bogdanov.warehouse.dto.NomenclatureDTO;
-import bogdanov.warehouse.dto.RecordDTO;
-import bogdanov.warehouse.dto.RecordInputDTO;
-import bogdanov.warehouse.dto.RecordOutputDTO;
+import bogdanov.warehouse.dto.*;
 import bogdanov.warehouse.exceptions.IncorectRecordFieldsException;
-import bogdanov.warehouse.exceptions.NullIdException;
 import bogdanov.warehouse.exceptions.ProhibitedRemovingException;
 import bogdanov.warehouse.exceptions.ResourceNotFoundException;
 import bogdanov.warehouse.services.interfaces.RecordService;
@@ -33,41 +31,50 @@ public class RecordServiceImpl implements RecordService {
     private final RecordRepository recordRepository;
     private final Mapper mapper;
     private final NomenclatureServiceImpl nomenclatureService;
-    //TODO delete! For Test Only
     private final UserRepository userRepository;
     private final RecordTypeService recordTypeService;
+    private final ReverseRecordRepository reverseRecordRepository;
 
     @Override
     public RecordDTO add(RecordInputDTO record, String username) {
         RecordEntity entity = mapper.convert(record);
-        entity.setTime(LocalDateTime.now());
         entity.setUser(userRepository.findByUsername(username));
+        return mapper.convert(add(entity));
+    }
+
+    private RecordEntity add(RecordEntity entity) {
+        entity.setTime(LocalDateTime.now());
         NomenclatureDTO nomenclatureDTO = mapper.convert(entity.getNomenclature());
         nomenclatureDTO.setAmount(entity.getAmount());
         switch (entity.getType().getName()) {
             case "RECEPTION" -> nomenclatureService.addAmount(nomenclatureDTO);
             case "RELEASE" -> nomenclatureService.subtractAmount(nomenclatureDTO);
         }
-        return mapper.convert(recordRepository.save(entity));
+        return recordRepository.save(entity);
     }
 
     @Override
-    public RecordDTO delete(Long id) {
-        RecordEntity entity = getEntityById(id);
-        NomenclatureDTO nomenclatureDTO = mapper.convert(entity.getNomenclature());
-        nomenclatureDTO.setAmount(entity.getAmount());
-        switch (entity.getType().getName()) {
-            case "RECEPTION" -> nomenclatureService.subtractAmount(nomenclatureDTO);
-            case "RELEASE" -> nomenclatureService.addAmount(nomenclatureDTO);
+    public RecordDTO revert(Long id, String username) {
+        RecordEntity revertedRecord = getEntityById(id);
+        RecordEntity generatedRecord = new RecordEntity();
+        generatedRecord.setUser(userRepository.findByUsername(username));
+        generatedRecord.setNomenclature(revertedRecord.getNomenclature());
+        generatedRecord.setAmount(revertedRecord.getAmount());
+        switch (revertedRecord.getType().getName()) {
+            case "RECEPTION" -> generatedRecord.setType(recordTypeService.getEntityByName("RELEASE"));
+            case "RELEASE" -> generatedRecord.setType(recordTypeService.getEntityByName("RECEPTION"));
         }
+        generatedRecord = add(generatedRecord);
+        ReverseRecordEntity reverseRecord = new ReverseRecordEntity(
+                revertedRecord, generatedRecord, generatedRecord.getTime(), generatedRecord.getUser());
+        reverseRecordRepository.save(reverseRecord);
+        return mapper.convert(generatedRecord);
+    }
 
-        if (LocalDateTime.now().minusHours(24).compareTo(entity.getTime()) > 0) {
-            entity.setType(mapper.convert(recordTypeService.getByName("DELETED")));
-            entity = recordRepository.save(entity);
-        } else {
-            recordRepository.delete(entity);
-        }
-        return mapper.convert(entity);
+    @Override
+    public RecordDTO update(Long id, String username, RecordInputDTO record) {
+        revert(id, username);
+        return add(record, username);
     }
 
     @Override
@@ -124,10 +131,6 @@ public class RecordServiceImpl implements RecordService {
         return recordRepository.findAllByNomenclature_CodeEquals(nomenclatureCode).stream().map(mapper::convert).toList();
     }
 
-    private boolean filterDeletedRecords(RecordEntity entity) {
-        return !entity.getType().getName().equals("DELETED");
-    }
-
     @Override
     public RecordDTO getById(Long id) {
         return mapper.convert(getEntityById(id));
@@ -135,9 +138,6 @@ public class RecordServiceImpl implements RecordService {
 
     @Override
     public RecordEntity getEntityById(Long id) {
-        if (id == null) {
-            throw new NullIdException();
-        }
         Optional<RecordEntity> entity = recordRepository.findById(id);
         if (entity.isPresent()) {
             return entity.get();
@@ -156,5 +156,10 @@ public class RecordServiceImpl implements RecordService {
         return recordRepository.
                 findAllByTimeBetween(start.atStartOfDay(), end.atStartOfDay())
                 .stream().map(mapper::convert).toList();
+    }
+
+    @Override
+    public List<ReverseRecordDTO> getAllReverseRecords() {
+        return reverseRecordRepository.findAll().stream().map(mapper::convert).toList();
     }
 }

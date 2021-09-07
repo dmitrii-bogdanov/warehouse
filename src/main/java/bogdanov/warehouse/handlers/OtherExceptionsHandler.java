@@ -1,5 +1,6 @@
 package bogdanov.warehouse.handlers;
 
+import bogdanov.warehouse.dto.ExceptionDTO;
 import bogdanov.warehouse.exceptions.*;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpStatus;
@@ -26,18 +27,25 @@ public class OtherExceptionsHandler extends ResponseEntityExceptionHandler {
                     InvalidDataAccessApiUsageException.class,
                     IllegalArgumentException.class
             })
-    protected ResponseEntity<String> handleException(RuntimeException e) {
+    protected ResponseEntity<ExceptionDTO> handleException(RuntimeException e) {
         return new ResponseEntity(
-                e.getClass().getSimpleName() + " : " + e.getMessage(),
+                new ExceptionDTO(e, HttpStatus.BAD_REQUEST),
                 HttpStatus.BAD_REQUEST
         );
     }
 
     @ExceptionHandler(value = ResourceNotFoundException.class)
-    protected ResponseEntity<String> handleResourceNotFoundException(ResourceNotFoundException e) {
+    protected ResponseEntity<ExceptionDTO> handleResourceNotFoundException(ResourceNotFoundException e) {
         return new ResponseEntity(
-                e.getClass().getSimpleName() + " : " + e.getMessage(),
+                new ExceptionDTO(e),
                 HttpStatus.NOT_FOUND
         );
+    }
+
+    //TODO Change. Test only for now
+    @ExceptionHandler(value = RuntimeException.class)
+    protected ResponseEntity<ExceptionDTO> handleOther(RuntimeException e) {
+        ExceptionDTO exceptionDTO = new ExceptionDTO(e);
+        return new ResponseEntity(exceptionDTO, exceptionDTO.getStatus());
     }
 }

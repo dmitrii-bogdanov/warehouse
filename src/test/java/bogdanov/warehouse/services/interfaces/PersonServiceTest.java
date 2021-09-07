@@ -899,4 +899,183 @@ class PersonServiceTest {
         assertTrue(result.isEmpty());
     }
 
+    @Test
+    void findAllByBirthDate_Exist() {
+        dto = setFieldsAndSave();
+        assertTrue(personRepository.existsById(dto.getId()));
+        PersonDTO dto2 = new PersonDTO(dto);
+        dto2.setBirth(dto.getBirth().minusDays(34));
+        dto2 = personService.add(dto2);
+        assertTrue(personRepository.existsById(dto2.getId()));
+
+        List<PersonDTO> result = personService.findAllByBirthDate(dto.getBirth());
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertTrue(result.contains(dto));
+        assertFalse(result.contains(dto2));
+    }
+
+    @Test
+    void findAllByBirthDate_NotExist() {
+        dto = setFieldsAndSave();
+        assertTrue(personRepository.existsById(dto.getId()));
+        PersonDTO dto2 = new PersonDTO(dto);
+        dto2.setBirth(dto.getBirth().minusDays(34));
+        dto2 = personService.add(dto2);
+        assertTrue(personRepository.existsById(dto2.getId()));
+
+        LocalDate date = dto.getBirth().minusDays(1234);
+        assertEquals(0, personRepository.findAllByBirthEquals(date).size());
+
+        List<PersonDTO> result = personService.findAllByBirthDate(date);
+
+        assertNotNull(result);
+        assertEquals(0, result.size());
+    }
+
+    @Test
+    void findAllByBirthDate_Null() {
+        dto = setFieldsAndSave();
+        assertTrue(personRepository.existsById(dto.getId()));
+        PersonDTO dto2 = new PersonDTO(dto);
+        dto2.setBirth(dto.getBirth().minusDays(34));
+        dto2 = personService.add(dto2);
+        assertTrue(personRepository.existsById(dto2.getId()));
+
+        List<PersonDTO> result = personService.findAllByBirthDate(null);
+
+        assertNotNull(result);
+        assertEquals(0, result.size());
+    }
+
+    @Test
+    void findAllOlderThan_Exist() {
+        dto = setFieldsAndSave();
+        assertTrue(personRepository.existsById(dto.getId()));
+        PersonDTO dto2 = new PersonDTO(dto);
+        int diff = 22;
+        dto2.setBirth(dto.getBirth().minusYears(diff));
+        dto2 = personService.add(dto2);
+        assertTrue(personRepository.existsById(dto2.getId()));
+
+        List<PersonDTO> result = personService.findAllOlderThan(diff - 2);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertFalse(result.contains(dto));
+        assertTrue(result.contains(dto2));
+    }
+
+    @Test
+    void findAllOlderThan_NotExist() {
+        dto = setFieldsAndSave();
+        assertTrue(personRepository.existsById(dto.getId()));
+        PersonDTO dto2 = new PersonDTO(dto);
+        int diff = 22;
+        dto2.setBirth(dto.getBirth().minusYears(diff));
+        dto2 = personService.add(dto2);
+        assertTrue(personRepository.existsById(dto2.getId()));
+
+        Integer age = 50;
+        LocalDate date = LocalDate.now().minusYears(50);
+        assertEquals(0, personRepository.findAllByBirthBefore(date).size());
+
+        List<PersonDTO> result = personService.findAllOlderThan(age);
+
+        assertNotNull(result);
+        assertEquals(0, result.size());
+    }
+
+    @Test
+    void findAllOlderThan_Null() {
+        dto = setFieldsAndSave();
+        assertTrue(personRepository.existsById(dto.getId()));
+        PersonDTO dto2 = new PersonDTO(dto);
+        dto2.setBirth(dto.getBirth().minusYears(22));
+        dto2 = personService.add(dto2);
+        assertTrue(personRepository.existsById(dto2.getId()));
+
+        List<PersonDTO> result = personService.findAllOlderThan(null);
+
+        assertNotNull(result);
+        assertEquals(0, result.size());
+    }
+
+    @Test
+    void findAllYoungerThan_Exist() {
+        dto = setFieldsAndSave();
+        assertTrue(personRepository.existsById(dto.getId()));
+        PersonDTO dto2 = new PersonDTO(dto);
+        int diff = 22;
+        dto2.setBirth(dto.getBirth().minusYears(diff));
+        dto2 = personService.add(dto2);
+        assertTrue(personRepository.existsById(dto2.getId()));
+
+        List<PersonDTO> result = personService.findAllOlderThan(diff-2);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertTrue(result.contains(dto));
+        assertFalse(result.contains(dto2));
+    }
+
+    @Test
+    void findAllYoungerThan_NotExist() {
+        dto = setFieldsAndSave();
+        assertTrue(personRepository.existsById(dto.getId()));
+        personService.delete(dto.getId());
+        assertFalse(personRepository.existsById(dto.getId()));
+        PersonDTO dto2 = new PersonDTO(dto);
+        int diff = 22;
+        dto2.setBirth(dto.getBirth().minusYears(diff));
+        dto2 = personService.add(dto2);
+        assertTrue(personRepository.existsById(dto2.getId()));
+
+        List<PersonDTO> result = personService.findAllOlderThan(diff - 2);
+
+        assertNotNull(result);
+        assertEquals(0, result.size());
+    }
+
+    @Test
+    void findAllYoungerThan_Null() {
+        dto = setFieldsAndSave();
+        assertTrue(personRepository.existsById(dto.getId()));
+        PersonDTO dto2 = new PersonDTO(dto);
+        int diff = 22;
+        dto2.setBirth(dto.getBirth().minusYears(diff));
+        dto2 = personService.add(dto2);
+        assertTrue(personRepository.existsById(dto2.getId()));
+
+        List<PersonDTO> result = personService.findAllOlderThan(null);
+
+        assertNotNull(result);
+        assertEquals(0, result.size());
+    }
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

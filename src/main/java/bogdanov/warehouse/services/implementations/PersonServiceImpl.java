@@ -50,10 +50,7 @@ public class PersonServiceImpl implements PersonService {
                 .filter(PersonDTO::allRequiredFieldsPresent)
                 .map(mapper::convert)
                 //TODO check alternative
-                .map(e -> {
-                    e.setId(null);
-                    return e;
-                })
+                .peek(e -> e.setId(null))
                 //
                 .toList();
         entities = personRepository.saveAll(entities);

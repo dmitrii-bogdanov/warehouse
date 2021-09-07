@@ -16,3 +16,5 @@ public class ResourceNotFoundException extends RuntimeException {
         this(entity + " with " + field + " : " + value.toString() + " not found");
     }
 }
+
+//#EntityName with #FieldName : #FieldValue not found

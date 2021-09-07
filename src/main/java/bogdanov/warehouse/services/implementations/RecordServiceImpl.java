@@ -6,9 +6,7 @@ import bogdanov.warehouse.database.repositories.RecordRepository;
 import bogdanov.warehouse.database.repositories.ReverseRecordRepository;
 import bogdanov.warehouse.database.repositories.UserRepository;
 import bogdanov.warehouse.dto.*;
-import bogdanov.warehouse.exceptions.IncorectRecordFieldsException;
-import bogdanov.warehouse.exceptions.ProhibitedRemovingException;
-import bogdanov.warehouse.exceptions.ResourceNotFoundException;
+import bogdanov.warehouse.exceptions.*;
 import bogdanov.warehouse.services.interfaces.RecordService;
 import bogdanov.warehouse.services.interfaces.RecordTypeService;
 import bogdanov.warehouse.services.mappers.Mapper;
@@ -109,16 +107,13 @@ public class RecordServiceImpl implements RecordService {
 
     @Override
     public List<RecordDTO> findAllByNomenclatureId(Long nomenclatureId) {
-        if (nomenclatureId == null) {
-            return Collections.EMPTY_LIST;
-        }
         return recordRepository.findAllByNomenclature_Id(nomenclatureId).stream().map(mapper::convert).toList();
     }
 
     @Override
     public List<RecordDTO> findAllByNomenclatureName(String nomenclatureName) {
         if (Strings.isBlank(nomenclatureName)) {
-            return Collections.EMPTY_LIST;
+            throw new BlankNameException();
         }
         return recordRepository.findAllByNomenclature_NameEquals(nomenclatureName).stream().map(mapper::convert).toList();
     }
@@ -126,7 +121,7 @@ public class RecordServiceImpl implements RecordService {
     @Override
     public List<RecordDTO> findAllByNomenclatureCode(String nomenclatureCode) {
         if (Strings.isBlank(nomenclatureCode)) {
-            return Collections.EMPTY_LIST;
+            throw new BlankCodeException();
         }
         return recordRepository.findAllByNomenclature_CodeEquals(nomenclatureCode).stream().map(mapper::convert).toList();
     }

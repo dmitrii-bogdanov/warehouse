@@ -3,12 +3,9 @@ package bogdanov.warehouse.services.implementations;
 import bogdanov.warehouse.database.entities.RecordTypeEntity;
 import bogdanov.warehouse.database.repositories.RecordTypeRepository;
 import bogdanov.warehouse.dto.RecordTypeDTO;
-import bogdanov.warehouse.exceptions.BlankNameException;
-import bogdanov.warehouse.exceptions.NullIdException;
+import bogdanov.warehouse.exceptions.enums.ExceptionMessage;
 import bogdanov.warehouse.exceptions.ResourceNotFoundException;
 import bogdanov.warehouse.services.interfaces.RecordTypeService;
-import bogdanov.warehouse.services.mappers.Mapper;
-import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 
@@ -34,9 +31,6 @@ public class RecordTypeServiceImpl implements RecordTypeService {
 
     @Override
     public RecordTypeEntity getEntityById(Long id) {
-        if (id == null) {
-            throw new NullIdException();
-        }
         List<RecordTypeEntity> tmp = entities.values().stream().filter(e -> e.getId() == id).toList();
         if (!tmp.isEmpty()) {
             return tmp.get(0);
@@ -48,7 +42,8 @@ public class RecordTypeServiceImpl implements RecordTypeService {
     @Override
     public RecordTypeEntity getEntityByName(String name) {
         if (Strings.isBlank(name)) {
-            throw new BlankNameException(RecordTypeEntity.class);
+            throw new IllegalArgumentException(
+                    ExceptionMessage.BLANK_ENTITY_NAME.setEntity(RecordTypeEntity.class).getModifiedMessage());
         }
         name = name.toUpperCase(Locale.ROOT);
         if (entities.containsKey(name)) {

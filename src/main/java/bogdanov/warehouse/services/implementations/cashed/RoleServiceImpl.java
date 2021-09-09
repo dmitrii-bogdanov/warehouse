@@ -5,7 +5,7 @@ import bogdanov.warehouse.database.entities.RoleEntity;
 import bogdanov.warehouse.database.enums.Role;
 import bogdanov.warehouse.database.repositories.RoleRepository;
 import bogdanov.warehouse.dto.RoleDTO;
-import bogdanov.warehouse.exceptions.BlankNameException;
+import bogdanov.warehouse.exceptions.enums.ExceptionMessage;
 import bogdanov.warehouse.exceptions.ResourceNotFoundException;
 import bogdanov.warehouse.services.interfaces.RoleService;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ import java.util.*;
 @Service
 @Primary
 @Qualifier("repositoryWithMap")
-public class RoleServiceImplWithMap implements RoleService {
+public class RoleServiceImpl implements RoleService {
 
     private final RoleRepository roleRepository;
     private final Map<String, RoleEntity> entities = new HashMap<>();
@@ -48,7 +48,8 @@ public class RoleServiceImplWithMap implements RoleService {
     @Override
     public RoleEntity findEntityByName(String name) {
         if (Strings.isBlank(name)) {
-            throw new BlankNameException(RoleEntity.class);
+            throw new IllegalArgumentException(
+                    ExceptionMessage.BLANK_ENTITY_NAME.setEntity(RoleEntity.class).getModifiedMessage());
         }
         name = name.toUpperCase(Locale.ROOT);
         if (dto.containsKey(name)) {
@@ -76,7 +77,8 @@ public class RoleServiceImplWithMap implements RoleService {
     @Override
     public RoleDTO findByName(String name) {
         if (Strings.isBlank(name)) {
-            throw new BlankNameException(RoleEntity.class);
+            throw new IllegalArgumentException(
+                    ExceptionMessage.BLANK_ENTITY_NAME.setEntity(RoleEntity.class).getModifiedMessage());
         }
         name = name.toUpperCase(Locale.ROOT);
         if (dto.containsKey(name)) {

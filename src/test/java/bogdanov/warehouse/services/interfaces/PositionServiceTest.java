@@ -2,14 +2,12 @@ package bogdanov.warehouse.services.interfaces;
 
 import bogdanov.warehouse.database.repositories.PositionRepository;
 import bogdanov.warehouse.dto.PositionDTO;
-import bogdanov.warehouse.exceptions.BlankNameException;
 import org.apache.logging.log4j.util.Strings;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.core.parameters.P;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -88,16 +86,16 @@ class PositionServiceTest {
     @Test
     void addString_BlankName() {
         dto.setName(null);
-        assertThrows(BlankNameException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> positionService.add(dto.getName()));
         dto.setName(Strings.EMPTY);
-        assertThrows(BlankNameException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> positionService.add(dto.getName()));
         dto.setName(" ");
-        assertThrows(BlankNameException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> positionService.add(dto.getName()));
         dto.setName("\t");
-        assertThrows(BlankNameException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> positionService.add(dto.getName()));
     }
 
@@ -146,16 +144,16 @@ class PositionServiceTest {
     @Test
     void addDto_BlankName() {
         dto.setName(null);
-        assertThrows(BlankNameException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> positionService.add(dto));
         dto.setName(Strings.EMPTY);
-        assertThrows(BlankNameException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> positionService.add(dto));
         dto.setName(" ");
-        assertThrows(BlankNameException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> positionService.add(dto));
         dto.setName("\t");
-        assertThrows(BlankNameException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> positionService.add(dto));
     }
 

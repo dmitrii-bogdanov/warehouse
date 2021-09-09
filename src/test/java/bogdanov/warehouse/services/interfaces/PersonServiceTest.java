@@ -96,7 +96,7 @@ class PersonServiceTest {
         dto.setLastname(null);
         dto.setBirth(null);
         dto.setPosition(null);
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.add(dto));
     }
 
@@ -122,7 +122,7 @@ class PersonServiceTest {
         dto.setBirth(null);
         dto.setPosition(POSITION);
 
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.add(dto));
     }
 
@@ -133,7 +133,7 @@ class PersonServiceTest {
         dto.setBirth(DATE);
         dto.setPosition(POSITION);
 
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.add(dto));
     }
 
@@ -144,7 +144,7 @@ class PersonServiceTest {
         dto.setBirth(DATE);
         dto.setPosition(POSITION);
 
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.add(dto));
     }
 
@@ -155,7 +155,7 @@ class PersonServiceTest {
         dto.setBirth(DATE);
         dto.setPosition(null);
 
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.add(dto));
     }
 
@@ -265,43 +265,43 @@ class PersonServiceTest {
                 dto, dto1, dto2, dto3, dto4, dto5, dto6, dto7, dto8,
                 dto9, dto10, dto11, dto12, dto13, dto14, dto15));
 
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.add(list));
         list.remove(dto2);
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.add(list));
         list.remove(dto3);
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.add(list));
         list.remove(dto4);
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.add(list));
         list.remove(dto5);
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.add(list));
         list.remove(dto6);
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.add(list));
         list.remove(dto7);
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.add(list));
         list.remove(dto8);
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.add(list));
         list.remove(dto9);
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.add(list));
         list.remove(dto10);
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.add(list));
         list.remove(dto11);
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.add(list));
         list.remove(dto12);
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.add(list));
         list.remove(dto13);
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.add(list));
         list.remove(dto14);
 
@@ -401,16 +401,16 @@ class PersonServiceTest {
         dto = setFieldsAndSave();
 
         dto.setPosition(null);
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.update(dto));
         dto.setPosition(Strings.EMPTY);
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.update(dto));
         dto.setPosition(" ");
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.update(dto));
         dto.setPosition("\t");
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.update(dto));
     }
 
@@ -419,16 +419,16 @@ class PersonServiceTest {
         dto = setFieldsAndSave();
 
         dto.setLastname(null);
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.update(dto));
         dto.setLastname(Strings.EMPTY);
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.update(dto));
         dto.setLastname(" ");
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.update(dto));
         dto.setLastname("\t");
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.update(dto));
     }
 
@@ -437,16 +437,16 @@ class PersonServiceTest {
         dto = setFieldsAndSave();
 
         dto.setFirstname(null);
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.update(dto));
         dto.setFirstname(Strings.EMPTY);
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.update(dto));
         dto.setFirstname(" ");
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.update(dto));
         dto.setFirstname("\t");
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.update(dto));
     }
 
@@ -455,7 +455,7 @@ class PersonServiceTest {
         dto = setFieldsAndSave();
 
         dto.setBirth(null);
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.update(dto));
     }
 
@@ -578,43 +578,43 @@ class PersonServiceTest {
                 dto, dto1, dto2, dto3, dto4, dto5, dto6, dto7, dto8,
                 dto9, dto10, dto11, dto12, dto13, dto14, dto15, dto16));
 
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.update(list));
         list.remove(dto2);
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.update(list));
         list.remove(dto3);
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.update(list));
         list.remove(dto4);
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.update(list));
         list.remove(dto5);
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.update(list));
         list.remove(dto6);
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.update(list));
         list.remove(dto7);
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.update(list));
         list.remove(dto8);
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.update(list));
         list.remove(dto9);
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.update(list));
         list.remove(dto10);
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.update(list));
         list.remove(dto11);
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.update(list));
         list.remove(dto12);
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.update(list));
         list.remove(dto13);
-        assertThrows(NotAllRequiredFieldsPresentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> personService.update(list));
         list.remove(dto14);
         assertThrows(InvalidDataAccessApiUsageException.class,
@@ -679,7 +679,7 @@ class PersonServiceTest {
         user = userRepository.save(user);
         assertNotNull(user);
         assertTrue(userRepository.existsByPerson_Id(dto.getId()));
-        assertThrows(AlreadyRegisteredPersonException.class,
+        assertThrows(ProhibitedRemovingException.class,
                 () -> personService.delete(dto.getId()));
     }
 

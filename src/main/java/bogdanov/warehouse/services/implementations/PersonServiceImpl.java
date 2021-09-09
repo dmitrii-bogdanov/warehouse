@@ -4,16 +4,14 @@ import bogdanov.warehouse.database.entities.PersonEntity;
 import bogdanov.warehouse.database.repositories.PersonRepository;
 import bogdanov.warehouse.database.repositories.UserRepository;
 import bogdanov.warehouse.dto.PersonDTO;
-import bogdanov.warehouse.exceptions.AlreadyRegisteredPersonException;
-import bogdanov.warehouse.exceptions.NotAllRequiredFieldsPresentException;
-import bogdanov.warehouse.exceptions.ResourceNotFoundException;
+import bogdanov.warehouse.exceptions.*;
+import bogdanov.warehouse.exceptions.enums.ExceptionMessage;
 import bogdanov.warehouse.services.interfaces.PersonService;
 import bogdanov.warehouse.services.mappers.Mapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -27,7 +25,6 @@ public class PersonServiceImpl implements PersonService {
 
     @Override
     public PersonDTO add(PersonDTO person) {
-        if (person.allRequiredFieldsPresent()) {
             /*TODO check alternatives
             *TODO implement additional convert() method
             *TODO in mapper to add new records
@@ -36,10 +33,6 @@ public class PersonServiceImpl implements PersonService {
             entity.setId(null);
             return mapper.convert(personRepository.save(entity));
 //            return mapper.convert(personRepository.save(mapper.convert(person)));
-        } else {
-            throw new NotAllRequiredFieldsPresentException(
-                    "Person firstname, lastname and date of birth should be present");
-        }
     }
 
     @Override
@@ -83,7 +76,7 @@ public class PersonServiceImpl implements PersonService {
     public PersonDTO delete(Long id) {
         PersonEntity entity = getEntityById(id);
         if (userRepository.existsByPerson_Id(id)) {
-            throw new AlreadyRegisteredPersonException(id);
+            throw new ProhibitedRemovingException(ExceptionMessage.ALREADY_REGISTERED_PERSON.setId(id).getModifiedMessage());
         } else {
             personRepository.delete(entity);
             return mapper.convert(entity);

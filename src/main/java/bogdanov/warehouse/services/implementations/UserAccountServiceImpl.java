@@ -7,21 +7,18 @@ import bogdanov.warehouse.database.repositories.UserRepository;
 import bogdanov.warehouse.dto.UserAccountDTO;
 import bogdanov.warehouse.dto.UserAccountWithPasswordDTO;
 import bogdanov.warehouse.exceptions.*;
+import bogdanov.warehouse.exceptions.enums.ExceptionMessage;
 import bogdanov.warehouse.services.interfaces.PersonService;
-import bogdanov.warehouse.services.interfaces.RoleService;
 import bogdanov.warehouse.services.interfaces.UserAccountService;
 import bogdanov.warehouse.services.mappers.Mapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.util.*;
 
 @Primary
@@ -46,7 +43,8 @@ public class UserAccountServiceImpl implements UserAccountService {
         if (isUsernameAvailable(user.getUsername()) && isPasswordValid(user.getPassword())) {
             PersonEntity person = personService.getEntityById(user.getPersonId());
             if (userRepository.existsByPersonEquals(person)) {
-                throw new AlreadyRegisteredPersonException(user.getPersonId());
+                throw new IllegalArgumentException(
+                        ExceptionMessage.ALREADY_REGISTERED_PERSON.setId(user.getPersonId()).getModifiedMessage());
             } else {
                 UserEntity entity = mapper.convert(user);
                 entity.setPerson(person);
@@ -60,7 +58,7 @@ public class UserAccountServiceImpl implements UserAccountService {
     public UserAccountDTO delete(Long id) {
         UserEntity entity = getEntityById(id);
         if (recordRepository.existsByUser_Id(id)) {
-            throw new ProhibitedRemovingException("User has records");
+            throw new ProhibitedRemovingException(ExceptionMessage.USER_HAS_RECORDS.setId(id).getModifiedMessage());
         } else {
             userRepository.delete(entity);
             return mapper.convert(entity, UserAccountDTO.class);
@@ -70,9 +68,6 @@ public class UserAccountServiceImpl implements UserAccountService {
 
     @Override
     public UserAccountDTO updatePassword(UserAccountWithPasswordDTO user) {
-        if (user.getId() == null) {
-            throw new NullIdException();
-        }
         UserEntity entity = getEntityById(user.getId());
         if (isIdAndUsernameCorrect(user, entity)) {
             entity.setPassword(mapper.convert(user).getPassword());
@@ -106,21 +101,23 @@ public class UserAccountServiceImpl implements UserAccountService {
         if (entity.getUsername().equals(dto.getUsername())) {
             return true;
         } else {
-            throw new UsernameException("User id/username is incorrect");
+            throw new IllegalArgumentException(ExceptionMessage.ID_USERNAME_INCORRECT.getMessage());
         }
     }
 
     private boolean isUsernameAvailable(String username) {
         if (Strings.isBlank(username) || userRepository.existsByUsername(username)) {
-            throw new UsernameException("Username is already registered or blank");
+            throw new IllegalArgumentException(ExceptionMessage.ALREADY_REGISTERED_OR_BLANK_USERNAME.getMessage());
         }
         return true;
     }
 
     private boolean isPasswordValid(String password) {
         if (Strings.isBlank(password) || (password.length() < minPasswordLength)) {
-            throw new PasswordException(
-                    "Password is too short (min length : " + minPasswordLength + ") or blank");
+            throw new IllegalArgumentException(
+                    ExceptionMessage.NOT_VALID_PASSWORD
+                            .addComment("Password is too short (min length : " + minPasswordLength + ") or blank")
+                            .getModifiedMessage());
         }
         return true;
     }
@@ -137,9 +134,6 @@ public class UserAccountServiceImpl implements UserAccountService {
 
     @Override
     public UserAccountDTO setEnabled(Long id, boolean isEnabled) {
-        if (id == null) {
-            throw new NullIdException();
-        }
         UserEntity entity = getEntityById(id);
         entity.setEnabled(isEnabled);
         return mapper.convert(userRepository.save(entity), UserAccountDTO.class);
@@ -158,9 +152,6 @@ public class UserAccountServiceImpl implements UserAccountService {
 
     @Override
     public UserEntity getEntityById(Long id) {
-        if (id == null) {
-            throw new NullIdException();
-        }
         Optional<UserEntity> optionalEntity = userRepository.findById(id);
         if (optionalEntity.isPresent()) {
             return optionalEntity.get();
@@ -171,9 +162,6 @@ public class UserAccountServiceImpl implements UserAccountService {
 
     @Override
     public UserAccountDTO getByPersonId(Long personId) {
-        if (personId == null) {
-            throw new NullIdException();
-        }
         Optional<UserEntity> optionalEntity = userRepository.findByPerson_Id(personId);
         if (optionalEntity.isPresent()) {
             return mapper.convert(optionalEntity.get(), UserAccountDTO.class);

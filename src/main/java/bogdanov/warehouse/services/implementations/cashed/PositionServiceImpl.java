@@ -1,18 +1,17 @@
-package bogdanov.warehouse.services.implementations;
+package bogdanov.warehouse.services.implementations.cashed;
 
 import bogdanov.warehouse.database.entities.PositionEntity;
 import bogdanov.warehouse.database.repositories.PersonRepository;
 import bogdanov.warehouse.database.repositories.PositionRepository;
 import bogdanov.warehouse.dto.PositionDTO;
-import bogdanov.warehouse.exceptions.BlankNameException;
-import bogdanov.warehouse.exceptions.PositionIsInUseException;
+import bogdanov.warehouse.exceptions.ProhibitedRemovingException;
+import bogdanov.warehouse.exceptions.enums.ExceptionMessage;
 import bogdanov.warehouse.exceptions.ResourceNotFoundException;
 import bogdanov.warehouse.services.interfaces.PositionService;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -31,7 +30,8 @@ public class PositionServiceImpl implements PositionService {
     @Override
     public PositionDTO add(String name) {
         if (Strings.isBlank(name)) {
-            throw new BlankNameException(PositionEntity.class);
+            throw new IllegalArgumentException(
+                    ExceptionMessage.BLANK_ENTITY_NAME.setEntity(PositionEntity.class).getModifiedMessage());
         }
         positions.computeIfAbsent(name, n -> {
             PositionEntity entity = positionRepository.save(new PositionEntity(name));
@@ -76,7 +76,8 @@ public class PositionServiceImpl implements PositionService {
     @Override
     public PositionDTO getByName(String name) {
         if (Strings.isBlank(name)) {
-            throw new BlankNameException(PositionEntity.class);
+            throw new IllegalArgumentException(
+                    ExceptionMessage.BLANK_ENTITY_NAME.setEntity(PositionEntity.class).getModifiedMessage());
         }
         if (positions.containsKey(name)) {
             return positions.get(name);
@@ -93,11 +94,12 @@ public class PositionServiceImpl implements PositionService {
     @Override
     public void delete(String name) {
         if (Strings.isBlank(name)) {
-            throw new BlankNameException();
+            throw new IllegalArgumentException(ExceptionMessage.BLANK_NAME.getMessage());
         }
         name = name.toUpperCase(Locale.ROOT);
         if (personRepository.existsByPosition_NameEquals(name)) {
-            throw new PositionIsInUseException("name", name);
+            throw new ProhibitedRemovingException(
+                    ExceptionMessage.POSITION_IS_IN_USE.setFieldValue(name).getModifiedMessage());
         }
         positions.remove(name);
         positionRepository.deleteByName(name);

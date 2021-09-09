@@ -3,7 +3,6 @@ package bogdanov.warehouse.services.interfaces;
 import bogdanov.warehouse.database.entities.RoleEntity;
 import bogdanov.warehouse.database.repositories.RoleRepository;
 import bogdanov.warehouse.dto.RoleDTO;
-import bogdanov.warehouse.exceptions.BlankNameException;
 import bogdanov.warehouse.exceptions.ResourceNotFoundException;
 import bogdanov.warehouse.services.mappers.Mapper;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.repository.NoRepositoryBean;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -77,13 +75,13 @@ class RoleServiceTest {
     @Test
     void findByNameString_BlankName() {
         final String name = null;
-        assertThrows(BlankNameException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> roleService.findByName(name));
-        assertThrows(BlankNameException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> roleService.findByName(Strings.EMPTY));
-        assertThrows(BlankNameException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> roleService.findByName(" "));
-        assertThrows(BlankNameException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> roleService.findByName("\t"));
 
     }
@@ -135,13 +133,13 @@ class RoleServiceTest {
     @Test
     void findEntityByNameString_BlankName() {
         final String name = null;
-        assertThrows(BlankNameException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> roleService.findByName(name));
-        assertThrows(BlankNameException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> roleService.findByName(Strings.EMPTY));
-        assertThrows(BlankNameException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> roleService.findByName(" "));
-        assertThrows(BlankNameException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> roleService.findByName("\t"));
 
     }

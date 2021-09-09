@@ -2,7 +2,6 @@ package bogdanov.warehouse.services.interfaces;
 
 import bogdanov.warehouse.database.entities.NomenclatureEntity;
 import bogdanov.warehouse.dto.NomenclatureDTO;
-import bogdanov.warehouse.exceptions.NomenclatureException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -65,48 +64,33 @@ public interface NomenclatureService {
 
     boolean checkId(NomenclatureDTO dto);
 
-    boolean checkId(NomenclatureDTO dto, NomenclatureException e);
-
     NomenclatureEntity checkIdAndRetrieve(NomenclatureDTO dto);
 
-    NomenclatureEntity checkIdAndRetrieve(NomenclatureDTO dto, NomenclatureException e);
-
     boolean checkNameAvailability(NomenclatureDTO dto);
-
-    boolean checkNameAvailability(NomenclatureDTO dto, NomenclatureException e);
 
 
     boolean checkCodeAvailability(NomenclatureDTO dto);
 
-    boolean checkCodeAvailability(NomenclatureDTO dto, NomenclatureException e);
-
 
     boolean checkIdAndNamePair(NomenclatureDTO dto, NomenclatureEntity entity);
 
-    boolean checkIdAndNamePair(NomenclatureDTO dto, NomenclatureEntity entity, NomenclatureException e);
 
-//    List<NomenclatureDTO> checkIdAndName(List<NomenclatureDTO> nomenclature, NomenclatureException e);
 
 
     boolean checkIdAndCodePair(NomenclatureDTO dto, NomenclatureEntity entity);
 
-    boolean checkIdAndCodePair(NomenclatureDTO dto, NomenclatureEntity entity, NomenclatureException e);
 
-//    List<NomenclatureDTO> checkIdAndCodePair(List<NomenclatureDTO> nomenclature, NomenclatureException e);
 
 
     boolean checkAmount(NomenclatureDTO dto);
 
-    boolean checkAmount(NomenclatureDTO dto, NomenclatureException e);
 
 
     boolean checkAmountAvailability(NomenclatureDTO dto, NomenclatureEntity entity);
 
-    boolean checkAmountAvailability(NomenclatureDTO dto, NomenclatureEntity entity, NomenclatureException e);
 
     List<NomenclatureDTO> findAllByNameContainingAndCodeContaining(String name, String code);
 
-//    List<NomenclatureDTO> checkData(List<NomenclatureDTO nomenclature>);
 
     NomenclatureDTO delete(Long id);
 

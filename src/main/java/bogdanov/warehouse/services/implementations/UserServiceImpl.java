@@ -1,20 +1,15 @@
 package bogdanov.warehouse.services.implementations;
 
-import bogdanov.warehouse.database.entities.PersonEntity;
 import bogdanov.warehouse.database.entities.UserEntity;
 import bogdanov.warehouse.database.repositories.UserRepository;
 import bogdanov.warehouse.dto.UserDTO;
-import bogdanov.warehouse.exceptions.NullIdException;
 import bogdanov.warehouse.exceptions.ResourceNotFoundException;
-import bogdanov.warehouse.exceptions.UsernameException;
+import bogdanov.warehouse.exceptions.enums.ExceptionMessage;
 import bogdanov.warehouse.services.interfaces.PersonService;
 import bogdanov.warehouse.services.interfaces.UserService;
 import bogdanov.warehouse.services.mappers.Mapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -36,9 +31,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO getById(Long id) {
-        if (id == null) {
-            throw new NullIdException();
-        }
         Optional<UserEntity> entity = userRepository.findById(id);
         if (entity.isPresent()) {
             return mapper.convert(entity.get());
@@ -50,7 +42,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO getByUsername(String username) {
         if (Strings.isBlank(username)) {
-            throw new UsernameException("Username is blank");
+            throw new IllegalArgumentException(ExceptionMessage.BLANK_USERNAME.getMessage());
         }
         UserEntity entity = userRepository.findByUsername(username);
         if (entity != null) {
@@ -62,9 +54,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO getByPersonId(Long personId) {
-        if (personId == null) {
-            throw new NullIdException();
-        }
         Optional<UserEntity> entity = userRepository.findByPerson_Id(personId);
         if (entity.isPresent()) {
             return mapper.convert(entity.get());

@@ -1,11 +1,10 @@
 package bogdanov.warehouse.dto;
 
-import bogdanov.warehouse.exceptions.NotAllRequiredFieldsPresentException;
+import bogdanov.warehouse.exceptions.enums.ExceptionMessage;
 import lombok.*;
 import org.apache.logging.log4j.util.Strings;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Locale;
 
 @Data
@@ -29,8 +28,7 @@ public class PersonDTO {
                 && Strings.isNotBlank(position)) {
             return true;
         } else {
-            throw new NotAllRequiredFieldsPresentException(
-                    "Person firstname, lastname and date of birth should be present");
+            throw new IllegalArgumentException(ExceptionMessage.NOT_ALL_PERSON_REQUIRED_FIELDS.getMessage());
         }
     }
 

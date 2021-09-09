@@ -1,6 +1,6 @@
 package bogdanov.warehouse;
 
-import bogdanov.warehouse.exceptions.ExceptionMessage;
+import bogdanov.warehouse.exceptions.enums.ExceptionMessage;
 
 public class Temp {
 

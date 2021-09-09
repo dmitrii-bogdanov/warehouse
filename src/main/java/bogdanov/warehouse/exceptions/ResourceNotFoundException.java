@@ -1,6 +1,5 @@
 package bogdanov.warehouse.exceptions;
 
-import java.util.Locale;
 
 public class ResourceNotFoundException extends RuntimeException {
 

@@ -9,15 +9,11 @@ import java.util.List;
 @Service
 public interface PositionService {
 
-    PositionDTO add(String name);
+    PositionEntity add(String name);
 
     PositionDTO add(PositionDTO position);
 
     List<PositionDTO> add(List<PositionDTO> positions);
-
-    PositionDTO update(PositionDTO position);
-
-    List<PositionDTO> update(List<PositionDTO> positions);
 
     List<PositionDTO> getAll();
 
@@ -27,6 +23,8 @@ public interface PositionService {
 
     List<PositionDTO> findAllByNameContaining(String partialName);
 
-    void delete(String name);
+    PositionDTO delete(String name);
+
+    PositionDTO delete(Long id);
 
 }

@@ -49,4 +49,8 @@ public interface PersonService {
 
     List<PersonDTO> findAllByFullName(String firstname, String patronymic, String lastname);
 
+    List<PersonDTO> findAllByPosition(Long id);
+
+    List<PersonDTO> findAllByPosition(String position);
+
 }

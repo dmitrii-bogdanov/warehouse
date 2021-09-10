@@ -21,17 +21,6 @@ public class PersonDTO {
     private String email;
     private String position;
 
-    public boolean allRequiredFieldsPresent() {
-        if (Strings.isNotBlank(firstname)
-                && Strings.isNotBlank(lastname)
-                && birth != null
-                && Strings.isNotBlank(position)) {
-            return true;
-        } else {
-            throw new IllegalArgumentException(ExceptionMessage.NOT_ALL_PERSON_REQUIRED_FIELDS.getMessage());
-        }
-    }
-
     public PersonDTO(PersonDTO dto) {
         this.id = dto.id;
         this.firstname = dto.firstname;
@@ -41,42 +30,6 @@ public class PersonDTO {
         this.position = dto.position;
         this.phoneNumber = dto.phoneNumber;
         this.email = dto.email;
-    }
-
-    public void setFirstname(String firstname) {
-        if (firstname != null) {
-            firstname = firstname.toUpperCase(Locale.ROOT);
-        }
-        this.firstname = firstname;
-    }
-
-    public void setLastname(String lastname) {
-        if (lastname != null) {
-            lastname = lastname.toUpperCase(Locale.ROOT);
-        }
-        this.lastname = lastname;
-    }
-
-    public void setPatronymic(String patronymic) {
-        if (Strings.isNotBlank(patronymic)) {
-            this.patronymic = patronymic.toUpperCase(Locale.ROOT);
-        } else {
-            this.patronymic = Strings.EMPTY;
-        }
-    }
-
-    public void setEmail(String email) {
-        if (email != null) {
-            email = email.toUpperCase(Locale.ROOT);
-        }
-        this.email = email;
-    }
-
-    public void setPosition(String position) {
-        if (position != null) {
-            position = position.toUpperCase(Locale.ROOT);
-        }
-        this.position = position;
     }
 
 }

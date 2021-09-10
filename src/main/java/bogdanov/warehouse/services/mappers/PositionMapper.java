@@ -6,6 +6,8 @@ import bogdanov.warehouse.exceptions.enums.ExceptionMessage;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Component;
 
+import java.util.Locale;
+
 @Component
 public class PositionMapper {
 
@@ -14,7 +16,7 @@ public class PositionMapper {
             throw new IllegalArgumentException(
                     ExceptionMessage.BLANK_ENTITY_NAME.setEntity(PositionEntity.class).getModifiedMessage());
         }
-        return new PositionEntity(position.getId(), position.getName());
+        return new PositionEntity(position.getId(), position.getName().toUpperCase(Locale.ROOT));
     }
 
     PositionDTO convert(PositionEntity position) {

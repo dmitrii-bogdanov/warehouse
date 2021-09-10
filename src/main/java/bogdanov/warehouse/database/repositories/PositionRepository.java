@@ -11,12 +11,8 @@ import java.util.Optional;
 @Repository
 public interface PositionRepository extends JpaRepository<PositionEntity, Long> {
 
-    Optional<PositionEntity> findByName(String name);
+    Optional<PositionEntity> findByNameIgnoreCase(String name);
 
-    List<PositionEntity> findAllByNameContaining(String partialName);
+    List<PositionEntity> findAllByNameContainingIgnoreCase(String partialName);
 
-    boolean existsByName(String name);
-
-    @Transactional
-    void deleteByName(String name);
 }

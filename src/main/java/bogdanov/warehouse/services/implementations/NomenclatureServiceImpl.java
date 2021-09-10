@@ -15,10 +15,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.*;
 
 @Primary
 @Service
@@ -44,7 +41,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
     @Override
     public List<NomenclatureDTO> createNew(List<NomenclatureDTO> nomenclature) {
         try {
-            return nomenclatureRepository.saveAll(nomenclature.stream().map(mapper::convert).toList())
+            return nomenclatureRepository.saveAll(nomenclature.stream().filter(NomenclatureDTO::isNotEmpty).map(mapper::convert).toList())
                     .stream().map(mapper::convert).toList();
         } catch (DataIntegrityViolationException e) {
             throw explainException(e);

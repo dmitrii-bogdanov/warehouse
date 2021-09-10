@@ -29,5 +29,3 @@ public class ResourceNotFoundException extends RuntimeException {
         this(exceptionMessage.getModifiedMessage());
     }
 }
-
-//#EntityName with #FieldName : #FieldValue not found

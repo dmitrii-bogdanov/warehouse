@@ -10,6 +10,7 @@ import bogdanov.warehouse.exceptions.ResourceNotFoundException;
 import bogdanov.warehouse.services.interfaces.PositionService;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -19,16 +20,15 @@ import java.util.Map;
 
 @RequiredArgsConstructor
 @Service
-public class PositionServiceImpl implements PositionService {
+public class    PositionServiceImpl implements PositionService {
 
     private final PositionRepository positionRepository;
     private final PersonRepository personRepository;
     private final Map<String, PositionDTO> positions = new HashMap<>();
 
-    //Should call toUpperCase(...) for name before invoking this method
-    //or use through PositionDTO.getName()
     @Override
-    public PositionDTO add(String name) {
+    @Cacheable(value = "positions", key = "#name")
+    public PositionEntity add(String name) {
         if (Strings.isBlank(name)) {
             throw new IllegalArgumentException(
                     ExceptionMessage.BLANK_ENTITY_NAME.setEntity(PositionEntity.class).getModifiedMessage());
@@ -42,7 +42,8 @@ public class PositionServiceImpl implements PositionService {
 
     @Override
     public PositionDTO add(PositionDTO position) {
-        return add(position.getName());
+        PositionEntity entity = add(position.getName());
+        return new PositionDTO(entity.getId(), entity.getName());
     }
 
     @Override
@@ -50,27 +51,16 @@ public class PositionServiceImpl implements PositionService {
         return positions.stream().map(this::add).toList();
     }
 
-    //TODO make with unique
-    @Override
-    public PositionDTO update(PositionDTO position) {
-        return null;
-    }
-
-    @Override
-    public List<PositionDTO> update(List<PositionDTO> positions) {
-        return positions.stream().map(this::update).toList();
-    }
-
-    //TODO sort
     @Override
     public List<PositionDTO> getAll() {
-        return positions.values().stream().toList();
+        return positionRepository.findAll().stream().map(e -> new PositionDTO(e.getId(), e.getName())).toList();
     }
 
-    //TODO
     @Override
     public PositionDTO getById(Long id) {
-        return null;
+        PositionEntity entity = positionRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(POSITION, ID, id));
+        return new PositionDTO(entity.getId(), entity.getName());
     }
 
     @Override
@@ -79,29 +69,38 @@ public class PositionServiceImpl implements PositionService {
             throw new IllegalArgumentException(
                     ExceptionMessage.BLANK_ENTITY_NAME.setEntity(PositionEntity.class).getModifiedMessage());
         }
-        if (positions.containsKey(name)) {
-            return positions.get(name);
-        } else {
-            throw new ResourceNotFoundException("Position", "name", name);
-        }
+        PositionEntity entity = positionRepository.findByNameIgnoreCase(name)
+                .orElseThrow(() -> new ResourceNotFoundException(POSITION, NAME, name.toUpperCase(Locale.ROOT)));
+        return new PositionDTO(entity.getId(), entity.getName());
     }
 
     @Override
     public List<PositionDTO> findAllByNameContaining(String partialName) {
-        return positions.keySet().stream().filter(name -> name.contains(partialName)).map(positions::get).toList();
+        return positionRepository.findAllByNameContainingIgnoreCase(partialName)
+                .stream().map(e -> new PositionDTO(e.getId(), e.getName())).toList();
     }
 
     @Override
-    public void delete(String name) {
+    public PositionDTO delete(String name) {
         if (Strings.isBlank(name)) {
             throw new IllegalArgumentException(ExceptionMessage.BLANK_NAME.getMessage());
         }
-        name = name.toUpperCase(Locale.ROOT);
-        if (personRepository.existsByPosition_NameEquals(name)) {
+        return delete(positionRepository.findByNameIgnoreCase(name)
+                .orElseThrow(() -> new ResourceNotFoundException(POSITION, NAME, name.toUpperCase(Locale.ROOT))));
+    }
+
+    @Override
+    public PositionDTO delete(Long id) {
+        return delete(positionRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(POSITION, ID, id)));
+    }
+
+    private PositionDTO delete(PositionEntity entity) {
+        if (personRepository.existsByPosition_Id(entity.getId())) {
             throw new ProhibitedRemovingException(
-                    ExceptionMessage.POSITION_IS_IN_USE.setFieldValue(name).getModifiedMessage());
+                    ExceptionMessage.POSITION_IS_IN_USE.setFieldValue(entity.getName()).getModifiedMessage());
         }
-        positions.remove(name);
-        positionRepository.deleteByName(name);
+        positionRepository.delete(entity);
+        return new PositionDTO(entity.getId(), entity.getName());
     }
 }

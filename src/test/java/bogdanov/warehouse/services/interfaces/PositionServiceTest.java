@@ -1,5 +1,6 @@
 package bogdanov.warehouse.services.interfaces;
 
+import bogdanov.warehouse.database.entities.PositionEntity;
 import bogdanov.warehouse.database.repositories.PositionRepository;
 import bogdanov.warehouse.dto.PositionDTO;
 import org.apache.logging.log4j.util.Strings;
@@ -11,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -27,6 +29,8 @@ class PositionServiceTest {
     private List<PositionDTO> resultList;
     private PositionDTO dto;
     private PositionDTO result;
+    private PositionEntity resultEntity;
+    private List<PositionEntity> resultEntityList;
 
     @BeforeEach
     private void clear() {
@@ -38,23 +42,25 @@ class PositionServiceTest {
     private void initializeVariables() {
         dtoList = new LinkedList<>();
         resultList = null;
-        dto = new PositionDTO("admin");
+        dto = new PositionDTO(null, "admin");
         result = null;
+        resultEntity = null;
+        resultEntityList = null;
     }
 
     @Test
     void addString_FirstEntry() {
-        result = positionService.add(dto.getName());
+        resultEntity = positionService.add(dto.getName());
         assertNotNull(result);
         assertNotNull(result.getId());
         assertTrue(result.getId() > 0);
-        assertEquals(dto.getName(), result.getName());
+        assertEquals(dto.getName().toUpperCase(Locale.ROOT), result.getName());
     }
 
     @Test
     void addString_SecondEntryWithNotRegisteredName() {
         dtoList.add(dto);
-        dtoList.add(new PositionDTO("user"));
+        dtoList.add(new PositionDTO(null,"user"));
         assertNotEquals(dtoList.get(0).getName(), dtoList.get(1).getName());
         resultList = new LinkedList<>();
         resultList.add(positionService.add(dtoList.get(0).getName()));
@@ -73,14 +79,14 @@ class PositionServiceTest {
     @Test
     void addString_SecondEntryWithAlreadyRegistered() {
         dtoList.add(dto);
-        dtoList.add(new PositionDTO(dto.getName()));
+        dtoList.add(new PositionDTO(null, dto.getName()));
         assertEquals(dtoList.get(0).getName(), dtoList.get(1).getName());
-        resultList = new LinkedList<>();
-        resultList.add(positionService.add(dtoList.get(0).getName()));
-        resultList.add(positionService.add(dtoList.get(1).getName()));
-        assertNotNull(resultList.get(0));
-        assertNotNull(resultList.get(1));
-        assertEquals(resultList.get(0), resultList.get(1));
+        resultEntityList = new LinkedList<>();
+        resultEntityList.add(positionService.add(dtoList.get(0).getName()));
+        resultEntityList.add(positionService.add(dtoList.get(1).getName()));
+        assertNotNull(resultEntityList.get(0));
+        assertNotNull(resultEntityList.get(1));
+        assertEquals(resultEntityList.get(0), resultEntityList.get(1));
     }
 
     @Test
@@ -112,7 +118,7 @@ class PositionServiceTest {
     @Test
     void addDto_SecondEntryWithNotRegisteredName() {
         dtoList.add(dto);
-        dtoList.add(new PositionDTO("user"));
+        dtoList.add(new PositionDTO(null, "user"));
         assertNotEquals(dtoList.get(0).getName(), dtoList.get(1).getName());
         resultList = new LinkedList<>();
         resultList.add(positionService.add(dtoList.get(0)));
@@ -131,7 +137,7 @@ class PositionServiceTest {
     @Test
     void addDto_SecondEntryWithAlreadyRegistered() {
         dtoList.add(dto);
-        dtoList.add(new PositionDTO(dto.getName()));
+        dtoList.add(new PositionDTO(null, dto.getName()));
         assertEquals(dtoList.get(0).getName(), dtoList.get(1).getName());
         resultList = new LinkedList<>();
         resultList.add(positionService.add(dtoList.get(0)));
@@ -160,8 +166,8 @@ class PositionServiceTest {
     @Test
     void addListDto() {
         dtoList.add(dto);
-        dtoList.add(new PositionDTO("user"));
-        dtoList.add(new PositionDTO(dtoList.get(1).getName()));
+        dtoList.add(new PositionDTO(null, "user"));
+        dtoList.add(new PositionDTO(null, dtoList.get(1).getName()));
         assertNotEquals(dtoList.get(0).getName(), dtoList.get(1).getName());
         assertEquals(dtoList.get(1).getName(), dtoList.get(2).getName());
         resultList = positionService.add(dtoList);
@@ -182,9 +188,9 @@ class PositionServiceTest {
     @Test
     void getAll() {
         dtoList.add(dto);
-        dtoList.add(new PositionDTO("staff"));
-        dtoList.add(new PositionDTO(dtoList.get(1).getName()));
-        dtoList.add(new PositionDTO("user"));
+        dtoList.add(new PositionDTO(null, "staff"));
+        dtoList.add(new PositionDTO(null, dtoList.get(1).getName()));
+        dtoList.add(new PositionDTO(null,"user"));
         assertNotEquals(dtoList.get(0).getName(), dtoList.get(1).getName());
         assertEquals(dtoList.get(1).getName(), dtoList.get(2).getName());
         assertNotEquals(dtoList.get(0).getName(), dtoList.get(3).getName());

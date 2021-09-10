@@ -24,15 +24,9 @@ public class PositionRestController {
         return positionService.getAll();
     }
 
-    //TODO not working can't find List public constructor
     @PostMapping
     public List<PositionDTO> add(@RequestBody List<PositionDTO> positions) {
         return positionService.add(positions);
-    }
-
-    @PutMapping
-    public List<PositionDTO> update(@RequestBody List<PositionDTO> positions) {
-        return positionService.update(positions);
     }
 
     @GetMapping("/{id}")
@@ -40,9 +34,19 @@ public class PositionRestController {
         return positionService.getById(id);
     }
 
+    @DeleteMapping("/{id}")
+    public PositionDTO deleteById(@PathVariable Long id) {
+        return positionService.delete(id);
+    }
+
     @GetMapping(params = "name")
     public PositionDTO getByName(@RequestParam String name) {
         return positionService.getByName(name);
+    }
+
+    @DeleteMapping(params = "name")
+    public PositionDTO deleteByName(@RequestParam String name) {
+        return positionService.delete(name);
     }
 
     @GetMapping(params = {"search", "name"})

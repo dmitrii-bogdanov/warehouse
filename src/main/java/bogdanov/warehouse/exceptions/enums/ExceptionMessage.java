@@ -26,27 +26,19 @@ public enum ExceptionMessage {
     BLANK_USERNAME("Username value is missing", HttpStatus.BAD_REQUEST),
     USER_HAS_RECORDS("User with id : #ID has records", HttpStatus.BAD_REQUEST),
     NOMENCLATURE_HAS_RECORDS("Nomenclature with id : #ID has records", HttpStatus.BAD_REQUEST),
-    NOMENCLATURE_AMOUNT_IS_POSITIVE("Nomenclature with id : #ID amount is positive", HttpStatus.BAD_REQUEST);
+    NOMENCLATURE_AMOUNT_IS_POSITIVE("Nomenclature with id : #ID amount is positive", HttpStatus.BAD_REQUEST),
+    NO_PARAMETER_IS_PRESENT("No parameter is present", HttpStatus.BAD_REQUEST);
 
-    private String message;
+    private final String message;
+    private final HttpStatus status;
     private String modifiedMessage;
-    private HttpStatus status;
-
-    ExceptionMessage(String message) {
-        this.message = message;
-    }
 
     ExceptionMessage(String message, HttpStatus status) {
         this.message = message;
         this.status = status;
     }
 
-//    ExceptionMessage(String message, HttpStatus status) {
-//        this.message = message;
-//        this.status = status;
-//    }
-
-    public ExceptionMessage setId(long id) {
+    public synchronized ExceptionMessage setId(long id) {
         if (modifiedMessage == null) {
             modifiedMessage = message;
         }
@@ -54,7 +46,7 @@ public enum ExceptionMessage {
         return this;
     }
 
-    public ExceptionMessage setEntity(String entity) {
+    public synchronized ExceptionMessage setEntity(String entity) {
         if (modifiedMessage == null) {
             modifiedMessage = message;
         }
@@ -62,11 +54,11 @@ public enum ExceptionMessage {
         return this;
     }
 
-    public ExceptionMessage setEntity(Class entity) {
+    public synchronized ExceptionMessage setEntity(Class entity) {
         return setEntity(entity.getSimpleName().replace("Entity", ""));
     }
 
-    public ExceptionMessage setFieldName(String field) {
+    public synchronized ExceptionMessage setFieldName(String field) {
         if (modifiedMessage == null) {
             modifiedMessage = message;
         }
@@ -74,7 +66,7 @@ public enum ExceptionMessage {
         return this;
     }
 
-    public ExceptionMessage setFieldValue(Object fieldValue) {
+    public synchronized ExceptionMessage setFieldValue(Object fieldValue) {
         if (modifiedMessage == null) {
             modifiedMessage = message;
         }
@@ -82,7 +74,7 @@ public enum ExceptionMessage {
         return this;
     }
 
-    public ExceptionMessage addComment(String comment) {
+    public synchronized ExceptionMessage addComment(String comment) {
         if (modifiedMessage == null) {
             modifiedMessage = message;
         }
@@ -94,7 +86,7 @@ public enum ExceptionMessage {
         return message;
     }
 
-    public String getModifiedMessage() {
+    public synchronized String getModifiedMessage() {
         if (modifiedMessage == null) {
             return message;
         } else {

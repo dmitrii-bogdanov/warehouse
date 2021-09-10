@@ -16,9 +16,7 @@ public class NomenclatureMapper {
                 nomenclature.getId(),
                 nomenclature.getName(),
                 nomenclature.getCode(),
-                nomenclature.getAmount())
-
-                : new NomenclatureDTO();
+                nomenclature.getAmount());
     }
 
     NomenclatureEntity convert(NomenclatureDTO nomenclature) {

@@ -9,25 +9,32 @@ import java.util.List;
 
 @Repository
 public interface PersonRepository extends JpaRepository<PersonEntity, Long> {
-    List<PersonEntity> findAllByEmail(String email);
+
+    List<PersonEntity> findAllByEmailIgnoreCase(String email);
 
     //TODO Check what it does
-    List<PersonEntity> findAllByEmailContaining(String partialEmail);
+    List<PersonEntity> findAllByEmailContainingIgnoreCase(String partialEmail);
 
     List<PersonEntity> findAllByPhoneNumber(String phoneNumber);
 
     //TODO Check what it does
     List<PersonEntity> findAllByPhoneNumberContaining(String partialPhoneNumber);
 
-    List<PersonEntity> findAllByFirstname(String firstname);
+    List<PersonEntity> findAllByFirstnameIgnoreCase(String firstname);
 
-    List<PersonEntity> findAllByLastname(String lastname);
+    List<PersonEntity> findAllByLastnameIgnoreCase(String lastname);
 
-    List<PersonEntity> findAllByPatronymic(String patronymic);
+    List<PersonEntity> findAllByPatronymicIgnoreCase(String patronymic);
 
-    List<PersonEntity> findAllByFirstnameAndLastnameAndPatronymic(String firstname,
-                                                                  String lastname,
-                                                                  String patronymic);
+    List<PersonEntity> findAllByFirstnameIgnoreCaseAndLastnameIgnoreCaseAndPatronymicIgnoreCase(String firstname,
+                                                                                                String lastname,
+                                                                                                String patronymic);
+
+    List<PersonEntity> findAllByFirstnameIgnoreCaseAndLastnameIgnoreCase(String firstname, String lastname);
+
+    List<PersonEntity> findAllByFirstnameIgnoreCaseAndPatronymicIgnoreCase(String firstname, String patronymic);
+
+    List<PersonEntity> findAllByLastnameIgnoreCaseAndPatronymicIgnoreCase(String lastname, String patronymic);
 
     List<PersonEntity> findAllByBirthEquals(LocalDate date);
 
@@ -37,18 +44,10 @@ public interface PersonRepository extends JpaRepository<PersonEntity, Long> {
 
     List<PersonEntity> findAllByBirthBetween(LocalDate start, LocalDate end);
 
-    List<PersonEntity> findAllByFirstnameAndPatronymicAndLastname(String firstname,
-                                                                  String patronymic,
-                                                                  String lastname);
+    List<PersonEntity> findAllByPosition_NameEqualsIgnoreCase(String name);
 
-    List<PersonEntity> findAllByFirstnameAndLastname(String firstname, String lastname);
+    List<PersonEntity> findAllByPosition_Id(Long id);
 
-    List<PersonEntity> findAllByFirstnameAndPatronymic(String firstname, String patronymic);
-
-    List<PersonEntity> findAllByLastnameAndPatronymic(String lastname, String patronymic);
-
-    List<PersonEntity> findAllByPosition_NameEquals(String name);
-
-    boolean existsByPosition_NameEquals(String name);
+    boolean existsByPosition_Id(Long id);
 
 }

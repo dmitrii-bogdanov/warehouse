@@ -2,12 +2,16 @@ package bogdanov.warehouse.services.mappers;
 
 import bogdanov.warehouse.database.entities.NomenclatureEntity;
 import bogdanov.warehouse.dto.NomenclatureDTO;
-import org.apache.logging.log4j.util.Strings;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 //TODO
 @Component
+@RequiredArgsConstructor
 public class NomenclatureMapper {
+
+    private final ObjectMapper objectMapper;
 
     NomenclatureDTO convert(NomenclatureEntity nomenclature) {
         return nomenclature != null

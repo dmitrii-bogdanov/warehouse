@@ -18,15 +18,4 @@ public class PersonDTO {
     private String email;
     private String position;
 
-    public PersonDTO(PersonDTO dto) {
-        this.id = dto.id;
-        this.firstname = dto.firstname;
-        this.lastname = dto.lastname;
-        this.patronymic = dto.patronymic;
-        this.birth = dto.birth;
-        this.position = dto.position;
-        this.phoneNumber = dto.phoneNumber;
-        this.email = dto.email;
-    }
-
 }

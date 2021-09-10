@@ -50,21 +50,6 @@ public class NomenclatureEntity {
         return false;
     }
 
-    public void setName(String name) {
-        if (Strings.isBlank(name)) {
-            this.name = null;
-        }
-        this.name = name.toUpperCase(Locale.ROOT);
-    }
-
-    public void setCode(String code) {
-        if (Strings.isBlank(code)) {
-            this.code = null;
-        } else {
-            this.code = code.toUpperCase(Locale.ROOT);
-        }
-    }
-
     public void setAmount(Long amount) {
         if (amount != null) {
             this.amount = amount;

@@ -10,13 +10,18 @@ import java.util.Optional;
 @Repository
 public interface NomenclatureRepository extends JpaRepository<NomenclatureEntity, Long> {
 
-    Optional<NomenclatureEntity> findByCode(String code);
+    Optional<NomenclatureEntity> findByCodeIgnoreCase(String code);
 
-    Optional<NomenclatureEntity> findByName(String name);
+    Optional<NomenclatureEntity> findByNameIgnoreCase(String name);
 
-    List<NomenclatureEntity> findAllByCode(String code);
+    List<NomenclatureEntity> findAllByCodeIsNull();
 
-    List<NomenclatureEntity> findAllByNameContaining(String partialName);
+    List<NomenclatureEntity> findAllByNameContainingIgnoreCase(String partialName);
+
+    List<NomenclatureEntity> findAllByCodeContainingIgnoreCase(String partialCode);
+
+    List<NomenclatureEntity> findAllByNameContainingIgnoreCaseAndCodeIsNull(String partialName);
+    List<NomenclatureEntity> findAllByNameContainingIgnoreCaseAndCodeContainingIgnoreCase(String partialName, String partialCode);
 
     List<NomenclatureEntity> findAllByAmountGreaterThanEqual(long amount);
 
@@ -26,7 +31,4 @@ public interface NomenclatureRepository extends JpaRepository<NomenclatureEntity
 
     List<NomenclatureEntity> findAllByAmountEquals(long amount);
 
-    List<NomenclatureEntity> findAllByCodeContaining(String partialCode);
-
-    List<NomenclatureEntity> findAllByNameContainingAndCodeContaining(String partialName, String partialCode);
 }

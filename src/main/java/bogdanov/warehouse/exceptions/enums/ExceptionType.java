@@ -3,6 +3,8 @@ package bogdanov.warehouse.exceptions.enums;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
+import java.util.Locale;
+
 @Getter
 public enum ExceptionType {
 
@@ -27,7 +29,9 @@ public enum ExceptionType {
     USER_HAS_RECORDS("User with id : #ID has records", HttpStatus.BAD_REQUEST),
     NOMENCLATURE_HAS_RECORDS("Nomenclature with id : #ID has records", HttpStatus.BAD_REQUEST),
     NOMENCLATURE_AMOUNT_IS_POSITIVE("Nomenclature with id : #ID amount is positive", HttpStatus.BAD_REQUEST),
-    NO_PARAMETER_IS_PRESENT("No parameter is present", HttpStatus.BAD_REQUEST);
+    NO_PARAMETER_IS_PRESENT("No parameter is present", HttpStatus.BAD_REQUEST),
+    LIST_CONTAINS_REPEATING_VALUES("Sent list contains repeating #FIELD_NAMEs", HttpStatus.BAD_REQUEST),
+    RESERVED_VALUE("Value of #FIELD_NAME : \"#FIELD_VALUE\" is reserved", HttpStatus.BAD_REQUEST);
 
     private final String message;
     private final HttpStatus status;

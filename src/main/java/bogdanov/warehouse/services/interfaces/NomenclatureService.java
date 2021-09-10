@@ -14,8 +14,6 @@ public interface NomenclatureService {
 
     List<NomenclatureDTO> createNew(List<NomenclatureDTO> nomenclature);
 
-    List<NomenclatureDTO> createNew(NomenclatureDTO[] nomenclature);
-
     NomenclatureDTO getById(Long id);
 
     NomenclatureEntity getEntityById(Long id);

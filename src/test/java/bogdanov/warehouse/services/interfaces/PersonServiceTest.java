@@ -9,6 +9,7 @@ import bogdanov.warehouse.dto.PersonDTO;
 import bogdanov.warehouse.dto.UserAccountDTO;
 import bogdanov.warehouse.exceptions.*;
 import bogdanov.warehouse.services.interfaces.PersonService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.aspectj.lang.annotation.Before;
@@ -40,6 +41,8 @@ class PersonServiceTest {
     private PersonRepository personRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @BeforeEach
     private void clear() {
@@ -62,6 +65,10 @@ class PersonServiceTest {
         dto = new PersonDTO();
         result = null;
         entity = new PersonEntity();
+    }
+
+    private PersonDTO clone(PersonDTO dto) {
+        return objectMapper.convertValue(dto, PersonDTO.class);
     }
 
     @Test
@@ -462,7 +469,7 @@ class PersonServiceTest {
     @Test
     void updateDtoList() {
         dto = setFieldsAndSave();
-        PersonDTO anotherDto = new PersonDTO(dto);
+        PersonDTO anotherDto = clone(dto);
         anotherDto.setId(null);
         anotherDto = personService.add(anotherDto);
         //ok
@@ -480,92 +487,92 @@ class PersonServiceTest {
         dto1.setBirth(LocalDate.now());
         dto1.setPosition("position1");
         //not ok
-        PersonDTO dto2 = new PersonDTO(dto);
+        PersonDTO dto2 = clone(dto);
         dto2.setFirstname("firstname2");
         dto2.setLastname("lastname2");
         dto2.setBirth(null);
         dto2.setPosition("position2");
         //not ok
-        PersonDTO dto3 = new PersonDTO(dto);
+        PersonDTO dto3 = clone(dto);
         dto3.setFirstname("firstname3");
         dto3.setLastname(null);
         dto3.setBirth(LocalDate.now());
         dto3.setPosition("position3");
         //not ok
-        PersonDTO dto4 = new PersonDTO(dto);
+        PersonDTO dto4 = clone(dto);
         dto4.setFirstname(null);
         dto4.setLastname("lastname6");
         dto4.setBirth(LocalDate.now());
         dto4.setPosition("position6");
         //not ok
-        PersonDTO dto5 = new PersonDTO(dto);
+        PersonDTO dto5 = clone(dto);
         dto5.setFirstname("firstname4");
         dto5.setLastname("lastname4");
         dto5.setBirth(LocalDate.now());
         dto5.setPosition(null);
         //not ok
-        PersonDTO dto6 = new PersonDTO(dto);
+        PersonDTO dto6 = clone(dto);
         dto6.setFirstname(Strings.EMPTY);
         dto6.setLastname("lastname6");
         dto6.setBirth(LocalDate.now());
         dto6.setPosition("position6");
         //not ok
-        PersonDTO dto7 = new PersonDTO(dto);
+        PersonDTO dto7 = clone(dto);
         dto7.setFirstname("firstname3");
         dto7.setLastname(Strings.EMPTY);
         dto7.setBirth(LocalDate.now());
         dto7.setPosition("position3");
         //not ok
-        PersonDTO dto8 = new PersonDTO(dto);
+        PersonDTO dto8 = clone(dto);
         dto8.setFirstname("firstname4");
         dto8.setLastname("lastname4");
         dto8.setBirth(LocalDate.now());
         dto8.setPosition(Strings.EMPTY);
         //not ok
-        PersonDTO dto9 = new PersonDTO(dto);
+        PersonDTO dto9 = clone(dto);
         dto9.setFirstname(" ");
         dto9.setLastname("lastname6");
         dto9.setBirth(LocalDate.now());
         dto9.setPosition("position6");
         //not ok
-        PersonDTO dto10 = new PersonDTO(dto);
+        PersonDTO dto10 = clone(dto);
         dto10.setFirstname("firstname3");
         dto10.setLastname(" ");
         dto10.setBirth(LocalDate.now());
         dto10.setPosition("position3");
         //not ok
-        PersonDTO dto11 = new PersonDTO(dto);
+        PersonDTO dto11 = clone(dto);
         dto11.setFirstname("firstname4");
         dto11.setLastname("lastname4");
         dto11.setBirth(LocalDate.now());
         dto11.setPosition(" ");
         //not ok
-        PersonDTO dto12 = new PersonDTO(dto);
+        PersonDTO dto12 = clone(dto);
         dto12.setFirstname("\t");
         dto12.setLastname("lastname6");
         dto12.setBirth(LocalDate.now());
         dto12.setPosition("position6");
         //not ok
-        PersonDTO dto13 = new PersonDTO(dto);
+        PersonDTO dto13 = clone(dto);
         dto13.setFirstname("firstname3");
         dto13.setLastname("\t");
         dto13.setBirth(LocalDate.now());
         dto13.setPosition("position3");
         //not ok
-        PersonDTO dto14 = new PersonDTO(dto);
+        PersonDTO dto14 = clone(dto);
         dto14.setFirstname("firstname4");
         dto14.setLastname("lastname4");
         dto14.setBirth(LocalDate.now());
         dto14.setPosition("\t");
         //not ok
-        PersonDTO dto15 = new PersonDTO(dto);
+        PersonDTO dto15 = clone(dto);
         dto15.setId(null);
         dto15.setFirstname(FIRSTNAME);
         dto15.setLastname(LASTNAME);
         dto15.setBirth(DATE);
         dto15.setPosition(POSITION);
         //not ok
-        PersonDTO dto16 = new PersonDTO(dto);
+        PersonDTO dto16 = clone(dto);
         dto16.setId(dto16.getId() + 355532);
         dto16.setFirstname(FIRSTNAME);
         dto16.setLastname(LASTNAME);
@@ -742,7 +749,7 @@ class PersonServiceTest {
     @Test
     void getAll() {
         dto = setFieldsAndSave();
-        PersonDTO dto2 = new PersonDTO(dto);
+        PersonDTO dto2 = clone(dto);
         dto2.setId(null);
         dto2.setFirstname("firstname2");
         dto2.setLastname("lastname2");
@@ -768,10 +775,10 @@ class PersonServiceTest {
     @Test
     void findAllByFirstname_Exist() {
         dto = setFieldsAndSave();
-        PersonDTO dto1 = new PersonDTO(dto);
+        PersonDTO dto1 = clone(dto);
         dto1.setLastname("lastname1");
         dto1 = personService.add(dto1);
-        PersonDTO dto2 = new PersonDTO(dto);
+        PersonDTO dto2 = clone(dto);
         dto2.setFirstname("firstname2");
         dto2 = personService.add(dto2);
 
@@ -786,10 +793,10 @@ class PersonServiceTest {
     @Test
     void findAllByFirstname_Blank() {
         dto = setFieldsAndSave();
-        PersonDTO dto1 = new PersonDTO(dto);
+        PersonDTO dto1 = clone(dto);
         dto1.setLastname("lastname1");
         dto1 = personService.add(dto1);
-        PersonDTO dto2 = new PersonDTO(dto);
+        PersonDTO dto2 = clone(dto);
         dto2.setFirstname("firstname2");
         dto2 = personService.add(dto2);
 
@@ -810,10 +817,10 @@ class PersonServiceTest {
     @Test
     void findAllByFirstname_NotExist() {
         dto = setFieldsAndSave();
-        PersonDTO dto1 = new PersonDTO(dto);
+        PersonDTO dto1 = clone(dto);
         dto1.setLastname("lastname1");
         dto1 = personService.add(dto1);
-        PersonDTO dto2 = new PersonDTO(dto);
+        PersonDTO dto2 = clone(dto);
         dto2.setFirstname("firstname2");
         dto2 = personService.add(dto2);
 
@@ -833,11 +840,11 @@ class PersonServiceTest {
     void findAllByLastname_Exist() {
         dto = setFieldsAndSave();
         log.info(dto.toString());
-        PersonDTO dto1 = new PersonDTO(dto);
+        PersonDTO dto1 = clone(dto);
         dto1.setFirstname("firstname1");
         dto1 = personService.add(dto1);
         log.info(dto1.toString());
-        PersonDTO dto2 = new PersonDTO(dto);
+        PersonDTO dto2 = clone(dto);
         dto2.setLastname("lastname2");
         dto2 = personService.add(dto2);
         log.info(dto2.toString());
@@ -856,10 +863,10 @@ class PersonServiceTest {
     @Test
     void findAllByLastname_Blank() {
         dto = setFieldsAndSave();
-        PersonDTO dto1 = new PersonDTO(dto);
+        PersonDTO dto1 = clone(dto);
         dto1.setFirstname("firstname1");
         dto1 = personService.add(dto1);
-        PersonDTO dto2 = new PersonDTO(dto);
+        PersonDTO dto2 = clone(dto);
         dto2.setLastname("lastname2");
         dto2 = personService.add(dto2);
 
@@ -880,10 +887,10 @@ class PersonServiceTest {
     @Test
     void findAllByLastname_NotExist() {
         dto = setFieldsAndSave();
-        PersonDTO dto1 = new PersonDTO(dto);
+        PersonDTO dto1 = clone(dto);
         dto1.setFirstname("firstname1");
         dto1 = personService.add(dto1);
-        PersonDTO dto2 = new PersonDTO(dto);
+        PersonDTO dto2 = clone(dto);
         dto2.setLastname("lastname2");
         dto2 = personService.add(dto2);
 
@@ -903,7 +910,7 @@ class PersonServiceTest {
     void findAllByBirthDate_Exist() {
         dto = setFieldsAndSave();
         assertTrue(personRepository.existsById(dto.getId()));
-        PersonDTO dto2 = new PersonDTO(dto);
+        PersonDTO dto2 = clone(dto);
         dto2.setBirth(dto.getBirth().minusDays(34));
         dto2 = personService.add(dto2);
         assertTrue(personRepository.existsById(dto2.getId()));
@@ -920,7 +927,7 @@ class PersonServiceTest {
     void findAllByBirthDate_NotExist() {
         dto = setFieldsAndSave();
         assertTrue(personRepository.existsById(dto.getId()));
-        PersonDTO dto2 = new PersonDTO(dto);
+        PersonDTO dto2 = clone(dto);
         dto2.setBirth(dto.getBirth().minusDays(34));
         dto2 = personService.add(dto2);
         assertTrue(personRepository.existsById(dto2.getId()));
@@ -938,7 +945,7 @@ class PersonServiceTest {
     void findAllByBirthDate_Null() {
         dto = setFieldsAndSave();
         assertTrue(personRepository.existsById(dto.getId()));
-        PersonDTO dto2 = new PersonDTO(dto);
+        PersonDTO dto2 = clone(dto);
         dto2.setBirth(dto.getBirth().minusDays(34));
         dto2 = personService.add(dto2);
         assertTrue(personRepository.existsById(dto2.getId()));
@@ -953,7 +960,7 @@ class PersonServiceTest {
     void findAllOlderThan_Exist() {
         dto = setFieldsAndSave();
         assertTrue(personRepository.existsById(dto.getId()));
-        PersonDTO dto2 = new PersonDTO(dto);
+        PersonDTO dto2 = clone(dto);
         int diff = 22;
         dto2.setBirth(dto.getBirth().minusYears(diff));
         dto2 = personService.add(dto2);
@@ -971,7 +978,7 @@ class PersonServiceTest {
     void findAllOlderThan_NotExist() {
         dto = setFieldsAndSave();
         assertTrue(personRepository.existsById(dto.getId()));
-        PersonDTO dto2 = new PersonDTO(dto);
+        PersonDTO dto2 = clone(dto);
         int diff = 22;
         dto2.setBirth(dto.getBirth().minusYears(diff));
         dto2 = personService.add(dto2);
@@ -991,7 +998,7 @@ class PersonServiceTest {
     void findAllOlderThan_Null() {
         dto = setFieldsAndSave();
         assertTrue(personRepository.existsById(dto.getId()));
-        PersonDTO dto2 = new PersonDTO(dto);
+        PersonDTO dto2 = clone(dto);
         dto2.setBirth(dto.getBirth().minusYears(22));
         dto2 = personService.add(dto2);
         assertTrue(personRepository.existsById(dto2.getId()));
@@ -1006,7 +1013,7 @@ class PersonServiceTest {
     void findAllYoungerThan_Exist() {
         dto = setFieldsAndSave();
         assertTrue(personRepository.existsById(dto.getId()));
-        PersonDTO dto2 = new PersonDTO(dto);
+        PersonDTO dto2 = clone(dto);
         int diff = 22;
         dto2.setBirth(dto.getBirth().minusYears(diff));
         dto2 = personService.add(dto2);
@@ -1026,7 +1033,7 @@ class PersonServiceTest {
         assertTrue(personRepository.existsById(dto.getId()));
         personService.delete(dto.getId());
         assertFalse(personRepository.existsById(dto.getId()));
-        PersonDTO dto2 = new PersonDTO(dto);
+        PersonDTO dto2 = clone(dto);
         int diff = 22;
         dto2.setBirth(dto.getBirth().minusYears(diff));
         dto2 = personService.add(dto2);
@@ -1042,7 +1049,7 @@ class PersonServiceTest {
     void findAllYoungerThan_Null() {
         dto = setFieldsAndSave();
         assertTrue(personRepository.existsById(dto.getId()));
-        PersonDTO dto2 = new PersonDTO(dto);
+        PersonDTO dto2 = clone(dto);
         int diff = 22;
         dto2.setBirth(dto.getBirth().minusYears(diff));
         dto2 = personService.add(dto2);

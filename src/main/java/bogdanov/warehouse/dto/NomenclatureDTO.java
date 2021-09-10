@@ -9,7 +9,7 @@ import java.util.Locale;
 
 @Data
 @NoArgsConstructor
-@JsonPropertyOrder({"id", "name", "code", "amount"})
+@AllArgsConstructor
 public class NomenclatureDTO {
 
     private Long id;
@@ -22,42 +22,6 @@ public class NomenclatureDTO {
         this.name = dto.name;
         this.code = dto.code;
         this.amount = dto.amount;
-    }
-
-    public NomenclatureDTO(Long id, String name, String code, Long amount) {
-        this.id = id;
-        this.amount = amount;
-        setName(name);
-        setCode(code);
-    }
-
-    @JsonIgnore
-    public boolean isEmpty() {
-        return id == null
-                && name == null
-                && code == null
-                && amount == null;
-    }
-
-    public void setName(String name) {
-        if (Strings.isNotBlank(name)) {
-            this.name = name.toUpperCase(Locale.ROOT);
-        } else {
-            this.name = Strings.EMPTY;
-        }
-    }
-
-    public void setCode(String code) {
-        if (Strings.isNotBlank(code)) {
-            this.code = code.toUpperCase(Locale.ROOT);
-        } else {
-            this.code = Strings.EMPTY;
-        }
-    }
-
-    @JsonIgnore
-    public boolean isNotEmpty() {
-        return !isEmpty();
     }
 
 }

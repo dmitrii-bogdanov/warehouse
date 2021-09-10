@@ -2,6 +2,7 @@ package bogdanov.warehouse.handlers;
 
 import bogdanov.warehouse.dto.ExceptionDTO;
 import bogdanov.warehouse.exceptions.*;
+import bogdanov.warehouse.exceptions.enums.ExceptionType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpStatus;
@@ -17,25 +18,23 @@ public class OtherExceptionsHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(
             value = {
-                    ProhibitedRemovingException.class,
                     InvalidDataAccessApiUsageException.class,
                     IllegalArgumentException.class
             })
     protected ResponseEntity<ExceptionDTO> handleException(RuntimeException e) {
+        if (InvalidDataAccessApiUsageException.class.equals(e.getClass())) {
+            e = new ArgumentException(ExceptionType.NULL_ID);
+            return handleOther(e);
+        }
         return new ResponseEntity<>(
                 new ExceptionDTO(e, HttpStatus.BAD_REQUEST),
                 HttpStatus.BAD_REQUEST
         );
     }
 
-    @ExceptionHandler(value = ResourceNotFoundException.class)
-    protected ResponseEntity<ExceptionDTO> handleResourceNotFoundException(ResourceNotFoundException e) {
-       e.getExceptionMessage().getStatus();
-        return new ResponseEntity<>(
-                new ExceptionDTO(e),
-                //TODO Make statuses, msg -> type
-                e.getExceptionMessage().getStatus()
-        );
+    @ExceptionHandler(value = WarehouseExeption.class)
+    protected ResponseEntity<ExceptionDTO> handleWarehouseException(WarehouseExeption e) {
+        return new ResponseEntity<>(new ExceptionDTO(e.getExceptionMessage()), e.getExceptionMessage().getStatus());
     }
 
     //TODO Change. Test only for now

@@ -7,7 +7,7 @@ import bogdanov.warehouse.database.repositories.UserRepository;
 import bogdanov.warehouse.dto.UserAccountDTO;
 import bogdanov.warehouse.dto.UserAccountWithPasswordDTO;
 import bogdanov.warehouse.exceptions.*;
-import bogdanov.warehouse.exceptions.enums.ExceptionMessage;
+import bogdanov.warehouse.exceptions.enums.ExceptionType;
 import bogdanov.warehouse.services.interfaces.PersonService;
 import bogdanov.warehouse.services.interfaces.UserAccountService;
 import bogdanov.warehouse.services.mappers.Mapper;
@@ -44,7 +44,7 @@ public class UserAccountServiceImpl implements UserAccountService {
             PersonEntity person = personService.getEntityById(user.getPersonId());
             if (userRepository.existsByPersonEquals(person)) {
                 throw new IllegalArgumentException(
-                        ExceptionMessage.ALREADY_REGISTERED_PERSON.setId(user.getPersonId()).getModifiedMessage());
+                        ExceptionType.ALREADY_REGISTERED_PERSON.setId(user.getPersonId()).getModifiedMessage());
             } else {
                 UserEntity entity = mapper.convert(user);
                 entity.setPerson(person);
@@ -58,7 +58,7 @@ public class UserAccountServiceImpl implements UserAccountService {
     public UserAccountDTO delete(Long id) {
         UserEntity entity = getEntityById(id);
         if (recordRepository.existsByUser_Id(id)) {
-            throw new ProhibitedRemovingException(ExceptionMessage.USER_HAS_RECORDS.setId(id).getModifiedMessage());
+            throw new ProhibitedRemovingException(ExceptionType.USER_HAS_RECORDS.setId(id));
         } else {
             userRepository.delete(entity);
             return mapper.convert(entity, UserAccountDTO.class);
@@ -101,13 +101,13 @@ public class UserAccountServiceImpl implements UserAccountService {
         if (entity.getUsername().equals(dto.getUsername())) {
             return true;
         } else {
-            throw new IllegalArgumentException(ExceptionMessage.ID_USERNAME_INCORRECT.getMessage());
+            throw new IllegalArgumentException(ExceptionType.ID_USERNAME_INCORRECT.getMessage());
         }
     }
 
     private boolean isUsernameAvailable(String username) {
         if (Strings.isBlank(username) || userRepository.existsByUsername(username)) {
-            throw new IllegalArgumentException(ExceptionMessage.ALREADY_REGISTERED_OR_BLANK_USERNAME.getMessage());
+            throw new IllegalArgumentException(ExceptionType.ALREADY_REGISTERED_OR_BLANK_USERNAME.getMessage());
         }
         return true;
     }
@@ -115,7 +115,7 @@ public class UserAccountServiceImpl implements UserAccountService {
     private boolean isPasswordValid(String password) {
         if (Strings.isBlank(password) || (password.length() < minPasswordLength)) {
             throw new IllegalArgumentException(
-                    ExceptionMessage.NOT_VALID_PASSWORD
+                    ExceptionType.NOT_VALID_PASSWORD
                             .addComment("Password is too short (min length : " + minPasswordLength + ") or blank")
                             .getModifiedMessage());
         }

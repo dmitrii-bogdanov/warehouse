@@ -1,31 +1,16 @@
 package bogdanov.warehouse.exceptions;
 
 
-import bogdanov.warehouse.exceptions.enums.ExceptionMessage;
-import lombok.Getter;
-import lombok.Setter;
+import bogdanov.warehouse.exceptions.enums.ExceptionType;
 
-@Getter
-@Setter
-public class ResourceNotFoundException extends RuntimeException {
-
-    private ExceptionMessage exceptionMessage;
-
-    public ResourceNotFoundException(String message) {
-        super(message);
-    }
-
-    public ResourceNotFoundException() {
-        super();
-    }
+public class ResourceNotFoundException extends WarehouseExeption {
 
     public ResourceNotFoundException(String entity, String field, Object value) {
-        this(ExceptionMessage.RESOURCE_NOT_FOUND
-                .setEntity(entity).setFieldName(field).setFieldValue(value).getModifiedMessage());
-//        this(entity + " with " + field + " : " + value.toString() + " not found");
+        super(ExceptionType.RESOURCE_NOT_FOUND.setEntity(entity).setFieldName(field).setFieldValue(value));
     }
 
-    public ResourceNotFoundException(ExceptionMessage exceptionMessage) {
-        this(exceptionMessage.getModifiedMessage());
+    public ResourceNotFoundException(ExceptionType exceptionType) {
+        super(exceptionType);
     }
+
 }

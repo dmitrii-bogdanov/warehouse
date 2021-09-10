@@ -1,23 +1,10 @@
 package bogdanov.warehouse.exceptions;
 
-import bogdanov.warehouse.exceptions.enums.ExceptionMessage;
-import lombok.Getter;
+import bogdanov.warehouse.exceptions.enums.ExceptionType;
 
-@Getter
-public class ArgumentException extends RuntimeException{
+public class ArgumentException extends WarehouseExeption{
 
-    private ExceptionMessage exceptionMessage;
-
-    public ArgumentException(String message) {
-        super(message);
-    }
-
-    public ArgumentException() {
-        super();
-    }
-
-    public ArgumentException(ExceptionMessage exceptionMessage) {
-        this(exceptionMessage.getModifiedMessage());
-        this.exceptionMessage = exceptionMessage;
+    public ArgumentException(ExceptionType exceptionType) {
+        super(exceptionType);
     }
 }

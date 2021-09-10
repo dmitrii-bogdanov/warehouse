@@ -3,7 +3,7 @@ package bogdanov.warehouse.services.implementations;
 import bogdanov.warehouse.database.entities.RecordTypeEntity;
 import bogdanov.warehouse.database.repositories.RecordTypeRepository;
 import bogdanov.warehouse.dto.RecordTypeDTO;
-import bogdanov.warehouse.exceptions.enums.ExceptionMessage;
+import bogdanov.warehouse.exceptions.enums.ExceptionType;
 import bogdanov.warehouse.exceptions.ResourceNotFoundException;
 import bogdanov.warehouse.services.interfaces.RecordTypeService;
 import org.apache.logging.log4j.util.Strings;
@@ -43,7 +43,7 @@ public class RecordTypeServiceImpl implements RecordTypeService {
     public RecordTypeEntity getEntityByName(String name) {
         if (Strings.isBlank(name)) {
             throw new IllegalArgumentException(
-                    ExceptionMessage.BLANK_ENTITY_NAME.setEntity(RecordTypeEntity.class).getModifiedMessage());
+                    ExceptionType.BLANK_ENTITY_NAME.setEntity(RecordTypeEntity.class).getModifiedMessage());
         }
         name = name.toUpperCase(Locale.ROOT);
         if (entities.containsKey(name)) {

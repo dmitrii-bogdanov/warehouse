@@ -5,7 +5,7 @@ import bogdanov.warehouse.database.entities.RoleEntity;
 import bogdanov.warehouse.database.enums.Role;
 import bogdanov.warehouse.database.repositories.RoleRepository;
 import bogdanov.warehouse.dto.RoleDTO;
-import bogdanov.warehouse.exceptions.enums.ExceptionMessage;
+import bogdanov.warehouse.exceptions.enums.ExceptionType;
 import bogdanov.warehouse.exceptions.ResourceNotFoundException;
 import bogdanov.warehouse.services.interfaces.RoleService;
 import lombok.RequiredArgsConstructor;
@@ -49,7 +49,7 @@ public class RoleServiceImpl implements RoleService {
     public RoleEntity findEntityByName(String name) {
         if (Strings.isBlank(name)) {
             throw new IllegalArgumentException(
-                    ExceptionMessage.BLANK_ENTITY_NAME.setEntity(RoleEntity.class).getModifiedMessage());
+                    ExceptionType.BLANK_ENTITY_NAME.setEntity(RoleEntity.class).getModifiedMessage());
         }
         name = name.toUpperCase(Locale.ROOT);
         if (dto.containsKey(name)) {
@@ -78,7 +78,7 @@ public class RoleServiceImpl implements RoleService {
     public RoleDTO findByName(String name) {
         if (Strings.isBlank(name)) {
             throw new IllegalArgumentException(
-                    ExceptionMessage.BLANK_ENTITY_NAME.setEntity(RoleEntity.class).getModifiedMessage());
+                    ExceptionType.BLANK_ENTITY_NAME.setEntity(RoleEntity.class).getModifiedMessage());
         }
         name = name.toUpperCase(Locale.ROOT);
         if (dto.containsKey(name)) {

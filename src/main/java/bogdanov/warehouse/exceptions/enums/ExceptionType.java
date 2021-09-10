@@ -4,7 +4,7 @@ import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 @Getter
-public enum ExceptionMessage {
+public enum ExceptionType {
 
     ALREADY_REGISTERED_PERSON("Person with id : #ID has already been registered as user", HttpStatus.BAD_REQUEST),
     ALREADY_RECORDED_NAME_OR_CODE("#FIELD_NAME : #FIELD_VALUE belongs to nomenclature with id : #ID", HttpStatus.BAD_REQUEST),
@@ -33,12 +33,12 @@ public enum ExceptionMessage {
     private final HttpStatus status;
     private String modifiedMessage;
 
-    ExceptionMessage(String message, HttpStatus status) {
+    ExceptionType(String message, HttpStatus status) {
         this.message = message;
         this.status = status;
     }
 
-    public synchronized ExceptionMessage setId(long id) {
+    public synchronized ExceptionType setId(long id) {
         if (modifiedMessage == null) {
             modifiedMessage = message;
         }
@@ -46,7 +46,7 @@ public enum ExceptionMessage {
         return this;
     }
 
-    public synchronized ExceptionMessage setEntity(String entity) {
+    public synchronized ExceptionType setEntity(String entity) {
         if (modifiedMessage == null) {
             modifiedMessage = message;
         }
@@ -54,11 +54,11 @@ public enum ExceptionMessage {
         return this;
     }
 
-    public synchronized ExceptionMessage setEntity(Class entity) {
+    public synchronized ExceptionType setEntity(Class entity) {
         return setEntity(entity.getSimpleName().replace("Entity", ""));
     }
 
-    public synchronized ExceptionMessage setFieldName(String field) {
+    public synchronized ExceptionType setFieldName(String field) {
         if (modifiedMessage == null) {
             modifiedMessage = message;
         }
@@ -66,7 +66,7 @@ public enum ExceptionMessage {
         return this;
     }
 
-    public synchronized ExceptionMessage setFieldValue(Object fieldValue) {
+    public synchronized ExceptionType setFieldValue(Object fieldValue) {
         if (modifiedMessage == null) {
             modifiedMessage = message;
         }
@@ -74,7 +74,7 @@ public enum ExceptionMessage {
         return this;
     }
 
-    public synchronized ExceptionMessage addComment(String comment) {
+    public synchronized ExceptionType addComment(String comment) {
         if (modifiedMessage == null) {
             modifiedMessage = message;
         }

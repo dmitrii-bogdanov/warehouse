@@ -4,7 +4,7 @@ import bogdanov.warehouse.database.entities.UserEntity;
 import bogdanov.warehouse.database.repositories.UserRepository;
 import bogdanov.warehouse.dto.UserDTO;
 import bogdanov.warehouse.exceptions.ResourceNotFoundException;
-import bogdanov.warehouse.exceptions.enums.ExceptionMessage;
+import bogdanov.warehouse.exceptions.enums.ExceptionType;
 import bogdanov.warehouse.services.interfaces.PersonService;
 import bogdanov.warehouse.services.interfaces.UserService;
 import bogdanov.warehouse.services.mappers.Mapper;
@@ -42,7 +42,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO getByUsername(String username) {
         if (Strings.isBlank(username)) {
-            throw new IllegalArgumentException(ExceptionMessage.BLANK_USERNAME.getMessage());
+            throw new IllegalArgumentException(ExceptionType.BLANK_USERNAME.getMessage());
         }
         UserEntity entity = userRepository.findByUsername(username);
         if (entity != null) {

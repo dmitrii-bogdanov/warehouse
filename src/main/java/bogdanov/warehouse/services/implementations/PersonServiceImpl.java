@@ -6,7 +6,7 @@ import bogdanov.warehouse.database.repositories.PersonRepository;
 import bogdanov.warehouse.database.repositories.UserRepository;
 import bogdanov.warehouse.dto.PersonDTO;
 import bogdanov.warehouse.exceptions.*;
-import bogdanov.warehouse.exceptions.enums.ExceptionMessage;
+import bogdanov.warehouse.exceptions.enums.ExceptionType;
 import bogdanov.warehouse.services.interfaces.PersonService;
 import bogdanov.warehouse.services.mappers.Mapper;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +31,7 @@ public class PersonServiceImpl implements PersonService {
                 && Strings.isNotBlank(dto.getPosition())) {
             return true;
         } else {
-            throw new IllegalArgumentException(ExceptionMessage.NOT_ALL_PERSON_REQUIRED_FIELDS.getMessage());
+            throw new IllegalArgumentException(ExceptionType.NOT_ALL_PERSON_REQUIRED_FIELDS.getMessage());
         }
     }
 
@@ -89,7 +89,7 @@ public class PersonServiceImpl implements PersonService {
     public PersonDTO delete(Long id) {
         PersonEntity entity = getEntityById(id);
         if (userRepository.existsByPerson_Id(id)) {
-            throw new ProhibitedRemovingException(ExceptionMessage.ALREADY_REGISTERED_PERSON.setId(id).getModifiedMessage());
+            throw new ProhibitedRemovingException(ExceptionType.ALREADY_REGISTERED_PERSON.setId(id));
         } else {
             personRepository.delete(entity);
             return mapper.convert(entity);
@@ -119,7 +119,7 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public List<PersonDTO> findAllByFirstname(String firstname) {
         if (Strings.isBlank(firstname)) {
-            throw new ArgumentException(ExceptionMessage.NO_PARAMETER_IS_PRESENT);
+            throw new ArgumentException(ExceptionType.NO_PARAMETER_IS_PRESENT);
         }
         return personRepository.findAllByFirstnameIgnoreCase(firstname).stream().map(mapper::convert).toList();
     }
@@ -127,7 +127,7 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public List<PersonDTO> findAllByLastname(String lastname) {
         if (Strings.isBlank(lastname)) {
-            throw new ArgumentException(ExceptionMessage.NO_PARAMETER_IS_PRESENT);
+            throw new ArgumentException(ExceptionType.NO_PARAMETER_IS_PRESENT);
         }
         return personRepository.findAllByLastnameIgnoreCase(lastname).stream().map(mapper::convert).toList();
     }
@@ -135,7 +135,7 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public List<PersonDTO> findAllByBirthDate(LocalDate date) {
         if (date == null) {
-            throw new ArgumentException(ExceptionMessage.NO_PARAMETER_IS_PRESENT);
+            throw new ArgumentException(ExceptionType.NO_PARAMETER_IS_PRESENT);
         }
         return personRepository.findAllByBirthEquals(date)
                 .stream().map(mapper::convert).toList();
@@ -144,7 +144,7 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public List<PersonDTO> findAllOlderThan(Integer age) {
         if (age == null) {
-            throw new ArgumentException(ExceptionMessage.NO_PARAMETER_IS_PRESENT);
+            throw new ArgumentException(ExceptionType.NO_PARAMETER_IS_PRESENT);
         }
         return personRepository.findAllByBirthBefore(LocalDate.now().minusYears(age))
                 .stream().map(mapper::convert).toList();
@@ -153,7 +153,7 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public List<PersonDTO> findAllYoungerThan(Integer age) {
         if (age == null) {
-            throw new ArgumentException(ExceptionMessage.NO_PARAMETER_IS_PRESENT);
+            throw new ArgumentException(ExceptionType.NO_PARAMETER_IS_PRESENT);
         }
         return personRepository.findAllByBirthAfter(LocalDate.now().minusYears(age))
                 .stream().map(mapper::convert).toList();
@@ -164,7 +164,7 @@ public class PersonServiceImpl implements PersonService {
         boolean isStartAbsent = start == null;
         boolean isEndAbsent = end == null;
         if (isStartAbsent && isEndAbsent) {
-            throw new ArgumentException(ExceptionMessage.NO_PARAMETER_IS_PRESENT);
+            throw new ArgumentException(ExceptionType.NO_PARAMETER_IS_PRESENT);
         }
         List<PersonEntity> entities;
         if (isStartAbsent) {
@@ -182,7 +182,7 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public List<PersonDTO> findAllByPhoneNumber(String phoneNumber) {
         if (Strings.isBlank(phoneNumber)) {
-            throw new ArgumentException(ExceptionMessage.NO_PARAMETER_IS_PRESENT);
+            throw new ArgumentException(ExceptionType.NO_PARAMETER_IS_PRESENT);
         }
         return personRepository.findAllByPhoneNumber(phoneNumber)
                 .stream().map(mapper::convert).toList();
@@ -191,7 +191,7 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public List<PersonDTO> findAllByPhoneNumberContaining(String partialPhoneNumber) {
         if (Strings.isBlank(partialPhoneNumber)) {
-            throw new ArgumentException(ExceptionMessage.NO_PARAMETER_IS_PRESENT);
+            throw new ArgumentException(ExceptionType.NO_PARAMETER_IS_PRESENT);
         }
         return personRepository.findAllByPhoneNumberContaining(partialPhoneNumber)
                 .stream().map(mapper::convert).toList();
@@ -200,7 +200,7 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public List<PersonDTO> findAllByEmail(String email) {
         if (Strings.isBlank(email)) {
-            throw new ArgumentException(ExceptionMessage.NO_PARAMETER_IS_PRESENT);
+            throw new ArgumentException(ExceptionType.NO_PARAMETER_IS_PRESENT);
         }
         return personRepository.findAllByEmailIgnoreCase(email).stream().map(mapper::convert).toList();
     }
@@ -208,7 +208,7 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public List<PersonDTO> findAllByEmailContaining(String partialEmail) {
         if (Strings.isBlank(partialEmail)) {
-            throw new ArgumentException(ExceptionMessage.NO_PARAMETER_IS_PRESENT);
+            throw new ArgumentException(ExceptionType.NO_PARAMETER_IS_PRESENT);
         }
         return personRepository.findAllByEmailContainingIgnoreCase(partialEmail)
                 .stream().map(mapper::convert).toList();
@@ -230,7 +230,7 @@ public class PersonServiceImpl implements PersonService {
         }
 
         if (isFirstnameBlank && isLastnameBlank && isPatronymicBlank) {
-            throw new ArgumentException(ExceptionMessage.NO_PARAMETER_IS_PRESENT);
+            throw new ArgumentException(ExceptionType.NO_PARAMETER_IS_PRESENT);
         }
         if (isFirstnameBlank && isPatronymicBlank) {
             entities = personRepository.findAllByLastnameIgnoreCase(lastname);
@@ -263,7 +263,7 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public List<PersonDTO> findAllByPosition(String position) {
         if (Strings.isBlank(position)) {
-            throw new ArgumentException(ExceptionMessage.BLANK_ENTITY_NAME.setEntity(PositionEntity.class));
+            throw new ArgumentException(ExceptionType.BLANK_ENTITY_NAME.setEntity(PositionEntity.class));
         }
         return personRepository.findAllByPosition_NameEqualsIgnoreCase(position).stream().map(mapper::convert).toList();
     }

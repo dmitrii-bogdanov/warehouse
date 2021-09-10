@@ -5,7 +5,7 @@ import bogdanov.warehouse.database.repositories.NomenclatureRepository;
 import bogdanov.warehouse.database.repositories.RecordRepository;
 import bogdanov.warehouse.dto.NomenclatureDTO;
 import bogdanov.warehouse.exceptions.*;
-import bogdanov.warehouse.exceptions.enums.ExceptionMessage;
+import bogdanov.warehouse.exceptions.enums.ExceptionType;
 import bogdanov.warehouse.services.interfaces.NomenclatureService;
 import bogdanov.warehouse.services.mappers.Mapper;
 import lombok.RequiredArgsConstructor;
@@ -58,9 +58,9 @@ public class NomenclatureServiceImpl implements NomenclatureService {
             Optional<NomenclatureEntity> entity = nomenclatureRepository.findById(id);
             if (entity.isPresent()) {
                 switch (sb.substring(0, 4)) {
-                    case "CODE" -> message = ExceptionMessage.ALREADY_RECORDED_NAME_OR_CODE
+                    case "CODE" -> message = ExceptionType.ALREADY_RECORDED_NAME_OR_CODE
                             .setFieldName("Code").setFieldValue(entity.get().getCode()).setId(id).getModifiedMessage();
-                    case "NAME" -> message = ExceptionMessage.ALREADY_RECORDED_NAME_OR_CODE
+                    case "NAME" -> message = ExceptionType.ALREADY_RECORDED_NAME_OR_CODE
                             .setFieldName("Name").setFieldValue(entity.get().getName()).setId(id).getModifiedMessage();
                 }
             } else {
@@ -95,7 +95,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
     @Override
     public NomenclatureDTO getByName(String name) {
         if (Strings.isBlank(name)) {
-            throw new IllegalArgumentException(ExceptionMessage.BLANK_NAME.getMessage());
+            throw new IllegalArgumentException(ExceptionType.BLANK_NAME.getMessage());
         }
         Optional<NomenclatureEntity> entity = nomenclatureRepository.findByName(name);
         if (entity.isPresent()) {
@@ -121,7 +121,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
     @Override
     public List<NomenclatureDTO> findAllByNameContaining(String partialName) {
         if (Strings.isBlank(partialName)) {
-            throw new IllegalArgumentException(ExceptionMessage.BLANK_NAME.getMessage());
+            throw new IllegalArgumentException(ExceptionType.BLANK_NAME.getMessage());
         }
         partialName = partialName.toUpperCase(Locale.ROOT);
         return nomenclatureRepository.findAllByNameContaining(partialName).stream().map(mapper::convert).toList();
@@ -147,7 +147,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
             return mapper.convert(nomenclatureRepository.save(entity));
         } catch (DataIntegrityViolationException e) {
             throw new IllegalArgumentException(
-                    ExceptionMessage.NAME_OR_CODE_IS_ALREADY_REGISTERED
+                    ExceptionType.NAME_OR_CODE_IS_ALREADY_REGISTERED
                             .setFieldName("Name")
                             .setFieldValue(nomenclature.getName())
                             .getModifiedMessage());
@@ -172,7 +172,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
             return mapper.convert(nomenclatureRepository.save(entity));
         } catch (DataIntegrityViolationException e) {
             throw new IllegalArgumentException(
-                    ExceptionMessage.NAME_OR_CODE_IS_ALREADY_REGISTERED
+                    ExceptionType.NAME_OR_CODE_IS_ALREADY_REGISTERED
                             .setFieldName("Code")
                             .setFieldValue(nomenclature.getCode())
                             .getModifiedMessage());
@@ -278,7 +278,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
     @Override
     public boolean checkAmount(NomenclatureDTO dto) {
         if (dto.getId() == null || dto.getId() < 0) {
-            throw new IllegalArgumentException(ExceptionMessage.NOT_POSITIVE_AMOUNT.getMessage());
+            throw new IllegalArgumentException(ExceptionType.NOT_POSITIVE_AMOUNT.getMessage());
         }
         return true;
     }
@@ -290,7 +290,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
             return true;
         } else {
             throw new IllegalArgumentException(
-                    ExceptionMessage.NOT_ENOUGH_AMOUNT.setId(entity.getId()).getModifiedMessage());
+                    ExceptionType.NOT_ENOUGH_AMOUNT.setId(entity.getId()).getModifiedMessage());
         }
     }
 
@@ -324,7 +324,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
     //TODO check exceptions without this method
     private NomenclatureEntity checkForUpdateAndRetrieveEntity(NomenclatureDTO dto) {
         if (Strings.isBlank(dto.getName())) {
-            throw new IllegalArgumentException(ExceptionMessage.BLANK_NAME.getMessage());
+            throw new IllegalArgumentException(ExceptionType.BLANK_NAME.getMessage());
         }
         NomenclatureEntity entity = nomenclatureRepository.getById(dto.getId());
         if (entity == null) {
@@ -340,7 +340,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
         boolean isCodeBlank = Strings.isBlank(code);
 
         if (isNameBlank && isCodeBlank) {
-            throw new IllegalArgumentException(ExceptionMessage.BLANK_NAME_AND_CODE.getMessage());
+            throw new IllegalArgumentException(ExceptionType.BLANK_NAME_AND_CODE.getMessage());
         }
         name = name.toUpperCase(Locale.ROOT);
         if (isCodeBlank) {
@@ -366,10 +366,10 @@ public class NomenclatureServiceImpl implements NomenclatureService {
     public NomenclatureDTO delete(Long id) {
         NomenclatureEntity entity = getEntityById(id);
         if (recordRepository.existsByNomenclature_Id(id)) {
-            throw new ProhibitedRemovingException(ExceptionMessage.NOMENCLATURE_HAS_RECORDS.setId(id).getModifiedMessage());
+            throw new ProhibitedRemovingException(ExceptionType.NOMENCLATURE_HAS_RECORDS.setId(id));
         }
         if (entity.getAmount() <= 0) {
-            throw new ProhibitedRemovingException(ExceptionMessage.NOMENCLATURE_AMOUNT_IS_POSITIVE.setId(id).getModifiedMessage());
+            throw new ProhibitedRemovingException(ExceptionType.NOMENCLATURE_AMOUNT_IS_POSITIVE.setId(id));
         }
         nomenclatureRepository.delete(entity);
         return mapper.convert(entity);

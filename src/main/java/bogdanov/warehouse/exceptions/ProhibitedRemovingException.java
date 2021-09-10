@@ -1,15 +1,12 @@
 package bogdanov.warehouse.exceptions;
 
-import org.springframework.stereotype.Component;
 
-@Component
-public class ProhibitedRemovingException extends RuntimeException{
+import bogdanov.warehouse.exceptions.enums.ExceptionType;
 
-    public ProhibitedRemovingException() {
-        super();
+public class ProhibitedRemovingException extends WarehouseExeption {
+
+    public ProhibitedRemovingException(ExceptionType exceptionType) {
+        super(exceptionType);
     }
 
-    public ProhibitedRemovingException(String message) {
-        super(message);
-    }
 }

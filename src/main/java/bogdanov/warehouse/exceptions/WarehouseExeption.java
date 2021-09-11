@@ -8,14 +8,15 @@ public abstract class WarehouseExeption extends RuntimeException{
 
     protected WarehouseExeption(ExceptionType exceptionType) {
         super();
+        setExceptionType(exceptionType);
+    }
+
+    protected void setExceptionType(ExceptionType exceptionType) {
         this.exceptionType = exceptionType;
     }
 
-    protected void setExceptionMessage(ExceptionType exceptionType) {
-        this.exceptionType = exceptionType;
-    }
-
-    public ExceptionType getExceptionMessage() {
+    public ExceptionType getExceptionType() {
         return exceptionType;
     }
+
 }

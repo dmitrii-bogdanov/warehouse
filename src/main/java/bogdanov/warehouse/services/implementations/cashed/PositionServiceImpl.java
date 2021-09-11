@@ -12,9 +12,11 @@ import bogdanov.warehouse.services.interfaces.PositionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -47,17 +49,21 @@ public class PositionServiceImpl implements PositionService {
     @Cacheable(value = "positions", key = "#name")
     public PositionEntity add(String name) {
         isNameNotBlank(name);
-        return positionRepository.save(new PositionEntity(name.toUpperCase(Locale.ROOT)));
+//        return positionRepository.findByNameIgnoreCase(name)
+//                .orElse(positionRepository.save(new PositionEntity(name.toUpperCase(Locale.ROOT))));// и даже с такой проверкой не работает
+        return positionRepository.save(new PositionEntity(name.toUpperCase(Locale.ROOT)));//так должно быть
     }
 
+    //TODO Remove? Not working with internal cacheable methods
     @Override
     public PositionDTO add(PositionDTO position) {
         return convert(add(position.getName().toUpperCase(Locale.ROOT)));
     }
 
+    //TODO Remove? Not working with internal cacheable methods
     @Override
     public List<PositionDTO> add(List<PositionDTO> positions) {
-        return positions.stream().filter(p -> isNameNotBlank(p.getName())).map(this::add).toList();
+        return positions.stream().map(this::add).toList();
     }
 
     @Override

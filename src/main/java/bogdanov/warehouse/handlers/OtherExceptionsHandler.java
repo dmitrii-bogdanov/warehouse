@@ -34,7 +34,7 @@ public class OtherExceptionsHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = WarehouseExeption.class)
     protected ResponseEntity<ExceptionDTO> handleWarehouseException(WarehouseExeption e) {
-        return new ResponseEntity<>(new ExceptionDTO(e.getExceptionMessage()), e.getExceptionMessage().getStatus());
+        return new ResponseEntity<>(new ExceptionDTO(e.getExceptionType()), e.getExceptionType().getStatus());
     }
 
     //TODO Change. Test only for now

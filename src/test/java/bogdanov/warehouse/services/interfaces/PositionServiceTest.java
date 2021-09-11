@@ -3,6 +3,8 @@ package bogdanov.warehouse.services.interfaces;
 import bogdanov.warehouse.database.entities.PositionEntity;
 import bogdanov.warehouse.database.repositories.PositionRepository;
 import bogdanov.warehouse.dto.PositionDTO;
+import bogdanov.warehouse.exceptions.ArgumentException;
+import bogdanov.warehouse.exceptions.enums.ExceptionType;
 import org.apache.logging.log4j.util.Strings;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,29 +53,29 @@ class PositionServiceTest {
     @Test
     void addString_FirstEntry() {
         resultEntity = positionService.add(dto.getName());
-        assertNotNull(result);
-        assertNotNull(result.getId());
-        assertTrue(result.getId() > 0);
-        assertEquals(dto.getName().toUpperCase(Locale.ROOT), result.getName());
+        assertNotNull(resultEntity);
+        assertNotNull(resultEntity.getId());
+        assertTrue(resultEntity.getId() > 0);
+        assertEquals(dto.getName().toUpperCase(Locale.ROOT), resultEntity.getName());
     }
 
     @Test
     void addString_SecondEntryWithNotRegisteredName() {
-        dtoList.add(dto);
-        dtoList.add(new PositionDTO(null,"user"));
+        dtoList.add(dto);// 0
+        dtoList.add(new PositionDTO(null, "user"));// 1
         assertNotEquals(dtoList.get(0).getName(), dtoList.get(1).getName());
-        resultList = new LinkedList<>();
-        resultList.add(positionService.add(dtoList.get(0).getName()));
-        resultList.add(positionService.add(dtoList.get(1).getName()));
-        assertNotNull(resultList.get(0));
-        assertNotNull(resultList.get(1));
-        assertNotNull(resultList.get(0).getId());
-        assertNotNull(resultList.get(1).getId());
-        assertTrue(resultList.get(0).getId() > 0);
-        assertTrue(resultList.get(1).getId() > 0);
-        assertEquals(dtoList.get(0).getName(), resultList.get(0).getName());
-        assertEquals(dtoList.get(1).getName(), resultList.get(1).getName());
-        assertNotEquals(resultList.get(0), resultList.get(1));
+        resultEntityList = new LinkedList<>();
+        resultEntityList.add(positionService.add(dtoList.get(0).getName()));
+        resultEntityList.add(positionService.add(dtoList.get(1).getName()));
+        assertNotNull(resultEntityList.get(0));
+        assertNotNull(resultEntityList.get(1));
+        assertNotNull(resultEntityList.get(0).getId());
+        assertNotNull(resultEntityList.get(1).getId());
+        assertTrue(resultEntityList.get(0).getId() > 0);
+        assertTrue(resultEntityList.get(1).getId() > 0);
+        assertEquals(dtoList.get(0).getName().toUpperCase(Locale.ROOT), resultEntityList.get(0).getName().toUpperCase(Locale.ROOT));
+        assertEquals(dtoList.get(1).getName().toUpperCase(Locale.ROOT), resultEntityList.get(1).getName().toUpperCase(Locale.ROOT));
+        assertNotEquals(resultEntityList.get(0), resultEntityList.get(1));
     }
 
     @Test
@@ -92,17 +94,22 @@ class PositionServiceTest {
     @Test
     void addString_BlankName() {
         dto.setName(null);
-        assertThrows(IllegalArgumentException.class,
+        ArgumentException e;
+        e = assertThrows(ArgumentException.class,
                 () -> positionService.add(dto.getName()));
+        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
         dto.setName(Strings.EMPTY);
-        assertThrows(IllegalArgumentException.class,
+        e = assertThrows(ArgumentException.class,
                 () -> positionService.add(dto.getName()));
+        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
         dto.setName(" ");
-        assertThrows(IllegalArgumentException.class,
+        e = assertThrows(ArgumentException.class,
                 () -> positionService.add(dto.getName()));
+        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
         dto.setName("\t");
-        assertThrows(IllegalArgumentException.class,
+        e = assertThrows(ArgumentException.class,
                 () -> positionService.add(dto.getName()));
+        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
     }
 
     @Test
@@ -187,10 +194,10 @@ class PositionServiceTest {
 
     @Test
     void getAll() {
-        dtoList.add(dto);
-        dtoList.add(new PositionDTO(null, "staff"));
-        dtoList.add(new PositionDTO(null, dtoList.get(1).getName()));
-        dtoList.add(new PositionDTO(null,"user"));
+        dtoList.add(dto);//0
+        dtoList.add(new PositionDTO(null, "staff"));//1
+        dtoList.add(new PositionDTO(null, dtoList.get(1).getName()));//2
+        dtoList.add(new PositionDTO(null, "user"));//3
         assertNotEquals(dtoList.get(0).getName(), dtoList.get(1).getName());
         assertEquals(dtoList.get(1).getName(), dtoList.get(2).getName());
         assertNotEquals(dtoList.get(0).getName(), dtoList.get(3).getName());

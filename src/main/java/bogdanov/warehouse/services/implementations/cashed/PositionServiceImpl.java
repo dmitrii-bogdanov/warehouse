@@ -4,6 +4,7 @@ import bogdanov.warehouse.database.entities.PositionEntity;
 import bogdanov.warehouse.database.repositories.PersonRepository;
 import bogdanov.warehouse.database.repositories.PositionRepository;
 import bogdanov.warehouse.dto.PositionDTO;
+import bogdanov.warehouse.exceptions.ArgumentException;
 import bogdanov.warehouse.exceptions.ProhibitedRemovingException;
 import bogdanov.warehouse.exceptions.enums.ExceptionType;
 import bogdanov.warehouse.exceptions.ResourceNotFoundException;
@@ -21,7 +22,7 @@ import java.util.Map;
 
 @RequiredArgsConstructor
 @Service
-public class    PositionServiceImpl implements PositionService {
+public class PositionServiceImpl implements PositionService {
 
     private final PositionRepository positionRepository;
     private final PersonRepository personRepository;
@@ -32,9 +33,8 @@ public class    PositionServiceImpl implements PositionService {
     private static final String NAME = "name";
 
     private boolean isNameNotBlank(String name) {
-        if (Strings.isBlank(name)){
-            throw new IllegalArgumentException(
-                    ExceptionType.BLANK_ENTITY_NAME.setEntity(PositionEntity.class).getModifiedMessage());
+        if (Strings.isBlank(name)) {
+            throw new ArgumentException(ExceptionType.BLANK_ENTITY_NAME.setEntity(PositionEntity.class));
         }
         return true;
     }
@@ -75,8 +75,7 @@ public class    PositionServiceImpl implements PositionService {
     @Override
     public PositionDTO getByName(String name) {
         if (Strings.isBlank(name)) {
-            throw new IllegalArgumentException(
-                    ExceptionType.BLANK_ENTITY_NAME.setEntity(PositionEntity.class).getModifiedMessage());
+            throw new ArgumentException(ExceptionType.BLANK_ENTITY_NAME.setEntity(PositionEntity.class));
         }
         PositionEntity entity = positionRepository.findByNameIgnoreCase(name)
                 .orElseThrow(() -> new ResourceNotFoundException(POSITION, NAME, name.toUpperCase(Locale.ROOT)));
@@ -92,7 +91,7 @@ public class    PositionServiceImpl implements PositionService {
     @Override
     public PositionDTO delete(String name) {
         if (Strings.isBlank(name)) {
-            throw new IllegalArgumentException(ExceptionType.BLANK_NAME.getMessage());
+            throw new ArgumentException(ExceptionType.BLANK_NAME);
         }
         return delete(positionRepository.findByNameIgnoreCase(name)
                 .orElseThrow(() -> new ResourceNotFoundException(POSITION, NAME, name.toUpperCase(Locale.ROOT))));

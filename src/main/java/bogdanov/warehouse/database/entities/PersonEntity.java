@@ -26,8 +26,7 @@ public class PersonEntity {
     @Column(nullable = false)
     private String lastname;
 
-    @Column
-    private String patronymic = Strings.EMPTY;
+    private String patronymic;
 
     @Column(nullable = false)
     private LocalDate birth;

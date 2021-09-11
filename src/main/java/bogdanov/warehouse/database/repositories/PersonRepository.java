@@ -12,29 +12,31 @@ public interface PersonRepository extends JpaRepository<PersonEntity, Long> {
 
     List<PersonEntity> findAllByEmailIgnoreCase(String email);
 
-    //TODO Check what it does
     List<PersonEntity> findAllByEmailContainingIgnoreCase(String partialEmail);
 
     List<PersonEntity> findAllByPhoneNumber(String phoneNumber);
 
-    //TODO Check what it does
     List<PersonEntity> findAllByPhoneNumberContaining(String partialPhoneNumber);
 
     List<PersonEntity> findAllByFirstnameIgnoreCase(String firstname);
 
     List<PersonEntity> findAllByLastnameIgnoreCase(String lastname);
 
-    List<PersonEntity> findAllByPatronymicIgnoreCase(String patronymic);
+    default List<PersonEntity> findAllByFullName(String firstname, String lastname, String patronymic) {
+        return findAllByFirstnameContainingIgnoreCaseAndLastnameContainingIgnoreCaseAndPatronymicContainingIgnoreCase(
+                firstname, lastname, patronymic);
+    }
 
-    List<PersonEntity> findAllByFirstnameIgnoreCaseAndLastnameIgnoreCaseAndPatronymicIgnoreCase(String firstname,
-                                                                                                String lastname,
-                                                                                                String patronymic);
+    default List<PersonEntity> findAllByFullNameWithNullPatronymic(String firstname, String lastname) {
+        return findAllByFirstnameIgnoreCaseAndLastnameIgnoreCaseAndPatronymicIsNull(firstname, lastname);
+    }
 
-    List<PersonEntity> findAllByFirstnameIgnoreCaseAndLastnameIgnoreCase(String firstname, String lastname);
+    List<PersonEntity>
+    findAllByFirstnameContainingIgnoreCaseAndLastnameContainingIgnoreCaseAndPatronymicContainingIgnoreCase(
+            String firstname, String lastname, String patronymic);
 
-    List<PersonEntity> findAllByFirstnameIgnoreCaseAndPatronymicIgnoreCase(String firstname, String patronymic);
-
-    List<PersonEntity> findAllByLastnameIgnoreCaseAndPatronymicIgnoreCase(String lastname, String patronymic);
+    List<PersonEntity> findAllByFirstnameIgnoreCaseAndLastnameIgnoreCaseAndPatronymicIsNull(String firstname,
+                                                                                            String lastname);
 
     List<PersonEntity> findAllByBirthEquals(LocalDate date);
 

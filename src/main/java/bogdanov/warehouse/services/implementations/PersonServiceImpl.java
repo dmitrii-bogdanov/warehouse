@@ -24,6 +24,11 @@ public class PersonServiceImpl implements PersonService {
     private final Mapper mapper;
     private final UserRepository userRepository;
 
+    private static final String PERSON = "Person";
+    private static final String ID = "id";
+    private static final String RESERVED_NULL_PATRONYMIC = "NULL";
+    private static final String PATRONYMIC = "patronymic";
+
     private boolean areAllRequiredFieldsPresent(PersonDTO dto) {
         if (Strings.isNotBlank(dto.getFirstname())
                 && Strings.isNotBlank(dto.getLastname())
@@ -35,6 +40,14 @@ public class PersonServiceImpl implements PersonService {
         }
     }
 
+    private boolean areValuesNotReserved(PersonDTO dto) {
+        if (RESERVED_NULL_PATRONYMIC.equalsIgnoreCase(dto.getPatronymic())) {
+            throw new ArgumentException(
+                    ExceptionType.RESERVED_VALUE.setFieldName(PATRONYMIC).setFieldValue(dto.getPatronymic()));
+        }
+        return true;
+    }
+
     @Override
     public PersonDTO add(PersonDTO person) {
         /*TODO check alternatives
@@ -42,10 +55,10 @@ public class PersonServiceImpl implements PersonService {
          *TODO in mapper to add new records
          */
         areAllRequiredFieldsPresent(person);
+        areValuesNotReserved(person);
         PersonEntity entity = mapper.convert(person);
         entity.setId(null);
         return mapper.convert(personRepository.save(entity));
-//            return mapper.convert(personRepository.save(mapper.convert(person)));
     }
 
     @Override
@@ -54,10 +67,9 @@ public class PersonServiceImpl implements PersonService {
         entities = persons
                 .stream()
                 .filter(this::areAllRequiredFieldsPresent)
+                .filter(this::areValuesNotReserved)
                 .map(mapper::convert)
-                //TODO check alternative
-                .peek(e -> e.setId(null))
-                //
+                .peek(e -> e.setId(null)) //TODO check alternative
                 .toList();
         entities = personRepository.saveAll(entities);
         return entities.stream().map(mapper::convert).toList();
@@ -66,6 +78,7 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public PersonDTO update(PersonDTO person) {
         areAllRequiredFieldsPresent(person);
+        areValuesNotReserved(person);
         getEntityById(person.getId());
         return mapper.convert(personRepository.save(mapper.convert(person)));
 
@@ -77,7 +90,7 @@ public class PersonServiceImpl implements PersonService {
         entities = persons
                 .stream()
                 .filter(this::areAllRequiredFieldsPresent)
-                .filter(dto -> getEntityById(dto.getId()) != null)
+                .filter(this::areValuesNotReserved)
                 .map(mapper::convert)
                 .toList();
 
@@ -107,7 +120,7 @@ public class PersonServiceImpl implements PersonService {
         if (optionalEntity.isPresent()) {
             return optionalEntity.get();
         } else {
-            throw new ResourceNotFoundException("Person", "id", id);
+            throw new ResourceNotFoundException(PERSON, ID, id);
         }
     }
 
@@ -219,38 +232,25 @@ public class PersonServiceImpl implements PersonService {
         boolean isFirstnameBlank = Strings.isBlank(firstname);
         boolean isLastnameBlank = Strings.isBlank(lastname);
         boolean isPatronymicBlank = Strings.isBlank(patronymic);
-
-        List<PersonEntity> entities;
-
-        if (!isPatronymicBlank) {
-            patronymic = patronymic.toUpperCase(Locale.ROOT);
-            if ("NULL".equals(patronymic)) {
-                patronymic = Strings.EMPTY;
-            }
-        }
+        boolean shouldPatronymicBeAbsent = RESERVED_NULL_PATRONYMIC.equalsIgnoreCase(patronymic);
 
         if (isFirstnameBlank && isLastnameBlank && isPatronymicBlank) {
             throw new ArgumentException(ExceptionType.NO_PARAMETER_IS_PRESENT);
         }
-        if (isFirstnameBlank && isPatronymicBlank) {
-            entities = personRepository.findAllByLastnameIgnoreCase(lastname);
-        } else if (isLastnameBlank && isPatronymicBlank) {
-            entities = personRepository.findAllByFirstnameIgnoreCase(firstname);
-        } else if (isFirstnameBlank && isLastnameBlank) {
-            entities = personRepository.findAllByPatronymicIgnoreCase(patronymic);
-        } else if (isPatronymicBlank) {
-            entities = personRepository.findAllByFirstnameIgnoreCaseAndLastnameIgnoreCase(firstname, lastname);
-        } else if (isFirstnameBlank) {
-            entities = personRepository.findAllByLastnameIgnoreCaseAndPatronymicIgnoreCase(lastname, patronymic);
-        } else if (isLastnameBlank) {
-            entities = personRepository.findAllByFirstnameIgnoreCaseAndPatronymicIgnoreCase(firstname, patronymic);
-        } else {
-            entities = personRepository
-                    .findAllByFirstnameIgnoreCaseAndLastnameIgnoreCaseAndPatronymicIgnoreCase(
-                            firstname,
-                            lastname,
-                            patronymic);
+
+        if (isFirstnameBlank) {
+            firstname = Strings.EMPTY;
         }
+        if (isLastnameBlank) {
+            lastname = Strings.EMPTY;
+        }
+        if (isPatronymicBlank) {
+            patronymic = Strings.EMPTY;
+        }
+
+        List<PersonEntity> entities = shouldPatronymicBeAbsent
+                ? personRepository.findAllByFullNameWithNullPatronymic(firstname, lastname)
+                : personRepository.findAllByFullName(firstname, lastname, patronymic);
 
         return entities.stream().map(mapper::convert).toList();
     }

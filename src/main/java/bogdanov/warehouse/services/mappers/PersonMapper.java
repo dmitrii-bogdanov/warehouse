@@ -6,6 +6,7 @@ import bogdanov.warehouse.dto.PositionDTO;
 import bogdanov.warehouse.services.interfaces.PositionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Component;
 
@@ -21,6 +22,8 @@ public class PersonMapper {
     private String toUpperCase(String str) {
         if (Strings.isNotBlank(str)) {
             str =  str.toUpperCase(Locale.ROOT);
+        } else {
+            str = null;
         }
         return str;
     }
@@ -30,7 +33,7 @@ public class PersonMapper {
                 person.getId(),
                 toUpperCase(person.getFirstname()),
                 toUpperCase(person.getLastname()),
-                Strings.isNotBlank(person.getPatronymic()) ? toUpperCase(person.getPatronymic()) : Strings.EMPTY,
+                toUpperCase(person.getPatronymic()),
                 person.getBirth(),
                 person.getPhoneNumber(),
                 toUpperCase(person.getEmail()),

@@ -14,13 +14,7 @@ public class NomenclatureMapper {
     private final ObjectMapper objectMapper;
 
     NomenclatureDTO convert(NomenclatureEntity nomenclature) {
-        return nomenclature != null
-
-                ? new NomenclatureDTO(
-                nomenclature.getId(),
-                nomenclature.getName(),
-                nomenclature.getCode(),
-                nomenclature.getAmount());
+        return objectMapper.convertValue(nomenclature, NomenclatureDTO.class);
     }
 
     NomenclatureEntity convert(NomenclatureDTO nomenclature) {

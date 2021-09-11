@@ -5,8 +5,11 @@ import bogdanov.warehouse.database.entities.ReverseRecordEntity;
 import bogdanov.warehouse.database.repositories.RecordRepository;
 import bogdanov.warehouse.database.repositories.ReverseRecordRepository;
 import bogdanov.warehouse.database.repositories.UserRepository;
-import bogdanov.warehouse.dto.*;
-import bogdanov.warehouse.exceptions.*;
+import bogdanov.warehouse.dto.NomenclatureDTO;
+import bogdanov.warehouse.dto.RecordDTO;
+import bogdanov.warehouse.dto.RecordInputDTO;
+import bogdanov.warehouse.dto.ReverseRecordDTO;
+import bogdanov.warehouse.exceptions.ResourceNotFoundException;
 import bogdanov.warehouse.exceptions.enums.ExceptionType;
 import bogdanov.warehouse.services.interfaces.NomenclatureService;
 import bogdanov.warehouse.services.interfaces.RecordService;
@@ -139,7 +142,7 @@ public class RecordServiceImpl implements RecordService {
         if (entity.isPresent()) {
             return entity.get();
         } else {
-            throw new ResourceNotFoundException("Record with id : " + id + " not found");
+            throw new ResourceNotFoundException("Record", "id", id);
         }
     }
 

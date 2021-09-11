@@ -1,5 +1,6 @@
 package bogdanov.warehouse.database.entities;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,6 +10,7 @@ import java.util.Collection;
 @Entity
 @Getter
 @Setter
+@AllArgsConstructor
 @Table(name = "positions")
 public class PositionEntity {
 
@@ -23,13 +25,7 @@ public class PositionEntity {
         super();
     }
 
-
     public PositionEntity(String name) {
-        this.name = name;
-    }
-
-    public PositionEntity(Long id, String name) {
-        this.id = id;
         this.name = name;
     }
 

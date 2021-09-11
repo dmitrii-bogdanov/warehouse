@@ -8,11 +8,13 @@ import bogdanov.warehouse.exceptions.ProhibitedRemovingException;
 import bogdanov.warehouse.exceptions.enums.ExceptionType;
 import bogdanov.warehouse.exceptions.ResourceNotFoundException;
 import bogdanov.warehouse.services.interfaces.PositionService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -23,43 +25,51 @@ public class    PositionServiceImpl implements PositionService {
 
     private final PositionRepository positionRepository;
     private final PersonRepository personRepository;
-    private final Map<String, PositionDTO> positions = new HashMap<>();
+    private final ObjectMapper objectMapper;
+
+    private static final String POSITION = "Position";
+    private static final String ID = "id";
+    private static final String NAME = "name";
+
+    private boolean isNameNotBlank(String name) {
+        if (Strings.isBlank(name)){
+            throw new IllegalArgumentException(
+                    ExceptionType.BLANK_ENTITY_NAME.setEntity(PositionEntity.class).getModifiedMessage());
+        }
+        return true;
+    }
+
+    private PositionDTO convert(PositionEntity entity) {
+        return objectMapper.convertValue(entity, PositionDTO.class);
+    }
 
     @Override
     @Cacheable(value = "positions", key = "#name")
     public PositionEntity add(String name) {
-        if (Strings.isBlank(name)) {
-            throw new IllegalArgumentException(
-                    ExceptionType.BLANK_ENTITY_NAME.setEntity(PositionEntity.class).getModifiedMessage());
-        }
-        positions.computeIfAbsent(name, n -> {
-            PositionEntity entity = positionRepository.save(new PositionEntity(name));
-            return new PositionDTO(entity.getId(), entity.getName());
-        });
-        return positions.get(name);
+        isNameNotBlank(name);
+        return positionRepository.save(new PositionEntity(name.toUpperCase(Locale.ROOT)));
     }
 
     @Override
     public PositionDTO add(PositionDTO position) {
-        PositionEntity entity = add(position.getName());
-        return new PositionDTO(entity.getId(), entity.getName());
+        return convert(add(position.getName().toUpperCase(Locale.ROOT)));
     }
 
     @Override
     public List<PositionDTO> add(List<PositionDTO> positions) {
-        return positions.stream().map(this::add).toList();
+        return positions.stream().filter(p -> isNameNotBlank(p.getName())).map(this::add).toList();
     }
 
     @Override
     public List<PositionDTO> getAll() {
-        return positionRepository.findAll().stream().map(e -> new PositionDTO(e.getId(), e.getName())).toList();
+        return positionRepository.findAll().stream().map(this::convert).toList();
     }
 
     @Override
     public PositionDTO getById(Long id) {
         PositionEntity entity = positionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(POSITION, ID, id));
-        return new PositionDTO(entity.getId(), entity.getName());
+        return convert(entity);
     }
 
     @Override

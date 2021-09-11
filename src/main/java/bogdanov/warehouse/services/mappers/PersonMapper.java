@@ -42,17 +42,16 @@ public class PersonMapper {
     }
 
     PersonDTO convert(PersonEntity person) {
-        return objectMapper.convertValue(person, PersonDTO.class);
-//        return new PersonDTO(
-//                person.getId(),
-//                person.getFirstname(),
-//                person.getLastname(),
-//                person.getPatronymic(),
-//                person.getBirth(),
-//                person.getPhoneNumber(),
-//                person.getEmail(),
-//                person.getPosition().getName()
-//        );
+        return new PersonDTO(
+                person.getId(),
+                person.getFirstname(),
+                person.getLastname(),
+                person.getPatronymic(),
+                person.getBirth(),
+                person.getPhoneNumber(),
+                person.getEmail(),
+                person.getPosition().getName()
+        );
     }
 
 

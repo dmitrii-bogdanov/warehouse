@@ -2,6 +2,7 @@ package bogdanov.warehouse.services.implementations;
 
 import bogdanov.warehouse.database.entities.RecordEntity;
 import bogdanov.warehouse.database.entities.ReverseRecordEntity;
+import bogdanov.warehouse.database.enums.RecordType;
 import bogdanov.warehouse.database.repositories.RecordRepository;
 import bogdanov.warehouse.database.repositories.ReverseRecordRepository;
 import bogdanov.warehouse.database.repositories.UserRepository;

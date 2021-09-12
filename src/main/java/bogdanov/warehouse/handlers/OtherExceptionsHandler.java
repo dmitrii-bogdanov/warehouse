@@ -22,7 +22,8 @@ public class OtherExceptionsHandler extends ResponseEntityExceptionHandler {
                     IllegalArgumentException.class
             })
     protected ResponseEntity<ExceptionDTO> handleException(RuntimeException e) {
-        if (InvalidDataAccessApiUsageException.class.equals(e.getClass())) {
+        if (InvalidDataAccessApiUsageException.class.equals(e.getClass())
+        && IllegalArgumentException.class.equals(e.getCause().getClass())) {
             e = new ArgumentException(ExceptionType.NULL_ID);
             return handleOther(e);
         }

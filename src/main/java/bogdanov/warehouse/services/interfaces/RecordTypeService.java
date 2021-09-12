@@ -9,14 +9,14 @@ import java.util.List;
 @Service
 public interface RecordTypeService {
 
+    List<RecordTypeDTO> getAll();
+
     RecordTypeDTO getById(Long id);
 
     RecordTypeEntity getEntityById(Long id);
 
-    RecordTypeEntity getEntityByName(String name);
-
     RecordTypeDTO getByName(String name);
 
-    List<RecordTypeDTO> getAll();
+    RecordTypeEntity getEntityByName(String name);
 
 }

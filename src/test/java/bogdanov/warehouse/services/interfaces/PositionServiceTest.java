@@ -1,9 +1,12 @@
 package bogdanov.warehouse.services.interfaces;
 
+import bogdanov.warehouse.database.entities.PersonEntity;
 import bogdanov.warehouse.database.entities.PositionEntity;
+import bogdanov.warehouse.database.repositories.PersonRepository;
 import bogdanov.warehouse.database.repositories.PositionRepository;
 import bogdanov.warehouse.dto.PositionDTO;
 import bogdanov.warehouse.exceptions.ArgumentException;
+import bogdanov.warehouse.exceptions.ProhibitedRemovingException;
 import bogdanov.warehouse.exceptions.ResourceNotFoundException;
 import bogdanov.warehouse.exceptions.enums.ExceptionType;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,6 +19,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 
+import java.time.LocalDate;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -31,6 +35,8 @@ class PositionServiceTest {
     private PositionService positionService;
     @Autowired
     private PositionRepository positionRepository;
+    @Autowired
+    private PersonRepository personRepository;
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -627,6 +633,32 @@ class PositionServiceTest {
     }
 
     @Test
+    void deleteByName_PositionIsInUse() {
+        PositionEntity entity = new PositionEntity("USER".toUpperCase(Locale.ROOT));
+        entity = positionRepository.save(entity);
+        assertTrue(positionRepository.existsById(entity.getId()));
+
+        PersonEntity person = new PersonEntity();
+        person.setFirstname("FIRSTNAME");
+        person.setLastname("LASTNAME");
+        person.setBirth(LocalDate.now());
+        person.setPosition(entity);
+        person = personRepository.save(person);
+
+        String name = entity.getName();
+
+        ProhibitedRemovingException e = assertThrows(ProhibitedRemovingException.class,
+                () -> positionService.delete(name.toLowerCase(Locale.ROOT)));
+        assertEquals(ExceptionType.POSITION_IS_IN_USE, e.getExceptionType());
+
+        personRepository.delete(person);
+        dto = objectMapper.convertValue(entity, PositionDTO.class);
+
+        assertEquals(dto, positionService.delete(entity.getName()));
+        assertFalse(positionRepository.existsById(entity.getId()));
+    }
+
+    @Test
     void deleteByName_NotRegisteredName() {
         PositionEntity entity = new PositionEntity("USER".toUpperCase(Locale.ROOT));
         PositionDTO dto = objectMapper.convertValue(positionRepository.save(entity), PositionDTO.class);
@@ -702,6 +734,32 @@ class PositionServiceTest {
 
         assertEquals(dto2, positionService.delete(dto2.getId()));
         assertFalse(positionRepository.existsById(dto2.getId()));
+    }
+
+    @Test
+    void deleteById_PositionIsInUse() {
+        PositionEntity entity = new PositionEntity("USER".toUpperCase(Locale.ROOT));
+        entity = positionRepository.save(entity);
+        assertTrue(positionRepository.existsById(entity.getId()));
+
+        PersonEntity person = new PersonEntity();
+        person.setFirstname("FIRSTNAME");
+        person.setLastname("LASTNAME");
+        person.setBirth(LocalDate.now());
+        person.setPosition(entity);
+        person = personRepository.save(person);
+
+        Long id = entity.getId();
+
+        ProhibitedRemovingException e = assertThrows(ProhibitedRemovingException.class,
+                () -> positionService.delete(id));
+        assertEquals(ExceptionType.POSITION_IS_IN_USE, e.getExceptionType());
+
+        personRepository.delete(person);
+        dto = objectMapper.convertValue(entity, PositionDTO.class);
+
+        assertEquals(dto, positionService.delete(entity.getId()));
+        assertFalse(positionRepository.existsById(entity.getId()));
     }
 
     @Test

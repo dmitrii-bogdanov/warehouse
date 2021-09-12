@@ -11,4 +11,6 @@ public interface RecordTypeRepository extends JpaRepository<RecordTypeEntity, Lo
 
     Optional<RecordTypeEntity> findByName(String name);
 
+    Optional<RecordTypeEntity> findByNameIgnoreCase(String name);
+
 }

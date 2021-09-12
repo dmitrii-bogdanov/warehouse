@@ -2,9 +2,12 @@ package bogdanov.warehouse.services.interfaces;
 
 import bogdanov.warehouse.database.entities.PositionEntity;
 import bogdanov.warehouse.database.repositories.PositionRepository;
+import bogdanov.warehouse.dto.PersonDTO;
 import bogdanov.warehouse.dto.PositionDTO;
 import bogdanov.warehouse.exceptions.ArgumentException;
+import bogdanov.warehouse.exceptions.ResourceNotFoundException;
 import bogdanov.warehouse.exceptions.enums.ExceptionType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -28,6 +32,8 @@ class PositionServiceTest {
     private PositionService positionService;
     @Autowired
     private PositionRepository positionRepository;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     private List<PositionDTO> dtoList;
     private List<PositionDTO> resultList;
@@ -35,6 +41,10 @@ class PositionServiceTest {
     private PositionDTO result;
     private PositionEntity resultEntity;
     private List<PositionEntity> resultEntityList;
+
+    private final String POSITION = "Position";
+    private final String ID = "id";
+    private final String NAME = "name";
 
     @BeforeEach
     private void clear() {
@@ -283,5 +293,86 @@ class PositionServiceTest {
         assertTrue(resultList.containsAll(dtoList));
         assertEquals(resultList.size(), resultList.stream().distinct().toList().size());
     }
+
+    @Test
+    void getEntityById() {
+        PositionEntity entity1 = new PositionEntity("ADMIN");
+        PositionEntity entity2 = new PositionEntity("USER");
+        entity1 = positionRepository.save(entity1);
+        entity2 = positionRepository.save(entity2);
+        assertTrue(positionRepository.existsById(entity1.getId()));
+        assertTrue(positionRepository.existsById(entity2.getId()));
+
+        assertEquals(entity1, positionService.getEntityById(entity1.getId()));
+        assertEquals(entity2, positionService.getEntityById(entity2.getId()));
+    }
+
+
+    @Test
+    void getEntityById_WrongId() {
+        PositionEntity entity = new PositionEntity("ADMIN");
+        entity = positionRepository.save(entity);
+        assertTrue(positionRepository.existsById(entity.getId()));
+
+        Long id = entity.getId() + 33;
+        assertFalse(positionRepository.existsById(id));
+
+        ResourceNotFoundException e = assertThrows(ResourceNotFoundException.class,
+                () -> positionService.getEntityById(id));
+        assertEquals(ExceptionType.RESOURCE_NOT_FOUND, e.getExceptionType());
+    }
+
+
+    @Test
+    void getEntityById_NullId() {
+        PositionEntity entity = new PositionEntity("ADMIN");
+        entity = positionRepository.save(entity);
+        assertTrue(positionRepository.existsById(entity.getId()));
+
+        InvalidDataAccessApiUsageException e = assertThrows(InvalidDataAccessApiUsageException.class,
+                () -> positionService.getEntityById(null));
+        assertEquals(IllegalArgumentException.class, e.getCause().getClass());
+    }
+
+    @Test
+    void getById() {
+        PositionEntity entity1 = new PositionEntity("ADMIN");
+        PositionEntity entity2 = new PositionEntity("USER");
+        PositionDTO dto1 = objectMapper.convertValue(positionRepository.save(entity1), PositionDTO.class);
+        PositionDTO dto2 = objectMapper.convertValue(positionRepository.save(entity2), PositionDTO.class);
+        assertTrue(positionRepository.existsById(dto1.getId()));
+        assertTrue(positionRepository.existsById(dto2.getId()));
+
+        assertEquals(dto1, positionService.getById(dto1.getId()));
+        assertEquals(dto2, positionService.getById(dto2.getId()));
+    }
+
+
+    @Test
+    void getById_WrongId() {
+        PositionEntity entity = new PositionEntity("ADMIN");
+        dto = objectMapper.convertValue(positionRepository.save(entity), PositionDTO.class);
+        assertTrue(positionRepository.existsById(dto.getId()));
+
+        Long id = dto.getId() + 33;
+        assertFalse(positionRepository.existsById(id));
+
+        ResourceNotFoundException e = assertThrows(ResourceNotFoundException.class,
+                () -> positionService.getEntityById(id));
+        assertEquals(ExceptionType.RESOURCE_NOT_FOUND, e.getExceptionType());
+    }
+
+
+    @Test
+    void getById_NullId() {
+        PositionEntity entity = new PositionEntity("ADMIN");
+        dto = objectMapper.convertValue(positionRepository.save(entity), PositionDTO.class);
+        assertTrue(positionRepository.existsById(dto.getId()));
+
+        InvalidDataAccessApiUsageException e = assertThrows(InvalidDataAccessApiUsageException.class,
+                () -> positionService.getEntityById(null));
+        assertEquals(IllegalArgumentException.class, e.getCause().getClass());
+    }
+
 
 }

@@ -1,4 +1,4 @@
-package bogdanov.warehouse.services.implementations;
+package bogdanov.warehouse.services.implementations.cashed;
 
 import bogdanov.warehouse.database.entities.RecordTypeEntity;
 import bogdanov.warehouse.database.repositories.RecordTypeRepository;

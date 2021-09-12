@@ -23,6 +23,8 @@ public interface PositionService {
 
     PositionEntity getEntityById(Long id);
 
+    PositionEntity getEntityByName(String name);
+
     List<PositionDTO> findAllByNameContaining(String partialName);
 
     PositionDTO delete(String name);

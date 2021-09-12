@@ -78,40 +78,38 @@ public class PositionServiceImpl implements PositionService {
     }
 
     @Override
-    public PositionDTO getByName(String name) {
-        if (Strings.isBlank(name)) {
-            throw new ArgumentException(ExceptionType.BLANK_ENTITY_NAME.setEntity(this.getClass()));
-        }
-        PositionEntity entity = positionRepository.findByNameIgnoreCase(name)
-                .orElseThrow(() -> new ResourceNotFoundException(POSITION, NAME, name.toUpperCase(Locale.ROOT)));
-        return new PositionDTO(entity.getId(), entity.getName());
-    }
-
-    @Override
     public PositionEntity getEntityById(Long id) {
         return positionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(POSITION, ID, id));
     }
 
     @Override
+    public PositionDTO getByName(String name) {
+        return convert(getEntityByName(name));
+    }
+
+    @Override
+    public PositionEntity getEntityByName(String name) {
+        isNameNotBlank(name);
+        return positionRepository.findByNameIgnoreCase(name)
+                .orElseThrow(() -> new ResourceNotFoundException(POSITION, NAME, name.toUpperCase(Locale.ROOT)));
+    }
+
+    @Override
     public List<PositionDTO> findAllByNameContaining(String partialName) {
+        isNameNotBlank(partialName);
         return positionRepository.findAllByNameContainingIgnoreCase(partialName)
                 .stream().map(e -> new PositionDTO(e.getId(), e.getName())).toList();
     }
 
     @Override
     public PositionDTO delete(String name) {
-        if (Strings.isBlank(name)) {
-            throw new ArgumentException(ExceptionType.BLANK_NAME);
-        }
-        return delete(positionRepository.findByNameIgnoreCase(name)
-                .orElseThrow(() -> new ResourceNotFoundException(POSITION, NAME, name.toUpperCase(Locale.ROOT))));
+        return delete(getEntityByName(name));
     }
 
     @Override
     public PositionDTO delete(Long id) {
-        return delete(positionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(POSITION, ID, id)));
+        return delete(getEntityById(id));
     }
 
     private PositionDTO delete(PositionEntity entity) {
@@ -120,7 +118,7 @@ public class PositionServiceImpl implements PositionService {
                     ExceptionType.POSITION_IS_IN_USE.setFieldValue(entity.getName()));
         }
         positionRepository.delete(entity);
-        return new PositionDTO(entity.getId(), entity.getName());
+        return convert(entity);
     }
 
 }

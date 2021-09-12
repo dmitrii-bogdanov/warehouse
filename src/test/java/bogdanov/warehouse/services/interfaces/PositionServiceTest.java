@@ -2,7 +2,6 @@ package bogdanov.warehouse.services.interfaces;
 
 import bogdanov.warehouse.database.entities.PositionEntity;
 import bogdanov.warehouse.database.repositories.PositionRepository;
-import bogdanov.warehouse.dto.PersonDTO;
 import bogdanov.warehouse.dto.PositionDTO;
 import bogdanov.warehouse.exceptions.ArgumentException;
 import bogdanov.warehouse.exceptions.ResourceNotFoundException;
@@ -374,5 +373,377 @@ class PositionServiceTest {
         assertEquals(IllegalArgumentException.class, e.getCause().getClass());
     }
 
+    @Test
+    void getEntityByName() {
+        PositionEntity entity1 = new PositionEntity("ADMIN".toUpperCase(Locale.ROOT));
+        PositionEntity entity2 = new PositionEntity("USER".toUpperCase(Locale.ROOT));
+
+        entity1 = positionRepository.save(entity1);
+        entity2 = positionRepository.save(entity2);
+
+        assertTrue(positionRepository.findByNameIgnoreCase(entity1.getName()).isPresent());
+        assertTrue(positionRepository.findByNameIgnoreCase(entity2.getName()).isPresent());
+
+        assertEquals(entity1, positionService.getEntityByName(entity1.getName().toLowerCase(Locale.ROOT)));
+        assertEquals(entity2, positionService.getEntityByName(entity2.getName().toLowerCase(Locale.ROOT)));
+    }
+
+    @Test
+    void getEntityByName_NotRegisteredName() {
+        PositionEntity entity = new PositionEntity("USER".toUpperCase(Locale.ROOT));
+        entity = positionRepository.save(entity);
+        assertTrue(positionRepository.findByNameIgnoreCase(entity.getName()).isPresent());
+
+        final String name = "admin";
+
+        assertTrue(positionRepository.findByNameIgnoreCase(name).isEmpty());
+
+        ResourceNotFoundException e = assertThrows(ResourceNotFoundException.class,
+                () -> positionService.getEntityByName(name));
+        assertEquals(ExceptionType.RESOURCE_NOT_FOUND, e.getExceptionType());
+    }
+
+    @Test
+    void getEntityByName_NullName() {
+        PositionEntity entity = new PositionEntity("USER".toUpperCase(Locale.ROOT));
+        entity = positionRepository.save(entity);
+        assertTrue(positionRepository.findByNameIgnoreCase(entity.getName()).isPresent());
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> positionService.getEntityByName(null));
+        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
+    }
+
+    @Test
+    void getEntityByName_EmptyName() {
+        PositionEntity entity = new PositionEntity("USER".toUpperCase(Locale.ROOT));
+        entity = positionRepository.save(entity);
+        assertTrue(positionRepository.findByNameIgnoreCase(entity.getName()).isPresent());
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> positionService.getEntityByName(Strings.EMPTY));
+        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
+    }
+
+    @Test
+    void getEntityByName_SpaceName() {
+        PositionEntity entity = new PositionEntity("USER".toUpperCase(Locale.ROOT));
+        entity = positionRepository.save(entity);
+        assertTrue(positionRepository.findByNameIgnoreCase(entity.getName()).isPresent());
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> positionService.getEntityByName(" "));
+        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
+    }
+
+    @Test
+    void getEntityByName_TabName() {
+        PositionEntity entity = new PositionEntity("USER".toUpperCase(Locale.ROOT));
+        entity = positionRepository.save(entity);
+        assertTrue(positionRepository.findByNameIgnoreCase(entity.getName()).isPresent());
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> positionService.getEntityByName("\t"));
+        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
+    }
+
+    @Test
+    void getByName() {
+        PositionEntity entity1 = new PositionEntity("ADMIN".toUpperCase(Locale.ROOT));
+        PositionEntity entity2 = new PositionEntity("USER".toUpperCase(Locale.ROOT));
+
+        PositionDTO dto1 = objectMapper.convertValue(positionRepository.save(entity1), PositionDTO.class);
+        PositionDTO dto2 = objectMapper.convertValue(positionRepository.save(entity2), PositionDTO.class);
+
+        assertTrue(positionRepository.findByNameIgnoreCase(dto1.getName()).isPresent());
+        assertTrue(positionRepository.findByNameIgnoreCase(dto2.getName()).isPresent());
+
+        assertEquals(dto1, positionService.getByName(dto1.getName().toLowerCase(Locale.ROOT)));
+        assertEquals(dto2, positionService.getByName(dto2.getName().toLowerCase(Locale.ROOT)));
+    }
+
+    @Test
+    void getByName_NotRegisteredName() {
+        PositionEntity entity = new PositionEntity("USER".toUpperCase(Locale.ROOT));
+        PositionDTO dto = objectMapper.convertValue(positionRepository.save(entity), PositionDTO.class);
+        assertTrue(positionRepository.findByNameIgnoreCase(dto.getName()).isPresent());
+
+        final String name = "admin";
+
+        assertTrue(positionRepository.findByNameIgnoreCase(name).isEmpty());
+
+        ResourceNotFoundException e = assertThrows(ResourceNotFoundException.class,
+                () -> positionService.getEntityByName(name));
+        assertEquals(ExceptionType.RESOURCE_NOT_FOUND, e.getExceptionType());
+    }
+
+    @Test
+    void getByName_NullName() {
+        PositionEntity entity = new PositionEntity("USER".toUpperCase(Locale.ROOT));
+        PositionDTO dto = objectMapper.convertValue(positionRepository.save(entity), PositionDTO.class);
+        assertTrue(positionRepository.findByNameIgnoreCase(dto.getName()).isPresent());
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> positionService.getEntityByName(null));
+        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
+    }
+
+    @Test
+    void getByName_EmptyName() {
+        PositionEntity entity = new PositionEntity("USER".toUpperCase(Locale.ROOT));
+        PositionDTO dto = objectMapper.convertValue(positionRepository.save(entity), PositionDTO.class);
+        assertTrue(positionRepository.findByNameIgnoreCase(dto.getName()).isPresent());
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> positionService.getEntityByName(Strings.EMPTY));
+        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
+    }
+
+    @Test
+    void getByName_SpaceName() {
+        PositionEntity entity = new PositionEntity("USER".toUpperCase(Locale.ROOT));
+        PositionDTO dto = objectMapper.convertValue(positionRepository.save(entity), PositionDTO.class);
+        assertTrue(positionRepository.findByNameIgnoreCase(dto.getName()).isPresent());
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> positionService.getEntityByName(" "));
+        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
+    }
+
+    @Test
+    void getByName_TabName() {
+        PositionEntity entity = new PositionEntity("USER".toUpperCase(Locale.ROOT));
+        PositionDTO dto = objectMapper.convertValue(positionRepository.save(entity), PositionDTO.class);
+        assertTrue(positionRepository.findByNameIgnoreCase(dto.getName()).isPresent());
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> positionService.getEntityByName("\t"));
+        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
+    }
+
+    @Test
+    void findAllByNameContaining() {
+        PositionEntity entity1 = new PositionEntity("ADMIN".toUpperCase(Locale.ROOT));
+        PositionEntity entity2 = new PositionEntity("USER".toUpperCase(Locale.ROOT));
+        PositionEntity entity3 = new PositionEntity("ADMINISTRATOR".toUpperCase(Locale.ROOT));
+
+        PositionDTO dto1 = objectMapper.convertValue(positionRepository.save(entity1), PositionDTO.class);
+        PositionDTO dto2 = objectMapper.convertValue(positionRepository.save(entity2), PositionDTO.class);
+        PositionDTO dto3 = objectMapper.convertValue(positionRepository.save(entity3), PositionDTO.class);
+
+        assertTrue(positionRepository.existsById(entity1.getId()));
+        assertTrue(positionRepository.existsById(entity2.getId()));
+        assertTrue(positionRepository.existsById(entity3.getId()));
+
+        resultList = positionService.findAllByNameContaining("MIN".toLowerCase(Locale.ROOT));
+        assertNotNull(resultList);
+        assertEquals(2, resultList.size());
+        assertTrue(resultList.contains(dto1));
+        assertFalse(resultList.contains(dto2));
+        assertTrue(resultList.contains(dto3));
+
+        resultList = null;
+        resultList = positionService.findAllByNameContaining("SE".toLowerCase(Locale.ROOT));
+        assertNotNull(resultList);
+        assertEquals(1, resultList.size());
+        assertFalse(resultList.contains(dto1));
+        assertTrue(resultList.contains(dto2));
+        assertFalse(resultList.contains(dto3));
+
+        resultList = null;
+        resultList = positionService.findAllByNameContaining("ADMINIST".toLowerCase(Locale.ROOT));
+        assertNotNull(resultList);
+        assertEquals(1, resultList.size());
+        assertFalse(resultList.contains(dto1));
+        assertFalse(resultList.contains(dto2));
+        assertTrue(resultList.contains(dto3));
+
+        resultList = null;
+        resultList = positionService.findAllByNameContaining("SOMETHING_OTHER".toLowerCase(Locale.ROOT));
+        assertNotNull(resultList);
+        assertEquals(0, resultList.size());
+    }
+
+    @Test
+    void findAllByNameContaining_NullName() {
+        PositionEntity entity = new PositionEntity("USER".toUpperCase(Locale.ROOT));
+        entity = positionRepository.save(entity);
+        assertTrue(positionRepository.existsById(entity.getId()));
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> positionService.findAllByNameContaining(null));
+        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
+    }
+
+    @Test
+    void findAllByNameContaining_EmptyName() {
+        PositionEntity entity = new PositionEntity("USER".toUpperCase(Locale.ROOT));
+        entity = positionRepository.save(entity);
+        assertTrue(positionRepository.existsById(entity.getId()));
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> positionService.findAllByNameContaining(Strings.EMPTY));
+        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
+    }
+
+    @Test
+    void findAllByNameContaining_SpaceName() {
+        PositionEntity entity = new PositionEntity("USER".toUpperCase(Locale.ROOT));
+        entity = positionRepository.save(entity);
+        assertTrue(positionRepository.existsById(entity.getId()));
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> positionService.findAllByNameContaining(" "));
+        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
+    }
+
+    @Test
+    void findAllByNameContaining_TabName() {
+        PositionEntity entity = new PositionEntity("USER".toUpperCase(Locale.ROOT));
+        entity = positionRepository.save(entity);
+        assertTrue(positionRepository.existsById(entity.getId()));
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> positionService.findAllByNameContaining("\t"));
+        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
+    }
+
+    @Test
+    void deleteByName() {
+        PositionEntity entity1 = new PositionEntity("USER".toUpperCase(Locale.ROOT));
+        PositionDTO dto1 = objectMapper.convertValue(positionRepository.save(entity1), PositionDTO.class);
+        assertTrue(positionRepository.existsById(dto1.getId()));
+
+        PositionEntity entity2 = new PositionEntity("ADMIN".toUpperCase(Locale.ROOT));
+        PositionDTO dto2 = objectMapper.convertValue(positionRepository.save(entity2), PositionDTO.class);
+        assertTrue(positionRepository.existsById(dto2.getId()));
+
+        assertEquals(dto1, positionService.delete(dto1.getName().toLowerCase(Locale.ROOT)));
+        assertFalse(positionRepository.existsById(dto1.getId()));
+        assertTrue(positionRepository.existsById(dto2.getId()));
+
+        assertEquals(dto2, positionService.delete(dto2.getName().toLowerCase(Locale.ROOT)));
+        assertFalse(positionRepository.existsById(dto2.getId()));
+    }
+
+    @Test
+    void deleteByName_NotRegisteredName() {
+        PositionEntity entity = new PositionEntity("USER".toUpperCase(Locale.ROOT));
+        PositionDTO dto = objectMapper.convertValue(positionRepository.save(entity), PositionDTO.class);
+        assertTrue(positionRepository.existsById(dto.getId()));
+
+        final String name = "ADMIN";
+        assertTrue(positionRepository.findByNameIgnoreCase(name).isEmpty());
+
+        ResourceNotFoundException e = assertThrows(ResourceNotFoundException.class,
+                () -> positionService.delete(name));
+        assertEquals(ExceptionType.RESOURCE_NOT_FOUND, e.getExceptionType());
+    }
+
+    @Test
+    void deleteByName_NullName() {
+        PositionEntity entity = new PositionEntity("USER".toUpperCase(Locale.ROOT));
+        entity = positionRepository.save(entity);
+        assertTrue(positionRepository.existsById(entity.getId()));
+
+        final String name = null;
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> positionService.delete(name));
+        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
+    }
+
+    @Test
+    void deleteByName_EmptyName() {
+        PositionEntity entity = new PositionEntity("USER".toUpperCase(Locale.ROOT));
+        entity = positionRepository.save(entity);
+        assertTrue(positionRepository.existsById(entity.getId()));
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> positionService.delete(Strings.EMPTY));
+        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
+    }
+
+    @Test
+    void deleteByName_SpaceName() {
+        PositionEntity entity = new PositionEntity("USER".toUpperCase(Locale.ROOT));
+        entity = positionRepository.save(entity);
+        assertTrue(positionRepository.existsById(entity.getId()));
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> positionService.delete(" "));
+        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
+    }
+
+    @Test
+    void deleteByName_TabName() {
+        PositionEntity entity = new PositionEntity("USER".toUpperCase(Locale.ROOT));
+        entity = positionRepository.save(entity);
+        assertTrue(positionRepository.existsById(entity.getId()));
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> positionService.delete("\t"));
+        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
+    }
+
+    @Test
+    void deleteById() {
+        PositionEntity entity1 = new PositionEntity("USER".toUpperCase(Locale.ROOT));
+        PositionDTO dto1 = objectMapper.convertValue(positionRepository.save(entity1), PositionDTO.class);
+        assertTrue(positionRepository.existsById(dto1.getId()));
+
+        PositionEntity entity2 = new PositionEntity("ADMIN".toUpperCase(Locale.ROOT));
+        PositionDTO dto2 = objectMapper.convertValue(positionRepository.save(entity2), PositionDTO.class);
+        assertTrue(positionRepository.existsById(dto2.getId()));
+
+        assertEquals(dto1, positionService.delete(dto1.getId()));
+        assertFalse(positionRepository.existsById(dto1.getId()));
+        assertTrue(positionRepository.existsById(dto2.getId()));
+
+        assertEquals(dto2, positionService.delete(dto2.getId()));
+        assertFalse(positionRepository.existsById(dto2.getId()));
+    }
+
+    @Test
+    void deleteById_NotRegisteredId() {
+        PositionEntity entity = new PositionEntity("USER".toUpperCase(Locale.ROOT));
+        PositionDTO dto = objectMapper.convertValue(positionRepository.save(entity), PositionDTO.class);
+        assertTrue(positionRepository.existsById(dto.getId()));
+
+        final Long id = dto.getId() + 33;
+        assertFalse(positionRepository.existsById(id));
+
+        ResourceNotFoundException e = assertThrows(ResourceNotFoundException.class,
+                () -> positionService.delete(id));
+        assertEquals(ExceptionType.RESOURCE_NOT_FOUND, e.getExceptionType());
+    }
+
+    @Test
+    void deleteById_NullId() {
+        PositionEntity entity = new PositionEntity("USER".toUpperCase(Locale.ROOT));
+        PositionDTO dto = objectMapper.convertValue(positionRepository.save(entity), PositionDTO.class);
+        assertTrue(positionRepository.existsById(dto.getId()));
+
+        final Long id = null;
+
+        InvalidDataAccessApiUsageException e = assertThrows(InvalidDataAccessApiUsageException.class,
+                () -> positionService.delete(id));
+        assertEquals(IllegalArgumentException.class, e.getCause().getClass());
+    }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

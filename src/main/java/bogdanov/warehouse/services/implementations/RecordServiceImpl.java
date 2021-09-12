@@ -9,11 +9,13 @@ import bogdanov.warehouse.dto.NomenclatureDTO;
 import bogdanov.warehouse.dto.RecordDTO;
 import bogdanov.warehouse.dto.RecordInputDTO;
 import bogdanov.warehouse.dto.ReverseRecordDTO;
+import bogdanov.warehouse.exceptions.ArgumentException;
 import bogdanov.warehouse.exceptions.ResourceNotFoundException;
 import bogdanov.warehouse.exceptions.enums.ExceptionType;
 import bogdanov.warehouse.services.interfaces.NomenclatureService;
 import bogdanov.warehouse.services.interfaces.RecordService;
 import bogdanov.warehouse.services.interfaces.RecordTypeService;
+import bogdanov.warehouse.services.interfaces.UserAccountService;
 import bogdanov.warehouse.services.mappers.Mapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
@@ -26,7 +28,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
-//TODO hide deleted records from usual call of getAll()
 @Service
 @RequiredArgsConstructor
 public class RecordServiceImpl implements RecordService {
@@ -37,11 +38,19 @@ public class RecordServiceImpl implements RecordService {
     private final UserRepository userRepository;
     private final RecordTypeService recordTypeService;
     private final ReverseRecordRepository reverseRecordRepository;
+    private final UserAccountService userAccountService;
+
+    private static final String RECEPTION = "RECEPTION";
+    private static final String RELEASE = "RELEASE";
+    private static final String RECORD = "Record";
+    private static final String ID = "id";
 
     @Override
     public RecordDTO add(RecordInputDTO record, String username) {
         RecordEntity entity = mapper.convert(record);
-        entity.setUser(userRepository.findByUsername(username));
+        entity.setNomenclature(nomenclatureService.getEntityById(record.getNomenclatureId()));
+        entity.setType(recordTypeService.getEntityByName(record.getType()));
+        entity.setUser(userAccountService.getEntityByUsername(username));
         return mapper.convert(add(entity));
     }
 
@@ -50,8 +59,8 @@ public class RecordServiceImpl implements RecordService {
         NomenclatureDTO nomenclatureDTO = mapper.convert(entity.getNomenclature());
         nomenclatureDTO.setAmount(entity.getAmount());
         switch (entity.getType().getName()) {
-            case "RECEPTION" -> nomenclatureService.addAmount(nomenclatureDTO);
-            case "RELEASE" -> nomenclatureService.subtractAmount(nomenclatureDTO);
+            case RECEPTION -> nomenclatureService.addAmount(nomenclatureDTO);
+            case RELEASE -> nomenclatureService.subtractAmount(nomenclatureDTO);
         }
         return recordRepository.save(entity);
     }
@@ -64,8 +73,8 @@ public class RecordServiceImpl implements RecordService {
         generatedRecord.setNomenclature(revertedRecord.getNomenclature());
         generatedRecord.setAmount(revertedRecord.getAmount());
         switch (revertedRecord.getType().getName()) {
-            case "RECEPTION" -> generatedRecord.setType(recordTypeService.getEntityByName("RELEASE"));
-            case "RELEASE" -> generatedRecord.setType(recordTypeService.getEntityByName("RECEPTION"));
+            case RECEPTION -> generatedRecord.setType(recordTypeService.getEntityByName(RELEASE));
+            case RELEASE -> generatedRecord.setType(recordTypeService.getEntityByName(RECEPTION));
         }
         generatedRecord = add(generatedRecord);
         ReverseRecordEntity reverseRecord = new ReverseRecordEntity(
@@ -118,7 +127,7 @@ public class RecordServiceImpl implements RecordService {
     @Override
     public List<RecordDTO> findAllByNomenclatureName(String nomenclatureName) {
         if (Strings.isBlank(nomenclatureName)) {
-            throw new IllegalArgumentException(ExceptionType.BLANK_NAME.getMessage());
+            throw new ArgumentException(ExceptionType.BLANK_NAME);
         }
         return recordRepository.findAllByNomenclature_NameEquals(nomenclatureName).stream().map(mapper::convert).toList();
     }
@@ -126,7 +135,7 @@ public class RecordServiceImpl implements RecordService {
     @Override
     public List<RecordDTO> findAllByNomenclatureCode(String nomenclatureCode) {
         if (Strings.isBlank(nomenclatureCode)) {
-            throw new IllegalArgumentException(ExceptionType.BLANK_CODE.getMessage());
+            throw new ArgumentException(ExceptionType.BLANK_CODE);
         }
         return recordRepository.findAllByNomenclature_CodeEquals(nomenclatureCode).stream().map(mapper::convert).toList();
     }
@@ -142,7 +151,7 @@ public class RecordServiceImpl implements RecordService {
         if (entity.isPresent()) {
             return entity.get();
         } else {
-            throw new ResourceNotFoundException("Record", "id", id);
+            throw new ResourceNotFoundException(RECORD, ID, id);
         }
     }
 

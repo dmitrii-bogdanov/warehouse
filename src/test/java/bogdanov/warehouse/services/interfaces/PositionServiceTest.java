@@ -93,22 +93,33 @@ class PositionServiceTest {
     }
 
     @Test
-    void addString_BlankName() {
+    void addString_NullName() {
         dto.setName(null);
-        ArgumentException e;
-        e = assertThrows(ArgumentException.class,
+        ArgumentException e = assertThrows(ArgumentException.class,
                 () -> positionService.add(dto.getName()));
         assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
+    }
+
+    @Test
+    void addString_EmptyName() {
         dto.setName(Strings.EMPTY);
-        e = assertThrows(ArgumentException.class,
+        ArgumentException e = assertThrows(ArgumentException.class,
                 () -> positionService.add(dto.getName()));
         assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
+    }
+
+    @Test
+    void addString_SpaceName() {
         dto.setName(" ");
-        e = assertThrows(ArgumentException.class,
+        ArgumentException e = assertThrows(ArgumentException.class,
                 () -> positionService.add(dto.getName()));
         assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
+    }
+
+    @Test
+    void addString_TabName() {
         dto.setName("\t");
-        e = assertThrows(ArgumentException.class,
+        ArgumentException e = assertThrows(ArgumentException.class,
                 () -> positionService.add(dto.getName()));
         assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
     }
@@ -156,6 +167,30 @@ class PositionServiceTest {
     }
 
     @Test
+    void addDto_NullName() {
+        dto.setName(null);
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> positionService.add(dto));
+        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
+    }
+
+    @Test
+    void addDto_EmptyName() {
+        dto.setName(Strings.EMPTY);
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> positionService.add(dto));
+        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
+    }
+
+    @Test
+    void addDto_SpaceName() {
+        dto.setName(" ");
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> positionService.add(dto));
+        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
+    }
+
+    @Test
     void addDto_TabName() {
         dto.setName("\t");
         ArgumentException e = assertThrows(ArgumentException.class,
@@ -186,6 +221,47 @@ class PositionServiceTest {
     }
 
     @Test
+    void addListDto_NullName() {
+        dtoList.add(dto);
+        dtoList.add(new PositionDTO(null, null));
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> positionService.add(dtoList));
+        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
+        assertEquals(0, positionRepository.findAll().size());
+    }
+
+    @Test
+    void addListDto_EmptyName() {
+        dtoList.add(dto);
+        dtoList.add(new PositionDTO(null, Strings.EMPTY));
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> positionService.add(dtoList));
+        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
+        assertEquals(0, positionRepository.findAll().size());
+    }
+
+
+    @Test
+    void addListDto_SpaceName() {
+        dtoList.add(dto);
+        dtoList.add(new PositionDTO(null, " "));
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> positionService.add(dtoList));
+        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
+        assertEquals(0, positionRepository.findAll().size());
+    }
+
+    @Test
+    void addListDto_TabName() {
+        dtoList.add(dto);
+        dtoList.add(new PositionDTO(null, "\t"));
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> positionService.add(dtoList));
+        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
+        assertEquals(0, positionRepository.findAll().size());
+    }
+
+    @Test
     void getAll() {
         dtoList.add(dto);//0
         dtoList.add(new PositionDTO(null, "staff"));//1
@@ -195,14 +271,8 @@ class PositionServiceTest {
         assertEquals(dtoList.get(1).getName(), dtoList.get(2).getName());
         assertNotEquals(dtoList.get(0).getName(), dtoList.get(3).getName());
         assertNotEquals(dtoList.get(1).getName(), dtoList.get(3).getName());
-        log.info("dtoList");
-        dtoList.forEach(d -> log.info(d.getId() + " " + d.getName()));
         dtoList = positionService.add(dtoList).stream().distinct().toList();
-        log.info("dtoList");
-        dtoList.forEach(d -> log.info(d.getId() + " " + d.getName()));
         resultList = positionService.getAll();
-        log.info("resultList");
-        resultList.forEach(d -> log.info(d.getId() + " " + d.getName()));
         assertNotNull(resultList);
         assertEquals(dtoList.size(), resultList.size());
         for (PositionDTO r : resultList) {

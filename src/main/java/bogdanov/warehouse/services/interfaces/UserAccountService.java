@@ -5,6 +5,7 @@ import bogdanov.warehouse.database.entities.UserEntity;
 import bogdanov.warehouse.database.repositories.UserRepository;
 import bogdanov.warehouse.dto.UserAccountDTO;
 import bogdanov.warehouse.dto.UserAccountWithPasswordDTO;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -35,6 +36,8 @@ public interface UserAccountService extends UserDetailsService {
     List<UserAccountDTO> getAll();
 
     UserAccountDTO getById(Long id);
+
+    UserEntity getEntityByUsername(String username);
 
     UserEntity getEntityById(Long id);
 

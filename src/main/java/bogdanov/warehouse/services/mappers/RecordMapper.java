@@ -29,15 +29,7 @@ public class RecordMapper {
     RecordEntity convert(RecordInputDTO record) {
         RecordEntity entity = new RecordEntity();
         entity.setId(record.getId());
-        Optional<NomenclatureEntity> nomenclature = nomenclatureRepository.findById(record.getNomenclatureId());
-        if (nomenclature.isPresent()) {
-            entity.setNomenclature(nomenclature.get());
-        } else {
-            throw new ResourceNotFoundException("Nomenclature", "id", record.getNomenclatureId());
-        }
-        entity.setType(recordTypeMapper.convert(recordTypeService.getByName(record.getType())));
-        entity.setAmount(record.getAmount()
-        );
+        entity.setAmount(record.getAmount());
         return entity;
     }
 
@@ -59,7 +51,7 @@ public class RecordMapper {
         entity.setType(recordTypeMapper.convert(recordTypeService.getByName(record.getType())));
         entity.setAmount(record.getAmount());
         entity.setTime(record.getTime());
-        return  entity;
+        return entity;
     }
 
 }

@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -45,21 +46,28 @@ public class PersonRestController {
         return personService.delete(id);
     }
 
-    @GetMapping(params = "firstname")
-    public List<PersonDTO> findAllByFirstname(@RequestParam String firstname) {
-        return personService.findAllByFirstname(firstname);
-    }
-
-    @GetMapping(params = "lastname")
-    public List<PersonDTO> findAllByLastname(@RequestParam String lastname) {
-        return personService.findAllByLastname(lastname);
-    }
-
-    @GetMapping(params = {"firstname", "patronymic", "lastname"})
-    public List<PersonDTO> findAllByFullName(@RequestParam String firstname,
-                                             @RequestParam String patronymic,
-                                             @RequestParam String lastname) {
-        return personService.findAllByFullName(firstname, patronymic, lastname);
+    @GetMapping(
+            params = {
+                    "search",
+                    "firstname",
+                    "lastname",
+                    "patronymic",
+                    "position",
+                    "phoneNumber",
+                    "email",
+                    "startDate",
+                    "endDate"
+            }
+            )
+    public List<PersonDTO> search(@RequestParam String firstname,
+                                  @RequestParam String lastname,
+                                  @RequestParam String patronymic,
+                                  @RequestParam String position,
+                                  @RequestParam String phoneNumber,
+                                  @RequestParam String email,
+                                  @RequestParam LocalDate startDate,
+                                  @RequestParam LocalDate endDate) {
+        return personService.search(firstname, lastname, patronymic, position, phoneNumber, email, startDate, endDate);
     }
 
 }

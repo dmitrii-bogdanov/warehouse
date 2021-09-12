@@ -13,7 +13,9 @@ import bogdanov.warehouse.services.interfaces.UserAccountService;
 import bogdanov.warehouse.services.mappers.Mapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -29,9 +31,17 @@ public class UserAccountServiceImpl implements UserAccountService {
 
     private final UserRepository userRepository;
     private final Mapper mapper;
-    private int minPasswordLength = 8;
     private final PersonService personService;
     private final RecordRepository recordRepository;
+
+    private static final int MIN_PASSWORD_LENGTH = 8;
+    private static final String NOT_VALID_PASSWORD_COMMENT =
+            "Password is too short (min length : " + MIN_PASSWORD_LENGTH + ") or blank";
+
+    private static final String USER = "User";
+    private static final String ID = "id";
+    private static final String USERNAME = "username";
+    private static final String PERSON_ID = "person_id";
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -113,11 +123,10 @@ public class UserAccountServiceImpl implements UserAccountService {
     }
 
     private boolean isPasswordValid(String password) {
-        if (Strings.isBlank(password) || (password.length() < minPasswordLength)) {
-            throw new IllegalArgumentException(
+        if (Strings.isBlank(password) || (password.length() < MIN_PASSWORD_LENGTH)) {
+            throw new ArgumentException(
                     ExceptionType.NOT_VALID_PASSWORD
-                            .addComment("Password is too short (min length : " + minPasswordLength + ") or blank")
-                            .getModifiedMessage());
+                            .addComment(NOT_VALID_PASSWORD_COMMENT));
         }
         return true;
     }
@@ -151,13 +160,15 @@ public class UserAccountServiceImpl implements UserAccountService {
     }
 
     @Override
+    @Cacheable("users")
+    public UserEntity getEntityByUsername(String username) {
+        return Optional.ofNullable(userRepository.findByUsername(StringUtils.toRootUpperCase(username)))
+                .orElseThrow(() -> new ResourceNotFoundException(USER, USERNAME, username));
+    }
+
+    @Override
     public UserEntity getEntityById(Long id) {
-        Optional<UserEntity> optionalEntity = userRepository.findById(id);
-        if (optionalEntity.isPresent()) {
-            return optionalEntity.get();
-        } else {
-            throw new ResourceNotFoundException("User", "id", id);
-        }
+        return userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(USER, ID, id));
     }
 
     @Override
@@ -166,7 +177,7 @@ public class UserAccountServiceImpl implements UserAccountService {
         if (optionalEntity.isPresent()) {
             return mapper.convert(optionalEntity.get(), UserAccountDTO.class);
         } else {
-            throw new ResourceNotFoundException("Person", "id", personId);
+            throw new ResourceNotFoundException(USER, PERSON_ID, personId);
         }
     }
 
@@ -177,7 +188,7 @@ public class UserAccountServiceImpl implements UserAccountService {
         if (entity != null) {
             return mapper.convert(entity, UserAccountDTO.class);
         } else {
-            throw new ResourceNotFoundException("User", "username", username);
+            throw new ResourceNotFoundException(USER, USERNAME, username);
         }
     }
 

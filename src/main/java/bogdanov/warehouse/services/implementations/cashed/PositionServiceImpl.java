@@ -15,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,6 +24,7 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
+@Primary
 public class PositionServiceImpl implements PositionService {
 
     private final PositionRepository positionRepository;
@@ -72,9 +74,7 @@ public class PositionServiceImpl implements PositionService {
 
     @Override
     public PositionDTO getById(Long id) {
-        PositionEntity entity = positionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(POSITION, ID, id));
-        return convert(entity);
+        return convert(getEntityById(id));
     }
 
     @Override
@@ -85,6 +85,12 @@ public class PositionServiceImpl implements PositionService {
         PositionEntity entity = positionRepository.findByNameIgnoreCase(name)
                 .orElseThrow(() -> new ResourceNotFoundException(POSITION, NAME, name.toUpperCase(Locale.ROOT)));
         return new PositionDTO(entity.getId(), entity.getName());
+    }
+
+    @Override
+    public PositionEntity getEntityById(Long id) {
+        return positionRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(POSITION, ID, id));
     }
 
     @Override

@@ -19,41 +19,28 @@ public interface PersonRepository extends JpaRepository<PersonEntity, Long> {
 
     List<PersonEntity> findAllByPhoneNumberContaining(String partialPhoneNumber);
 
-    List<PersonEntity> findAllByFirstnameIgnoreCase(String firstname);
-
-    List<PersonEntity> findAllByLastnameIgnoreCase(String lastname);
-
-    default List<PersonEntity> search(
+    //full
+    List<PersonEntity> findAllByFirstnameContainingIgnoreCaseAndLastnameContainingIgnoreCaseAndPatronymicContainingIgnoreCaseAndPositionInAndPhoneNumberContainingAndEmailContainingIgnoreCaseAndBirthBetween(
             String firstname, String lastname, String patronymic,
-            Long positionId, String phoneNumber, String email,
-            LocalDate startDate, LocalDate endDate) {
-        return findAllByFirstnameContainingIgnoreCaseAndLastnameContainingIgnoreCaseAndPatronymicContainingIgnoreCaseAndPosition_IdAndPhoneNumberContainingAndEmailContainingIgnoreCaseAndBirthBetween(
-                firstname, lastname, patronymic, positionId, phoneNumber, email, startDate, endDate);
-    }
-
-    default List<PersonEntity> searchWithNullPatronymic(
-            String firstname, String lastname,
-            Long positionId, String phoneNumber, String email,
-            LocalDate startDate, LocalDate endDate) {
-        return findAllByFirstnameContainingIgnoreCaseAndLastnameContainingIgnoreCaseAndPatronymicIsNullAndPosition_IdAndPhoneNumberContainingAndEmailContainingIgnoreCaseAndBirthBetween(
-                firstname, lastname, positionId, phoneNumber, email, startDate, endDate);
-    }
-
-    List<PersonEntity>
-    findAllByFirstnameContainingIgnoreCaseAndLastnameContainingIgnoreCaseAndPatronymicContainingIgnoreCase(
-            String firstname, String lastname, String patronymic);
-
-    List<PersonEntity> findAllByFirstnameIgnoreCaseAndLastnameIgnoreCaseAndPatronymicIsNull(String firstname,
-                                                                                            String lastname);
-
-    List<PersonEntity> findAllByFirstnameContainingIgnoreCaseAndLastnameContainingIgnoreCaseAndPatronymicContainingIgnoreCaseAndPosition_IdAndPhoneNumberContainingAndEmailContainingIgnoreCaseAndBirthBetween(
-            String firstname, String lastname, String patronymic,
-            Long positionId, String phoneNumber, String email,
+            List<PositionEntity> positions, String phoneNumber, String email,
             LocalDate startDate, LocalDate endDate);
 
-    List<PersonEntity> findAllByFirstnameContainingIgnoreCaseAndLastnameContainingIgnoreCaseAndPatronymicIsNullAndPosition_IdAndPhoneNumberContainingAndEmailContainingIgnoreCaseAndBirthBetween(
+    //patronymic is null
+    List<PersonEntity> findAllByFirstnameContainingIgnoreCaseAndLastnameContainingIgnoreCaseAndPatronymicIsNullAndPositionInAndPhoneNumberContainingAndEmailContainingIgnoreCaseAndBirthBetween(
             String firstname, String lastname,
-            Long positionId, String phoneNumber, String email,
+            List<PositionEntity> positions, String phoneNumber, String email,
+            LocalDate startDate, LocalDate endDate);
+
+    //patronymic is not null, any position
+    List<PersonEntity> findAllByFirstnameContainingIgnoreCaseAndLastnameContainingIgnoreCaseAndPatronymicContainingIgnoreCaseAndPhoneNumberContainingAndEmailContainingIgnoreCaseAndBirthBetween(
+            String firstname, String lastname, String patronymic,
+            String phoneNumber, String email,
+            LocalDate startDate, LocalDate endDate);
+
+    //patronymic is null, any position
+    List<PersonEntity> findAllByFirstnameContainingIgnoreCaseAndLastnameContainingIgnoreCaseAndPatronymicIsNullAndPhoneNumberContainingAndEmailContainingIgnoreCaseAndBirthBetween(
+            String firstname, String lastname,
+            String phoneNumber, String email,
             LocalDate startDate, LocalDate endDate);
 
     List<PersonEntity> findAllByBirthEquals(LocalDate date);

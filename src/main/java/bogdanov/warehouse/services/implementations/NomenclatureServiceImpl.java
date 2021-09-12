@@ -11,6 +11,7 @@ import bogdanov.warehouse.services.mappers.Mapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Primary;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -96,6 +97,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
     }
 
     @Override
+    @Cacheable("nomenclature")
     public NomenclatureEntity getEntityById(Long id) {
         Optional<NomenclatureEntity> entity = nomenclatureRepository.findById(id);
         if (entity.isPresent()) {

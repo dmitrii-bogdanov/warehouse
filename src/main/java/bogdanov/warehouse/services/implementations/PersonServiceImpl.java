@@ -8,6 +8,7 @@ import bogdanov.warehouse.dto.PersonDTO;
 import bogdanov.warehouse.exceptions.*;
 import bogdanov.warehouse.exceptions.enums.ExceptionType;
 import bogdanov.warehouse.services.interfaces.PersonService;
+import bogdanov.warehouse.services.interfaces.PositionService;
 import bogdanov.warehouse.services.mappers.Mapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
@@ -23,11 +24,13 @@ public class PersonServiceImpl implements PersonService {
     private final PersonRepository personRepository;
     private final Mapper mapper;
     private final UserRepository userRepository;
+    private final PositionService positionService;
 
     private static final String PERSON = "Person";
     private static final String ID = "id";
     private static final String RESERVED_NULL_PATRONYMIC = "NULL";
     private static final String PATRONYMIC = "patronymic";
+    private static final String SEARCH_POSITION_DELIMITER = ",";
 
     private boolean areAllRequiredFieldsPresent(PersonDTO dto) {
         if (Strings.isNotBlank(dto.getFirstname())
@@ -191,25 +194,26 @@ public class PersonServiceImpl implements PersonService {
 
     @Override
     public List<PersonDTO> search(String firstname, String lastname, String patronymic,
-                                  Long positionId, String phoneNumber, String email,
+                                  String position, String phoneNumber, String email,
                                   LocalDate startDate, LocalDate endDate) {
         boolean isFirstnameBlank = Strings.isBlank(firstname);
         boolean isLastnameBlank = Strings.isBlank(lastname);
         boolean isPatronymicBlank = Strings.isBlank(patronymic);
-        boolean isPositionAbsent = positionId == null;
+        boolean isPositionBlank = Strings.isBlank(position);
         boolean isPhoneNumberBlank = Strings.isBlank(phoneNumber);
         boolean isEmailBlank = Strings.isBlank(email);
         boolean isStartDateAbsent = startDate == null;
         boolean isEndDateAbsent = endDate == null;
+        List<PositionEntity> positions = new LinkedList<>();
+        List<PersonEntity> entities;
 
-        boolean shouldPatronymicBeAbsent = RESERVED_NULL_PATRONYMIC.equalsIgnoreCase(patronymic);
+        boolean shouldPatronymicBeNull = RESERVED_NULL_PATRONYMIC.equalsIgnoreCase(patronymic);
 
         if (isFirstnameBlank && isLastnameBlank && isPatronymicBlank
                 && isPhoneNumberBlank && isEmailBlank
                 && isStartDateAbsent && isEndDateAbsent) {
             throw new ArgumentException(ExceptionType.NO_PARAMETER_IS_PRESENT);
         }
-
 
 
         if (isFirstnameBlank) {
@@ -234,12 +238,68 @@ public class PersonServiceImpl implements PersonService {
             endDate = LocalDate.MAX;
         }
 
-        List<PersonEntity> entities = shouldPatronymicBeAbsent
-                ? personRepository.searchWithNullPatronymic(firstname, lastname, phoneNumber, email, startDate, endDate)
-                : personRepository.search(firstname, lastname, patronymic, phoneNumber, email, startDate, endDate);
+        if (!isPositionBlank) {
+            positions = getPositionEntitiesFromString(position);
+        }
+
+        if (isPositionBlank) {
+            entities = shouldPatronymicBeNull
+                    //patronymic is null, any position
+                    ? searchWithNullPatronymicAndAnyPosition(firstname, lastname, phoneNumber, email, startDate, endDate)
+                    //any position
+                    : searchWithAnyPosition(firstname, lastname, patronymic, phoneNumber, email, startDate, endDate);
+        } else {
+            entities = shouldPatronymicBeNull
+                    //patronymic is null
+                    ? searchWithNullPatronymic(firstname, lastname, positions, phoneNumber, email, startDate, endDate)
+                    //full
+                    : searchFull(firstname, lastname, patronymic, positions, phoneNumber, email, startDate, endDate);
+        }
 
         return entities.stream().map(mapper::convert).toList();
     }
+
+    private List<PositionEntity> getPositionEntitiesFromString(String positions) {
+        return Arrays.stream(positions.split(SEARCH_POSITION_DELIMITER))
+                .filter(Strings::isNotBlank)
+                .map(Long::parseLong)
+                .map(positionService::getEntityById)
+                .toList();
+    }
+
+    //region Search
+    //patronymic is null, any position
+    private List<PersonEntity> searchWithNullPatronymicAndAnyPosition(String firstname, String lastname,
+                                                                      String phoneNumber, String email,
+                                                                      LocalDate startDate, LocalDate endDate) {
+        return personRepository.findAllByFirstnameContainingIgnoreCaseAndLastnameContainingIgnoreCaseAndPatronymicIsNullAndPhoneNumberContainingAndEmailContainingIgnoreCaseAndBirthBetween(
+                firstname, lastname, phoneNumber, email, startDate, endDate);
+    }
+
+    //any position
+    private List<PersonEntity> searchWithAnyPosition(String firstname, String lastname, String patronymic,
+                                                     String phoneNumber, String email,
+                                                     LocalDate startDate, LocalDate endDate) {
+        return personRepository.findAllByFirstnameContainingIgnoreCaseAndLastnameContainingIgnoreCaseAndPatronymicContainingIgnoreCaseAndPhoneNumberContainingAndEmailContainingIgnoreCaseAndBirthBetween(
+                firstname, lastname, patronymic, phoneNumber, email, startDate, endDate);
+    }
+
+    //patronymic is null
+    private List<PersonEntity> searchWithNullPatronymic(String firstname, String lastname,
+                                                        List<PositionEntity> positions, String phoneNumber, String email,
+                                                        LocalDate startDate, LocalDate endDate) {
+        return personRepository.findAllByFirstnameContainingIgnoreCaseAndLastnameContainingIgnoreCaseAndPatronymicIsNullAndPositionInAndPhoneNumberContainingAndEmailContainingIgnoreCaseAndBirthBetween(
+                firstname, lastname, positions, phoneNumber, email, startDate, endDate);
+    }
+
+    //full
+    private List<PersonEntity> searchFull(String firstname, String lastname, String patronymic,
+                                          List<PositionEntity> positions, String phoneNumber, String email,
+                                          LocalDate startDate, LocalDate endDate) {
+        return personRepository.findAllByFirstnameContainingIgnoreCaseAndLastnameContainingIgnoreCaseAndPatronymicContainingIgnoreCaseAndPositionInAndPhoneNumberContainingAndEmailContainingIgnoreCaseAndBirthBetween(
+                firstname, lastname, patronymic, positions, phoneNumber, email, startDate, endDate);
+    }
+    //endregion
 
     @Override
     public List<PersonDTO> findAllByPosition(Long id) {

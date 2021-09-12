@@ -38,8 +38,7 @@ class PositionServiceTest {
 
     @BeforeEach
     private void clear() {
-        positionService.getAll().stream()
-                .forEach(p -> positionService.delete(p.getName()));
+        positionRepository.deleteAll();
     }
 
     @BeforeEach
@@ -120,7 +119,7 @@ class PositionServiceTest {
         assertNotNull(result);
         assertNotNull(result.getId());
         assertTrue(result.getId() > 0);
-        assertEquals(dto.getName(), result.getName());
+        assertEquals(dto.getName().toUpperCase(), result.getName());
     }
 
 
@@ -139,8 +138,8 @@ class PositionServiceTest {
         assertTrue(resultList.get(0).getId() > 0);
         assertTrue(resultList.get(1).getId() > 0);
         assertNotEquals(resultList.get(0), resultList.get(1));
-        assertEquals(dtoList.get(0).getName(), resultList.get(0).getName());
-        assertEquals(dtoList.get(1).getName(), resultList.get(1).getName());
+        assertEquals(dtoList.get(0).getName().toUpperCase(), resultList.get(0).getName());
+        assertEquals(dtoList.get(1).getName().toUpperCase(), resultList.get(1).getName());
     }
 
     @Test
@@ -157,21 +156,9 @@ class PositionServiceTest {
     }
 
     @Test
-    void addDto_BlankName() {
-        dto.setName(null);
-        assertThrows(IllegalArgumentException.class,
-                () -> positionService.add(dto));
-        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
-        dto.setName(Strings.EMPTY);
-        assertThrows(IllegalArgumentException.class,
-                () -> positionService.add(dto));
-        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
-        dto.setName(" ");
-        assertThrows(IllegalArgumentException.class,
-                () -> positionService.add(dto));
-        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
+    void addDto_TabName() {
         dto.setName("\t");
-        assertThrows(IllegalArgumentException.class,
+        ArgumentException e = assertThrows(ArgumentException.class,
                 () -> positionService.add(dto));
         assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
     }
@@ -192,7 +179,7 @@ class PositionServiceTest {
             assertTrue(r.getId() > 0);
         }
         for (int i = 0; i < dtoList.size(); i++) {
-            assertEquals(dtoList.get(i).getName(), resultList.get(i).getName());
+            assertEquals(dtoList.get(i).getName().toUpperCase(), resultList.get(i).getName());
         }
         assertNotEquals(resultList.get(0), resultList.get(1));
         assertEquals(resultList.get(1), resultList.get(2));

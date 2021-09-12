@@ -1,6 +1,7 @@
 package bogdanov.warehouse.database.repositories;
 
 import bogdanov.warehouse.database.entities.PersonEntity;
+import bogdanov.warehouse.database.entities.PositionEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -22,13 +23,20 @@ public interface PersonRepository extends JpaRepository<PersonEntity, Long> {
 
     List<PersonEntity> findAllByLastnameIgnoreCase(String lastname);
 
-    default List<PersonEntity> findAllByFullName(String firstname, String lastname, String patronymic) {
-        return findAllByFirstnameContainingIgnoreCaseAndLastnameContainingIgnoreCaseAndPatronymicContainingIgnoreCase(
-                firstname, lastname, patronymic);
+    default List<PersonEntity> search(
+            String firstname, String lastname, String patronymic,
+            Long positionId, String phoneNumber, String email,
+            LocalDate startDate, LocalDate endDate) {
+        return findAllByFirstnameContainingIgnoreCaseAndLastnameContainingIgnoreCaseAndPatronymicContainingIgnoreCaseAndPosition_IdAndPhoneNumberContainingAndEmailContainingIgnoreCaseAndBirthBetween(
+                firstname, lastname, patronymic, positionId, phoneNumber, email, startDate, endDate);
     }
 
-    default List<PersonEntity> findAllByFullNameWithNullPatronymic(String firstname, String lastname) {
-        return findAllByFirstnameIgnoreCaseAndLastnameIgnoreCaseAndPatronymicIsNull(firstname, lastname);
+    default List<PersonEntity> searchWithNullPatronymic(
+            String firstname, String lastname,
+            Long positionId, String phoneNumber, String email,
+            LocalDate startDate, LocalDate endDate) {
+        return findAllByFirstnameContainingIgnoreCaseAndLastnameContainingIgnoreCaseAndPatronymicIsNullAndPosition_IdAndPhoneNumberContainingAndEmailContainingIgnoreCaseAndBirthBetween(
+                firstname, lastname, positionId, phoneNumber, email, startDate, endDate);
     }
 
     List<PersonEntity>
@@ -37,6 +45,16 @@ public interface PersonRepository extends JpaRepository<PersonEntity, Long> {
 
     List<PersonEntity> findAllByFirstnameIgnoreCaseAndLastnameIgnoreCaseAndPatronymicIsNull(String firstname,
                                                                                             String lastname);
+
+    List<PersonEntity> findAllByFirstnameContainingIgnoreCaseAndLastnameContainingIgnoreCaseAndPatronymicContainingIgnoreCaseAndPosition_IdAndPhoneNumberContainingAndEmailContainingIgnoreCaseAndBirthBetween(
+            String firstname, String lastname, String patronymic,
+            Long positionId, String phoneNumber, String email,
+            LocalDate startDate, LocalDate endDate);
+
+    List<PersonEntity> findAllByFirstnameContainingIgnoreCaseAndLastnameContainingIgnoreCaseAndPatronymicIsNullAndPosition_IdAndPhoneNumberContainingAndEmailContainingIgnoreCaseAndBirthBetween(
+            String firstname, String lastname,
+            Long positionId, String phoneNumber, String email,
+            LocalDate startDate, LocalDate endDate);
 
     List<PersonEntity> findAllByBirthEquals(LocalDate date);
 

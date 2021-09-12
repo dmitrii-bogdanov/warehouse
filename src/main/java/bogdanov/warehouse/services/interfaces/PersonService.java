@@ -27,15 +27,7 @@ public interface PersonService {
 
     PersonEntity getEntityById(Long id);
 
-    List<PersonDTO> findAllByFirstname(String firstname);
-
-    List<PersonDTO> findAllByLastname(String lastname);
-
     List<PersonDTO> findAllByBirthDate(LocalDate date);
-
-    List<PersonDTO> findAllOlderThan(Integer age);
-
-    List<PersonDTO> findAllYoungerThan(Integer age);
 
     List<PersonDTO> findAllWithBirthDateBetween(LocalDate start, LocalDate end);
 
@@ -47,7 +39,9 @@ public interface PersonService {
 
     List<PersonDTO> findAllByEmailContaining(String partialEmail);
 
-    List<PersonDTO> findAllByFullName(String firstname, String patronymic, String lastname);
+    List<PersonDTO> search(String firstname, String lastname, String patronymic,
+                           String position, String phoneNumber, String email,
+                           LocalDate startDate, LocalDate endDate);
 
     List<PersonDTO> findAllByPosition(Long id);
 

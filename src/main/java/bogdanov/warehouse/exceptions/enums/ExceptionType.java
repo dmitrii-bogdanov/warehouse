@@ -21,6 +21,8 @@ public enum ExceptionType {
     NULL_ID("Id value is missing", HttpStatus.BAD_REQUEST),
     NOT_VALID_PASSWORD("Password is not valid", HttpStatus.BAD_REQUEST),
     POSITION_IS_IN_USE("Position with name : #FIELD_VALUE is in use", HttpStatus.BAD_REQUEST),
+    ALREADY_REGISTERED_POSITION_NAME("Position name : #FIELD_VALUE is already registered", HttpStatus.BAD_REQUEST),
+    ID_NAME_INCORRECT("#ENTITY id/name is incorrect", HttpStatus.BAD_REQUEST),
     RESOURCE_NOT_FOUND("#ENTITY with #FIELD_NAME : #FIELD_VALUE not found", HttpStatus.NOT_FOUND),
     ALREADY_REGISTERED_USERNAME("User with username : #FIELD_VALUE already registered", HttpStatus.BAD_REQUEST),
     ID_USERNAME_INCORRECT("User id/username is incorrect", HttpStatus.BAD_REQUEST),
@@ -31,7 +33,8 @@ public enum ExceptionType {
     NOMENCLATURE_AMOUNT_IS_POSITIVE("Nomenclature with id : #ID amount is positive", HttpStatus.BAD_REQUEST),
     NO_PARAMETER_IS_PRESENT("No parameter is present", HttpStatus.BAD_REQUEST),
     LIST_CONTAINS_REPEATING_VALUES("Sent list contains repeating #FIELD_NAMEs", HttpStatus.BAD_REQUEST),
-    RESERVED_VALUE("Value of #FIELD_NAME : \"#FIELD_VALUE\" is reserved", HttpStatus.BAD_REQUEST);
+    RESERVED_VALUE("Value of #FIELD_NAME : \"#FIELD_VALUE\" is reserved", HttpStatus.BAD_REQUEST),
+    INVALID_PHONE_NUMBER("Phone number contains no digit", HttpStatus.BAD_REQUEST);
 
     private final String message;
     private final HttpStatus status;

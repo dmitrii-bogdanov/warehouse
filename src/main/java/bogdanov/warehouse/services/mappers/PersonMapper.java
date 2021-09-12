@@ -3,6 +3,8 @@ package bogdanov.warehouse.services.mappers;
 import bogdanov.warehouse.database.entities.PersonEntity;
 import bogdanov.warehouse.dto.PersonDTO;
 import bogdanov.warehouse.dto.PositionDTO;
+import bogdanov.warehouse.exceptions.ArgumentException;
+import bogdanov.warehouse.exceptions.enums.ExceptionType;
 import bogdanov.warehouse.services.interfaces.PositionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +13,8 @@ import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Component;
 
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @RequiredArgsConstructor
 @Component
@@ -28,6 +32,21 @@ public class PersonMapper {
         return str;
     }
 
+    private String formatPhoneNumber(String phoneNumber) {
+        if (Strings.isBlank(phoneNumber)) {
+            return null;
+        }
+            Matcher matcher = Pattern.compile("\\d").matcher(phoneNumber);
+            if (!matcher.find()) {
+                throw new ArgumentException(ExceptionType.INVALID_PHONE_NUMBER);
+            }
+            int plusIndex;
+            boolean isStartingWithPlus = ((plusIndex = phoneNumber.indexOf('+')) > -1)
+                    && (plusIndex < matcher.start());
+            phoneNumber = phoneNumber.replaceAll("[\\D]+", Strings.EMPTY);
+            return isStartingWithPlus ? ('+' + phoneNumber) : phoneNumber;
+    }
+
     PersonEntity convert(PersonDTO person) {
         return new PersonEntity(
                 person.getId(),
@@ -35,7 +54,7 @@ public class PersonMapper {
                 toUpperCase(person.getLastname()),
                 toUpperCase(person.getPatronymic()),
                 person.getBirth(),
-                person.getPhoneNumber(),
+                formatPhoneNumber(person.getPhoneNumber()),
                 toUpperCase(person.getEmail()),
                 positionService.add(person.getPosition())
         );

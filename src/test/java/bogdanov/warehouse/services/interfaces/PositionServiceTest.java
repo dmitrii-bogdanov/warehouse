@@ -5,6 +5,7 @@ import bogdanov.warehouse.database.repositories.PositionRepository;
 import bogdanov.warehouse.dto.PositionDTO;
 import bogdanov.warehouse.exceptions.ArgumentException;
 import bogdanov.warehouse.exceptions.enums.ExceptionType;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,7 @@ import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Slf4j
 @SpringBootTest
 @AutoConfigureTestDatabase
 class PositionServiceTest {
@@ -143,8 +145,8 @@ class PositionServiceTest {
 
     @Test
     void addDto_SecondEntryWithAlreadyRegistered() {
-        dtoList.add(dto);
-        dtoList.add(new PositionDTO(null, dto.getName()));
+        dtoList.add(dto);//0
+        dtoList.add(new PositionDTO(null, dto.getName()));//1
         assertEquals(dtoList.get(0).getName(), dtoList.get(1).getName());
         resultList = new LinkedList<>();
         resultList.add(positionService.add(dtoList.get(0)));
@@ -159,15 +161,19 @@ class PositionServiceTest {
         dto.setName(null);
         assertThrows(IllegalArgumentException.class,
                 () -> positionService.add(dto));
+        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
         dto.setName(Strings.EMPTY);
         assertThrows(IllegalArgumentException.class,
                 () -> positionService.add(dto));
+        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
         dto.setName(" ");
         assertThrows(IllegalArgumentException.class,
                 () -> positionService.add(dto));
+        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
         dto.setName("\t");
         assertThrows(IllegalArgumentException.class,
                 () -> positionService.add(dto));
+        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
     }
 
     @Test
@@ -202,8 +208,14 @@ class PositionServiceTest {
         assertEquals(dtoList.get(1).getName(), dtoList.get(2).getName());
         assertNotEquals(dtoList.get(0).getName(), dtoList.get(3).getName());
         assertNotEquals(dtoList.get(1).getName(), dtoList.get(3).getName());
+        log.info("dtoList");
+        dtoList.forEach(d -> log.info(d.getId() + " " + d.getName()));
         dtoList = positionService.add(dtoList).stream().distinct().toList();
+        log.info("dtoList");
+        dtoList.forEach(d -> log.info(d.getId() + " " + d.getName()));
         resultList = positionService.getAll();
+        log.info("resultList");
+        resultList.forEach(d -> log.info(d.getId() + " " + d.getName()));
         assertNotNull(resultList);
         assertEquals(dtoList.size(), resultList.size());
         for (PositionDTO r : resultList) {

@@ -46,21 +46,17 @@ public class PositionServiceImpl implements PositionService {
     }
 
     @Override
-    @Cacheable(value = "positions", key = "#name")
+    @Cacheable("positions")
     public PositionEntity add(String name) {
         isNameNotBlank(name);
-//        return positionRepository.findByNameIgnoreCase(name)
-//                .orElse(positionRepository.save(new PositionEntity(name.toUpperCase(Locale.ROOT))));// и даже с такой проверкой не работает
-        return positionRepository.save(new PositionEntity(name.toUpperCase(Locale.ROOT)));//так должно быть
+        return positionRepository.save(new PositionEntity(name.toUpperCase(Locale.ROOT)));
     }
 
-    //TODO Remove? Not working with internal cacheable methods
     @Override
     public PositionDTO add(PositionDTO position) {
         return convert(add(position.getName().toUpperCase(Locale.ROOT)));
     }
 
-    //TODO Remove? Not working with internal cacheable methods
     @Override
     public List<PositionDTO> add(List<PositionDTO> positions) {
         return positions.stream().map(this::add).toList();
@@ -117,4 +113,5 @@ public class PositionServiceImpl implements PositionService {
         positionRepository.delete(entity);
         return new PositionDTO(entity.getId(), entity.getName());
     }
+
 }

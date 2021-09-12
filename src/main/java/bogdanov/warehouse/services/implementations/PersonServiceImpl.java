@@ -130,45 +130,11 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public List<PersonDTO> findAllByFirstname(String firstname) {
-        if (Strings.isBlank(firstname)) {
-            throw new ArgumentException(ExceptionType.NO_PARAMETER_IS_PRESENT);
-        }
-        return personRepository.findAllByFirstnameIgnoreCase(firstname).stream().map(mapper::convert).toList();
-    }
-
-    @Override
-    public List<PersonDTO> findAllByLastname(String lastname) {
-        if (Strings.isBlank(lastname)) {
-            throw new ArgumentException(ExceptionType.NO_PARAMETER_IS_PRESENT);
-        }
-        return personRepository.findAllByLastnameIgnoreCase(lastname).stream().map(mapper::convert).toList();
-    }
-
-    @Override
     public List<PersonDTO> findAllByBirthDate(LocalDate date) {
         if (date == null) {
             throw new ArgumentException(ExceptionType.NO_PARAMETER_IS_PRESENT);
         }
         return personRepository.findAllByBirthEquals(date)
-                .stream().map(mapper::convert).toList();
-    }
-
-    @Override
-    public List<PersonDTO> findAllOlderThan(Integer age) {
-        if (age == null) {
-            throw new ArgumentException(ExceptionType.NO_PARAMETER_IS_PRESENT);
-        }
-        return personRepository.findAllByBirthBefore(LocalDate.now().minusYears(age))
-                .stream().map(mapper::convert).toList();
-    }
-
-    @Override
-    public List<PersonDTO> findAllYoungerThan(Integer age) {
-        if (age == null) {
-            throw new ArgumentException(ExceptionType.NO_PARAMETER_IS_PRESENT);
-        }
-        return personRepository.findAllByBirthAfter(LocalDate.now().minusYears(age))
                 .stream().map(mapper::convert).toList();
     }
 
@@ -179,17 +145,13 @@ public class PersonServiceImpl implements PersonService {
         if (isStartAbsent && isEndAbsent) {
             throw new ArgumentException(ExceptionType.NO_PARAMETER_IS_PRESENT);
         }
-        List<PersonEntity> entities;
         if (isStartAbsent) {
-            entities = personRepository.findAllByBirthBefore(end);
-        } else if (isEndAbsent) {
-            entities = personRepository.findAllByBirthAfter(start);
-        } else if (start.equals(end)) {
-            return findAllByBirthDate(start);
-        } else {
-            entities = personRepository.findAllByBirthBetween(start, end);
+            start = LocalDate.MIN;
         }
-        return entities.stream().map(mapper::convert).toList();
+        if (isEndAbsent) {
+            end = LocalDate.MAX;
+        }
+        return personRepository.findAllByBirthBetween(start, end).stream().map(mapper::convert).toList();
     }
 
     @Override
@@ -228,15 +190,27 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public List<PersonDTO> findAllByFullName(String firstname, String patronymic, String lastname) {
+    public List<PersonDTO> search(String firstname, String lastname, String patronymic,
+                                  Long positionId, String phoneNumber, String email,
+                                  LocalDate startDate, LocalDate endDate) {
         boolean isFirstnameBlank = Strings.isBlank(firstname);
         boolean isLastnameBlank = Strings.isBlank(lastname);
         boolean isPatronymicBlank = Strings.isBlank(patronymic);
+        boolean isPositionAbsent = positionId == null;
+        boolean isPhoneNumberBlank = Strings.isBlank(phoneNumber);
+        boolean isEmailBlank = Strings.isBlank(email);
+        boolean isStartDateAbsent = startDate == null;
+        boolean isEndDateAbsent = endDate == null;
+
         boolean shouldPatronymicBeAbsent = RESERVED_NULL_PATRONYMIC.equalsIgnoreCase(patronymic);
 
-        if (isFirstnameBlank && isLastnameBlank && isPatronymicBlank) {
+        if (isFirstnameBlank && isLastnameBlank && isPatronymicBlank
+                && isPhoneNumberBlank && isEmailBlank
+                && isStartDateAbsent && isEndDateAbsent) {
             throw new ArgumentException(ExceptionType.NO_PARAMETER_IS_PRESENT);
         }
+
+
 
         if (isFirstnameBlank) {
             firstname = Strings.EMPTY;
@@ -247,10 +221,22 @@ public class PersonServiceImpl implements PersonService {
         if (isPatronymicBlank) {
             patronymic = Strings.EMPTY;
         }
+        if (isPhoneNumberBlank) {
+            phoneNumber = Strings.EMPTY;
+        }
+        if (isEmailBlank) {
+            email = Strings.EMPTY;
+        }
+        if (isStartDateAbsent) {
+            startDate = LocalDate.MIN;
+        }
+        if (isEndDateAbsent) {
+            endDate = LocalDate.MAX;
+        }
 
         List<PersonEntity> entities = shouldPatronymicBeAbsent
-                ? personRepository.findAllByFullNameWithNullPatronymic(firstname, lastname)
-                : personRepository.findAllByFullName(firstname, lastname, patronymic);
+                ? personRepository.searchWithNullPatronymic(firstname, lastname, phoneNumber, email, startDate, endDate)
+                : personRepository.search(firstname, lastname, patronymic, phoneNumber, email, startDate, endDate);
 
         return entities.stream().map(mapper::convert).toList();
     }

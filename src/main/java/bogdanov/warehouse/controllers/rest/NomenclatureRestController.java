@@ -40,6 +40,11 @@ public class NomenclatureRestController {
         return nomenclatureService.update(nomenclature);
     }
 
+    @GetMapping("/available")
+    public List<NomenclatureDTO> getAllAvailable() {
+        return nomenclatureService.getAllAvailable();
+    }
+
     @GetMapping(params = "name")
     public NomenclatureDTO getByName(@RequestParam String name) {
         return nomenclatureService.getByName(name);

@@ -20,7 +20,6 @@ import java.util.*;
 
 @Primary
 @Service
-@Qualifier("withoutInternalChecks")
 @RequiredArgsConstructor
 public class NomenclatureServiceImpl implements NomenclatureService {
 
@@ -40,13 +39,6 @@ public class NomenclatureServiceImpl implements NomenclatureService {
 
 
     //region Utility Methods
-    private boolean isIdNotNull(Long id) {
-        if (id == null) {
-            throw new ArgumentException(ExceptionType.NULL_ID);
-        }
-        return true;
-    }
-
     private boolean isCodeNotReserved(NomenclatureDTO dto) {
         if (RESERVED_NULL_CODE_VALUE.equalsIgnoreCase(dto.getCode())) {
             throw new ArgumentException(ExceptionType.RESERVED_VALUE
@@ -115,17 +107,6 @@ public class NomenclatureServiceImpl implements NomenclatureService {
     }
     //endregion
 
-    //TODO remove?
-//    @Override
-//    public NomenclatureDTO createNew(NomenclatureDTO nomenclature) {
-//        try {
-//            isCodeNotReserved(nomenclature);
-//            return mapper.convert(nomenclatureRepository.save(mapper.convert(nomenclature)));
-//        } catch (DataIntegrityViolationException e) {
-//            throw explainException(e);
-//        }
-//    }
-
     @Override
     public List<NomenclatureDTO> createNew(List<NomenclatureDTO> nomenclature) {
         try {
@@ -144,25 +125,12 @@ public class NomenclatureServiceImpl implements NomenclatureService {
 
     @Override
     public NomenclatureEntity getEntityById(Long id) {
-        isIdNotNull(id);
+        if (id == null) {
+            throw new ArgumentException(ExceptionType.NULL_ID);
+        }
         return nomenclatureRepository.findById(id).
                 orElseThrow(() -> new ResourceNotFoundException(NOMENCLATURE, ID, id));
     }
-
-    //TODO remove?
-//    @Override
-//    public NomenclatureDTO update(NomenclatureDTO nomenclature) {
-//        NomenclatureEntity entity = getEntityById(nomenclature.getId());
-//        isCodeNotReserved(nomenclature);
-//        NomenclatureEntity input = mapper.convert(nomenclature);
-//        entity.setName(input.getName());
-//        entity.setCode(input.getCode());
-//        try {
-//            return mapper.convert(nomenclatureRepository.save(entity));
-//        } catch (DataIntegrityViolationException e) {
-//            throw explainException(e);
-//        }
-//    }
 
     @Override
     public List<NomenclatureDTO> update(List<NomenclatureDTO> nomenclature) {
@@ -228,26 +196,12 @@ public class NomenclatureServiceImpl implements NomenclatureService {
     }
 
     @Override
-    public List<NomenclatureDTO> addAmount(List<NomenclatureDTO> nomenclature) {
-        List<NomenclatureEntity> entities;
-        entities = nomenclature.stream().map(n -> add(n.getAmount(), getEntityById(n.getId()))).toList();
-        return nomenclatureRepository.saveAll(entities).stream().map(mapper::convert).toList();
-    }
-
-    @Override
     public NomenclatureDTO subtractAmount(NomenclatureDTO nomenclature) {
         NomenclatureEntity entity = getEntityById(nomenclature.getId());
         return mapper.convert(
                 nomenclatureRepository.save(
                         take(nomenclature.getAmount(), entity)));
 
-    }
-
-    @Override
-    public List<NomenclatureDTO> subtractAmount(List<NomenclatureDTO> nomenclature) {
-        List<NomenclatureEntity> entities;
-        entities = nomenclature.stream().map(n -> take(n.getAmount(), getEntityById(n.getId()))).toList();
-        return nomenclatureRepository.saveAll(entities).stream().map(mapper::convert).toList();
     }
 
     @Override

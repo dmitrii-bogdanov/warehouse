@@ -54,73 +54,16 @@ public class RecordRestController {
         return recordService.update(id, user.getName(), record);
     }
 
-    @GetMapping("/reception")
-    public List<RecordDTO> getAllReceptionRecords() {
-        return recordService.findAllByType("RECEPTION");
+    @GetMapping(params = {"search", "nomenclatureId", "userId", "type", "dateFrom", "dateTo"})
+    public List<RecordDTO> updateRecord(@RequestParam Long nomenclatureId,
+                                        @RequestParam Long userId,
+                                        @RequestParam String type,
+                                        @RequestParam LocalDate dateFrom,
+                                        @RequestParam LocalDate dateTo) {
+        return recordService.search(nomenclatureId, userId, type, dateFrom, dateTo);
     }
 
-    @GetMapping("/release")
-    public List<RecordDTO> getAllReleaseRecords() {
-        return recordService.findAllByType("RELEASE");
-    }
-
-    @GetMapping("/deleted")
-    public List<RecordDTO> getAllDeletedRecords() {
-        return recordService.findAllByType("DELETED");
-    }
-
-    @GetMapping(params = "type")
-    public List<RecordDTO> getAllByType(@RequestParam String type) {
-        return recordService.findAllByType(type.toUpperCase(Locale.ROOT));
-    }
-
-    @GetMapping(params = "userId")
-    public List<RecordDTO> getAllRecordsByUserId(@RequestParam Long userId) {
-        return recordService.findAllByUserId(userId);
-    }
-
-    @GetMapping(params = "username")
-    public List<RecordDTO> getAllRecordsByUserUsername(@RequestParam String username) {
-        return recordService.findAllByUserUsername(username);
-    }
-
-    @GetMapping("/my")
-    public List<RecordDTO> getCurrentUserRecords(Principal user) {
-        return recordService.findAllByUserUsername(user.getName());
-    }
-
-    @GetMapping(params = "nomenclatureId")
-    public List<RecordDTO> getAllRecordsByNomenclatureId(@RequestParam Long nomenclatureId) {
-        return recordService.findAllByNomenclatureId(nomenclatureId);
-    }
-
-    @GetMapping(params = "nomenclatureName")
-    public List<RecordDTO> getAllRecordsByNomenclatureName(@RequestParam String nomenclatureName) {
-        return recordService.findAllByNomenclatureName(nomenclatureName);
-    }
-
-    @GetMapping(params = "nomenclatureCode")
-    public List<RecordDTO> getAllRecordsByNomenclatureCode(@RequestParam String nomenclatureCode) {
-        return recordService.findAllByNomenclatureCode(nomenclatureCode);
-    }
-
-    @GetMapping(params = "date")
-    public List<RecordDTO> getAllRecordByDate(@RequestParam LocalDate date) {
-        return recordService.findAllByDate(date);
-    }
-
-    @GetMapping(params = {"date", "start", "end"})
-    public List<RecordDTO> getAllRecordsByDateBetween(@RequestParam LocalDate start,
-                                                      @RequestParam LocalDate end) {
-        return recordService.findAllByDateBetween(start, end);
-    }
-
-    @GetMapping("/today")
-    public List<RecordDTO> getAllRecordsForToday() {
-        return recordService.findAllByDate(LocalDate.now());
-    }
-
-    @GetMapping("/reverse")
+    @GetMapping("/reversed")
     public List<ReverseRecordDTO> getAllReverseRecords() {
         return recordService.getAllReverseRecords();
     }

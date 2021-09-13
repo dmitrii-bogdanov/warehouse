@@ -19,25 +19,11 @@ public interface RecordService {
 
     List<RecordDTO> getAll();
 
-    List<RecordDTO> findAllByUserId(Long id);
-
-    List<RecordDTO> findAllByUserUsername(String username);
-
-    List<RecordDTO> findAllByType(String type);
-
-    List<RecordDTO> findAllByNomenclatureId(Long nomenclatureId);
-
-    List<RecordDTO> findAllByNomenclatureName(String nomenclatureName);
-
-    List<RecordDTO> findAllByNomenclatureCode(String nomenclatureCode);
+    List<RecordDTO> search(Long nomenclatureId, Long userId, String type, LocalDate dateFrom, LocalDate dateTo);
 
     RecordDTO getById(Long id);
 
     RecordEntity getEntityById(Long id);
-
-    List<RecordDTO> findAllByDate(LocalDate date);
-
-    List<RecordDTO> findAllByDateBetween(LocalDate start, LocalDate end);
 
     RecordDTO revert(Long id, String username);
 

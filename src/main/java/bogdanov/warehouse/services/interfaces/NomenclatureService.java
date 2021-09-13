@@ -10,8 +10,6 @@ import java.util.List;
 @Service
 public interface NomenclatureService {
 
-//    NomenclatureDTO createNew(NomenclatureDTO nomenclature);
-
     List<NomenclatureDTO> createNew(List<NomenclatureDTO> nomenclature);
 
     NomenclatureDTO getById(Long id);
@@ -22,8 +20,6 @@ public interface NomenclatureService {
 
     NomenclatureDTO getByCode(String code);
 
-//    NomenclatureDTO update(NomenclatureDTO nomenclature);
-
     List<NomenclatureDTO> update(List<NomenclatureDTO> nomenclature);
 
     List<NomenclatureDTO> getAll();
@@ -32,11 +28,7 @@ public interface NomenclatureService {
 
     NomenclatureDTO addAmount(NomenclatureDTO nomenclature);
 
-    List<NomenclatureDTO> addAmount(List<NomenclatureDTO> nomenclature);
-
     NomenclatureDTO subtractAmount(NomenclatureDTO nomenclature);
-
-    List<NomenclatureDTO> subtractAmount(List<NomenclatureDTO> nomenclature);
 
     List<NomenclatureDTO> search(String name, String code, Long minAmount, Long maxAmount);
 

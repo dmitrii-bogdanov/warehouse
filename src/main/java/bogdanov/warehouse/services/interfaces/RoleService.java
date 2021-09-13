@@ -12,18 +12,10 @@ public interface RoleService {
 
     List<RoleDTO> getAll();
 
-    RoleDTO findByName(String name);
-
-    List<RoleDTO> findByName(Collection<String> names);
-
-    List<RoleDTO> findByName(String[] names);
+    RoleDTO getByName(String name);
 
     List<RoleEntity> getAllEntities();
 
-    RoleEntity findEntityByName(String name);
-
-    List<RoleEntity> findEntitiesByName(Collection<String> names);
-
-    List<RoleEntity> findEntitiesByName(String[] names);
+    RoleEntity getEntityByName(String name);
 
 }

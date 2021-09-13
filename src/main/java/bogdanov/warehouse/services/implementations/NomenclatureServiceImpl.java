@@ -33,34 +33,57 @@ public class NomenclatureServiceImpl implements NomenclatureService {
     private static final String ID = "id";
     private static final String NAME = "name";
     private static final String CODE = "code";
+    private static final String RESERVED_NULL_CODE_VALUE = "NULL";
+    private static final Long ZERO = 0L;
+    private static final String MIN_AMOUNT = "minAmount";
+    private static final String MAX_AMOUNT = "maxAmount";
 
-    private boolean isCodeNotReserved(NomenclatureDTO dto) {
-        if ("NULL".equalsIgnoreCase(dto.getCode())) {
-            throw new ArgumentException(ExceptionType.RESERVED_VALUE
-                    .setFieldName(CODE).setFieldValue(dto.getCode().toUpperCase(Locale.ROOT)));
+
+    //region Utility Methods
+    private boolean isIdNotNull(Long id) {
+        if (id == null) {
+            throw new ArgumentException(ExceptionType.NULL_ID);
         }
         return true;
     }
 
-    @Override
-    public NomenclatureDTO createNew(NomenclatureDTO nomenclature) {
-        try {
-            isCodeNotReserved(nomenclature);
-            return mapper.convert(nomenclatureRepository.save(mapper.convert(nomenclature)));
-        } catch (DataIntegrityViolationException e) {
-            throw explainException(e);
+    private boolean isCodeNotReserved(NomenclatureDTO dto) {
+        if (RESERVED_NULL_CODE_VALUE.equalsIgnoreCase(dto.getCode())) {
+            throw new ArgumentException(ExceptionType.RESERVED_VALUE
+                    .setFieldName(CODE).setFieldValue(RESERVED_NULL_CODE_VALUE));
+        }
+        return true;
+    }
+
+    private boolean isAmountPositive(Long amount) {
+        if (amount == null || amount < 0) {
+            throw new ArgumentException(ExceptionType.NOT_POSITIVE_AMOUNT);
+        }
+        return true;
+    }
+
+    private boolean isAmountAvailable(Long amount, NomenclatureEntity entity) {
+        if (isAmountPositive(amount) && (entity.getAmount() >= amount)) {
+            return true;
+        } else {
+            throw new ArgumentException(ExceptionType.NOT_ENOUGH_AMOUNT.setId(entity.getId()));
         }
     }
 
-    @Override
-    public List<NomenclatureDTO> createNew(List<NomenclatureDTO> nomenclature) {
-        try {
-            return nomenclatureRepository
-                    .saveAll(nomenclature.stream().filter(this::isCodeNotReserved).map(mapper::convert).toList())
-                    .stream().map(mapper::convert).toList();
-        } catch (DataIntegrityViolationException e) {
-            throw explainException(e);
+    private NomenclatureEntity add(Long amount, NomenclatureEntity entity) {
+        isAmountPositive(amount);
+        long sum = entity.getAmount() + amount;
+        if (sum < 0) {
+            throw new ArgumentException(ExceptionType.LONG_VALUE_OVERFLOW);
         }
+        entity.setAmount(sum);
+        return entity;
+    }
+
+    private NomenclatureEntity take(Long amount, NomenclatureEntity entity) {
+        isAmountAvailable(amount, entity);
+        entity.setAmount(entity.getAmount() - amount);
+        return entity;
     }
 
     private RuntimeException explainException(DataIntegrityViolationException e) {
@@ -90,6 +113,29 @@ public class NomenclatureServiceImpl implements NomenclatureService {
             return e;
         }
     }
+    //endregion
+
+    //TODO remove?
+//    @Override
+//    public NomenclatureDTO createNew(NomenclatureDTO nomenclature) {
+//        try {
+//            isCodeNotReserved(nomenclature);
+//            return mapper.convert(nomenclatureRepository.save(mapper.convert(nomenclature)));
+//        } catch (DataIntegrityViolationException e) {
+//            throw explainException(e);
+//        }
+//    }
+
+    @Override
+    public List<NomenclatureDTO> createNew(List<NomenclatureDTO> nomenclature) {
+        try {
+            return nomenclatureRepository
+                    .saveAll(nomenclature.stream().filter(this::isCodeNotReserved).map(mapper::convert).toList())
+                    .stream().map(mapper::convert).toList();
+        } catch (DataIntegrityViolationException e) {
+            throw explainException(e);
+        }
+    }
 
     @Override
     public NomenclatureDTO getById(Long id) {
@@ -97,109 +143,70 @@ public class NomenclatureServiceImpl implements NomenclatureService {
     }
 
     @Override
-    @Cacheable("nomenclature")
     public NomenclatureEntity getEntityById(Long id) {
-        Optional<NomenclatureEntity> entity = nomenclatureRepository.findById(id);
-        if (entity.isPresent()) {
-            return entity.get();
-        } else {
-            throw new ResourceNotFoundException(NOMENCLATURE, ID, id);
+        isIdNotNull(id);
+        return nomenclatureRepository.findById(id).
+                orElseThrow(() -> new ResourceNotFoundException(NOMENCLATURE, ID, id));
+    }
+
+    //TODO remove?
+//    @Override
+//    public NomenclatureDTO update(NomenclatureDTO nomenclature) {
+//        NomenclatureEntity entity = getEntityById(nomenclature.getId());
+//        isCodeNotReserved(nomenclature);
+//        NomenclatureEntity input = mapper.convert(nomenclature);
+//        entity.setName(input.getName());
+//        entity.setCode(input.getCode());
+//        try {
+//            return mapper.convert(nomenclatureRepository.save(entity));
+//        } catch (DataIntegrityViolationException e) {
+//            throw explainException(e);
+//        }
+//    }
+
+    @Override
+    public List<NomenclatureDTO> update(List<NomenclatureDTO> nomenclature) {
+        try {
+            return nomenclatureRepository.saveAll(
+                    nomenclature
+                            .stream()
+                            .filter(this::isCodeNotReserved)
+                            .map(n -> {
+                                NomenclatureEntity entity = getEntityById(n.getId());
+                                NomenclatureEntity input = mapper.convert(n);
+                                entity.setName(input.getName());
+                                entity.setCode(input.getCode());
+                                return entity;
+                            })
+                            .toList()
+            )
+                    .stream()
+                    .map(mapper::convert)
+                    .toList();
+        } catch (DataIntegrityViolationException e) {
+            throw explainException(e);
         }
     }
 
     @Override
     public NomenclatureDTO getByName(String name) {
         if (Strings.isBlank(name)) {
-            throw new IllegalArgumentException(ExceptionType.BLANK_NAME.getMessage());
+            throw new ArgumentException(ExceptionType.BLANK_NAME);
         }
-        Optional<NomenclatureEntity> entity = nomenclatureRepository.findByNameIgnoreCase(name);
-        if (entity.isPresent()) {
-            return mapper.convert(entity.get());
-        } else {
-            throw new ResourceNotFoundException(NOMENCLATURE, NAME, name);
-        }
+        return mapper.convert(
+                nomenclatureRepository.findByNameIgnoreCase(name)
+                        .orElseThrow(() -> new ResourceNotFoundException(NOMENCLATURE, NAME, name)));
     }
 
     @Override
     public NomenclatureDTO getByCode(String code) {
         if (Strings.isBlank(code)) {
-            throw new ArgumentException(ExceptionType.BLANK_CODE
-                    .addComment("If system allows to use blank codes, try ?search?code=null"));
+            final String GET_BY_NULL_CODE_COMMENT = "If system allows to use blank codes, try ?search?code=null";
+            throw new ArgumentException(ExceptionType.BLANK_CODE.addComment(GET_BY_NULL_CODE_COMMENT));
         }
         return mapper.convert(
                 nomenclatureRepository.findByCodeIgnoreCase(code)
-                .orElseThrow(() -> new ResourceNotFoundException(NOMENCLATURE, CODE, code)));
-    }
-
-    @Override
-    public List<NomenclatureDTO> findAllByNameContaining(String partialName) {
-        if (Strings.isBlank(partialName)) {
-            throw new IllegalArgumentException(ExceptionType.BLANK_NAME.getMessage());
-        }
-        return nomenclatureRepository.findAllByNameContainingIgnoreCase(partialName)
-                .stream().map(mapper::convert).toList();
-    }
-
-    @Override
-    public List<NomenclatureDTO> findAllByCodeContaining(String partialCode) {
-        List<NomenclatureEntity> entities;
-        if (Strings.isBlank(partialCode)) {
-            entities = nomenclatureRepository.findAllByCodeIsNull();
-        } else {
-            partialCode = partialCode.toUpperCase(Locale.ROOT);
-            entities = nomenclatureRepository.findAllByCodeContainingIgnoreCase(partialCode);
-        }
-        return entities.stream().map(mapper::convert).toList();
-    }
-
-    @Override
-    public NomenclatureDTO updateName(NomenclatureDTO nomenclature) {
-        try {
-            NomenclatureEntity entity = getEntityById(nomenclature.getId());
-            entity.setName(nomenclature.getName());
-            return mapper.convert(nomenclatureRepository.save(entity));
-        } catch (DataIntegrityViolationException e) {
-            throw new IllegalArgumentException(
-                    ExceptionType.NAME_OR_CODE_IS_ALREADY_REGISTERED
-                            .setFieldName(NAME)
-                            .setFieldValue(nomenclature.getName())
-                            .getModifiedMessage());
-        }
-    }
-
-    @Override
-    public List<NomenclatureDTO> updateName(List<NomenclatureDTO> nomenclature) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public List<NomenclatureDTO> updateName(NomenclatureDTO[] nomenclature) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public NomenclatureDTO updateCode(NomenclatureDTO nomenclature) {
-        try {
-            NomenclatureEntity entity = getEntityById(nomenclature.getId());
-            entity.setCode(nomenclature.getCode());
-            return mapper.convert(nomenclatureRepository.save(entity));
-        } catch (DataIntegrityViolationException e) {
-            throw new IllegalArgumentException(
-                    ExceptionType.NAME_OR_CODE_IS_ALREADY_REGISTERED
-                            .setFieldName(CODE)
-                            .setFieldValue(nomenclature.getCode())
-                            .getModifiedMessage());
-        }
-    }
-
-    @Override
-    public List<NomenclatureDTO> updateCode(List<NomenclatureDTO> nomenclature) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public List<NomenclatureDTO> updateCode(NomenclatureDTO[] nomenclature) {
-        throw new UnsupportedOperationException();
+                        .orElseThrow(() -> new ResourceNotFoundException(NOMENCLATURE, CODE, code)));
     }
 
     @Override
@@ -209,163 +216,77 @@ public class NomenclatureServiceImpl implements NomenclatureService {
 
     @Override
     public List<NomenclatureDTO> getAllAvailable() {
-        return nomenclatureRepository.findAllByAmountGreaterThan(0).stream().map(mapper::convert).toList();
+        return nomenclatureRepository.findAllByAmountGreaterThan(ZERO).stream().map(mapper::convert).toList();
     }
 
     @Override
     public NomenclatureDTO addAmount(NomenclatureDTO nomenclature) {
         NomenclatureEntity entity = getEntityById(nomenclature.getId());
-        entity.add(nomenclature.getAmount());
-        return mapper.convert(nomenclatureRepository.save(entity));
-    }
-
-    @Override
-    public NomenclatureDTO updateAmount(NomenclatureDTO nomenclature) {
-        NomenclatureEntity entity = getEntityById(nomenclature.getId());
-        entity.setAmount(nomenclature.getAmount());
-        return mapper.convert(nomenclatureRepository.save(entity));
+        return mapper.convert(
+                nomenclatureRepository.save(
+                        add(nomenclature.getAmount(), entity)));
     }
 
     @Override
     public List<NomenclatureDTO> addAmount(List<NomenclatureDTO> nomenclature) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public List<NomenclatureDTO> addAmount(NomenclatureDTO[] nomenclature) {
-        throw new UnsupportedOperationException();
+        List<NomenclatureEntity> entities;
+        entities = nomenclature.stream().map(n -> add(n.getAmount(), getEntityById(n.getId()))).toList();
+        return nomenclatureRepository.saveAll(entities).stream().map(mapper::convert).toList();
     }
 
     @Override
     public NomenclatureDTO subtractAmount(NomenclatureDTO nomenclature) {
         NomenclatureEntity entity = getEntityById(nomenclature.getId());
-        checkAmountAvailability(nomenclature, entity);
-        entity.take(nomenclature.getAmount());
-        return mapper.convert(nomenclatureRepository.save(entity));
+        return mapper.convert(
+                nomenclatureRepository.save(
+                        take(nomenclature.getAmount(), entity)));
 
     }
 
     @Override
     public List<NomenclatureDTO> subtractAmount(List<NomenclatureDTO> nomenclature) {
-        throw new UnsupportedOperationException();
+        List<NomenclatureEntity> entities;
+        entities = nomenclature.stream().map(n -> take(n.getAmount(), getEntityById(n.getId()))).toList();
+        return nomenclatureRepository.saveAll(entities).stream().map(mapper::convert).toList();
     }
 
     @Override
-    public List<NomenclatureDTO> subtractAmount(NomenclatureDTO[] nomenclature) {
-        throw new UnsupportedOperationException();
-    }
+    public List<NomenclatureDTO> search(String name, String code, Long minAmount, Long maxAmount) {
 
-    @Override
-    public boolean checkId(NomenclatureDTO dto) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public NomenclatureEntity checkIdAndRetrieve(NomenclatureDTO dto) {
-        throw new UnsupportedOperationException();
-    }
-
-
-    @Override
-    public boolean checkNameAvailability(NomenclatureDTO dto) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean checkCodeAvailability(NomenclatureDTO dto) {
-        throw new UnsupportedOperationException();
-    }
-
-
-    @Override
-    public boolean checkIdAndNamePair(NomenclatureDTO dto, NomenclatureEntity entity) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean checkIdAndCodePair(NomenclatureDTO dto, NomenclatureEntity entity) {
-        throw new UnsupportedOperationException();
-    }
-
-
-    @Override
-    public boolean checkAmount(NomenclatureDTO dto) {
-        if (dto.getId() == null || dto.getId() < 0) {
-            throw new IllegalArgumentException(ExceptionType.NOT_POSITIVE_AMOUNT.getMessage());
-        }
-        return true;
-    }
-
-
-    @Override
-    public boolean checkAmountAvailability(NomenclatureDTO dto, NomenclatureEntity entity) {
-        if (checkAmount(dto) && (entity.getAmount() >= dto.getAmount())) {
-            return true;
-        } else {
-            throw new IllegalArgumentException(
-                    ExceptionType.NOT_ENOUGH_AMOUNT.setId(entity.getId()).getModifiedMessage());
-        }
-    }
-
-    @Override
-    public NomenclatureDTO update(NomenclatureDTO nomenclature) {
-        NomenclatureEntity entity = checkForUpdateAndRetrieveEntity(nomenclature);
-        entity.setName(nomenclature.getName());
-        entity.setName(nomenclature.getName());
-        entity = nomenclatureRepository.save(entity);
-        return mapper.convert(entity);
-    }
-
-    @Override
-    public List<NomenclatureDTO> update(List<NomenclatureDTO> nomenclature) {
-        return nomenclatureRepository.saveAll(
-                nomenclature
-                        .stream()
-                        .map(n -> {
-                            NomenclatureEntity entity = checkForUpdateAndRetrieveEntity(n);
-                            entity.setName(n.getName());
-                            entity.setCode(n.getCode());
-                            return entity;
-                        })
-                        .toList()
-        )
-                .stream()
-                .map(mapper::convert)
-                .toList();
-    }
-
-    //TODO check exceptions without this method
-    private NomenclatureEntity checkForUpdateAndRetrieveEntity(NomenclatureDTO dto) {
-        if (Strings.isBlank(dto.getName())) {
-            throw new IllegalArgumentException(ExceptionType.BLANK_NAME.getMessage());
-        }
-        return nomenclatureRepository.findById(dto.getId())
-                .orElseThrow(() -> new ResourceNotFoundException(NOMENCLATURE, ID, dto.getId()));
-    }
-
-    @Override
-    public List<NomenclatureDTO> findAllByNameContainingAndCodeContaining(String name, String code) {
-        List<NomenclatureEntity> entities = null;
         boolean isNameBlank = Strings.isBlank(name);
         boolean isCodeBlank = Strings.isBlank(code);
+        boolean isMinAmountAbsent = minAmount == null;
+        boolean isMaxAmountAbsent = maxAmount == null;
+        boolean shouldCodeBeNull = RESERVED_NULL_CODE_VALUE.equalsIgnoreCase(code);
 
-        if (isNameBlank && isCodeBlank) {
-            throw new IllegalArgumentException(ExceptionType.BLANK_NAME_AND_CODE.getMessage());
+        if (isNameBlank && isCodeBlank && isMinAmountAbsent && isMaxAmountAbsent) {
+            throw new ArgumentException(ExceptionType.NO_PARAMETER_IS_PRESENT);
+        }
+        if (isNameBlank) {
+            name = Strings.EMPTY;
         }
         if (isCodeBlank) {
-            entities = nomenclatureRepository.findAllByNameContainingIgnoreCase(name);
+            code = Strings.EMPTY;
         }
-        boolean isLookingForNullCode = "NULL".equalsIgnoreCase(code);
-        if (isNameBlank) {
-            entities = isLookingForNullCode
-                    ? nomenclatureRepository.findAllByCodeIsNull()
-                    : nomenclatureRepository.findAllByCodeContainingIgnoreCase(code);
+        if (isMinAmountAbsent) {
+            minAmount = ZERO;
+        } else {
+            isAmountPositive(minAmount);
         }
-        if (!isNameBlank && !isCodeBlank) {
-            entities = isLookingForNullCode
-                    ? nomenclatureRepository.findAllByNameContainingIgnoreCaseAndCodeIsNull(name)
-                    : nomenclatureRepository.findAllByNameContainingIgnoreCaseAndCodeContainingIgnoreCase(name, code);
+        if (isMaxAmountAbsent) {
+            maxAmount = Long.MAX_VALUE;
+        } else {
+            isAmountPositive(maxAmount);
         }
+        if (minAmount > maxAmount) {
+            throw new ArgumentException(ExceptionType.INCORRECT_RANGE.setFrom(MIN_AMOUNT).setTo(MAX_AMOUNT));
+        }
+
+        List<NomenclatureEntity> entities = shouldCodeBeNull
+                ? nomenclatureRepository.findAllByNameContainingIgnoreCaseAndCodeIsNullAndAmountBetween(
+                name, minAmount, maxAmount)
+                : nomenclatureRepository.findAllByNameContainingIgnoreCaseAndCodeContainingIgnoreCaseAndAmountBetween(
+                name, code, minAmount, maxAmount);
 
         return entities.stream().map(mapper::convert).toList();
     }
@@ -376,7 +297,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
         if (recordRepository.existsByNomenclature_Id(id)) {
             throw new ProhibitedRemovingException(ExceptionType.NOMENCLATURE_HAS_RECORDS.setId(id));
         }
-        if (entity.getAmount() <= 0) {
+        if (entity.getAmount() > 0) {
             throw new ProhibitedRemovingException(ExceptionType.NOMENCLATURE_AMOUNT_IS_POSITIVE.setId(id));
         }
         nomenclatureRepository.delete(entity);

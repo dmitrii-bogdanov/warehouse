@@ -20,8 +20,12 @@ public interface NomenclatureRepository extends JpaRepository<NomenclatureEntity
 
     List<NomenclatureEntity> findAllByCodeContainingIgnoreCase(String partialCode);
 
-    List<NomenclatureEntity> findAllByNameContainingIgnoreCaseAndCodeIsNull(String partialName);
-    List<NomenclatureEntity> findAllByNameContainingIgnoreCaseAndCodeContainingIgnoreCase(String partialName, String partialCode);
+    List<NomenclatureEntity> findAllByNameContainingIgnoreCaseAndCodeIsNullAndAmountBetween(String partialName,
+                                                                                            Long minAmount,
+                                                                                            Long maxAmount);
+
+    List<NomenclatureEntity> findAllByNameContainingIgnoreCaseAndCodeContainingIgnoreCaseAndAmountBetween(
+            String partialName, String partialCode, Long minAmount, Long maxAmount);
 
     List<NomenclatureEntity> findAllByAmountGreaterThanEqual(long amount);
 

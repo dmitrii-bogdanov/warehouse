@@ -1,5 +1,6 @@
 package bogdanov.warehouse.services.interfaces;
 
+import bogdanov.warehouse.AbstractSpringBootTest;
 import bogdanov.warehouse.database.entities.RecordTypeEntity;
 import bogdanov.warehouse.database.enums.RecordType;
 import bogdanov.warehouse.database.repositories.RecordTypeRepository;
@@ -23,9 +24,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
-@AutoConfigureTestDatabase
-class RecordTypeServiceTest {
+class RecordTypeServiceTest extends AbstractSpringBootTest {
 
     @Autowired
     private RecordTypeService recordTypeService;
@@ -40,7 +39,7 @@ class RecordTypeServiceTest {
     private final String NULL_NAME = null;
     private final String EMPTY_NAME = Strings.EMPTY;
     private final String SPACE_NAME = " ";
-    private final String TAB_NAME = "\t";
+    private final String BLANK_NAME = "\t  \t \t\t ";
 
     private RecordTypeEntity entity;
     private List<RecordTypeEntity> entitiesList;
@@ -148,8 +147,8 @@ class RecordTypeServiceTest {
     }
 
     @Test
-    void getEntityByName_TabName() {
-        final String name = TAB_NAME;
+    void getEntityByName_BlankName() {
+        final String name = BLANK_NAME;
         ArgumentException e = assertThrows(ArgumentException.class,
                 () -> recordTypeService.getEntityByName(name));
         assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
@@ -194,8 +193,8 @@ class RecordTypeServiceTest {
     }
 
     @Test
-    void getByName_TabName() {
-        final String name = TAB_NAME;
+    void getByName_BlankName() {
+        final String name = BLANK_NAME;
         ArgumentException e = assertThrows(ArgumentException.class,
                 () -> recordTypeService.getByName(name));
         assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());

@@ -1,28 +1,21 @@
 package bogdanov.warehouse.dto;
 
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.apache.logging.log4j.util.Strings;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class UserAccountDTO {
 
     private Long id;
     private String username;
     private Long personId;
-    private String[] roles;
+    private Collection<String> roles;
 
-    public void setUsername(String username) {
-        if (Strings.isBlank(username)) {
-            this.username = Strings.EMPTY;
-        }
-        this.username = username.toUpperCase(Locale.ROOT);
-    }
 }

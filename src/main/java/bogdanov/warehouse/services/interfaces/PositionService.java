@@ -27,8 +27,6 @@ public interface PositionService {
 
     List<PositionDTO> findAllByNameContaining(String partialName);
 
-    PositionDTO delete(String name);
-
     PositionDTO delete(Long id);
 
 }

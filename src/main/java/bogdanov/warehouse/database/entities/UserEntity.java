@@ -5,16 +5,13 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
+import java.beans.Transient;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
 @Entity
-@Getter
-@Setter
-@NoArgsConstructor
-@ToString
-@EqualsAndHashCode
+@Data
 @Table(name = "users")
 public class UserEntity implements UserDetails {
 
@@ -57,11 +54,4 @@ public class UserEntity implements UserDetails {
         return true;
     }
 
-    public void enable() {
-        isEnabled = true;
-    }
-
-    public void disable() {
-        isEnabled = false;
-    }
 }

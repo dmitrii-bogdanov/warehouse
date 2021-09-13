@@ -32,7 +32,7 @@ class RoleEntityTest {
         entity = new RoleEntity();
         String name = "admin";
         entity.setName(name);
-        assertEquals(name.toUpperCase(Locale.ROOT), entity.getAuthority());
+        assertEquals(name, entity.getAuthority());
     }
 
 }

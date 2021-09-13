@@ -31,9 +31,6 @@ public class AccountRestController {
 
     @PostMapping
     public UserAccountDTO register(@RequestBody UserAccountWithPasswordDTO user) {
-        //TODO delete
-        log.info(Arrays.toString(user.getRoles()));
-
         return accountService.add(user);
     }
 

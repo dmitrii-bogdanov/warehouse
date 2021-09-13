@@ -4,6 +4,7 @@ import lombok.*;
 import org.apache.logging.log4j.util.Strings;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.time.LocalDate;
 
 @Entity

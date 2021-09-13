@@ -1,6 +1,7 @@
 package bogdanov.warehouse.exceptions.enums;
 
 import lombok.Getter;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.http.HttpStatus;
 
 import java.util.Locale;
@@ -34,7 +35,16 @@ public enum ExceptionType {
     NO_PARAMETER_IS_PRESENT("No parameter is present", HttpStatus.BAD_REQUEST),
     LIST_CONTAINS_REPEATING_VALUES("Sent list contains repeating #FIELD_NAMEs", HttpStatus.BAD_REQUEST),
     RESERVED_VALUE("Value of #FIELD_NAME : \"#FIELD_VALUE\" is reserved", HttpStatus.BAD_REQUEST),
-    INVALID_PHONE_NUMBER("Phone number contains no digit", HttpStatus.BAD_REQUEST);
+    INVALID_PHONE_NUMBER("Phone number contains no digit", HttpStatus.BAD_REQUEST),
+    INCORRECT_RANGE("#FROM_PARAMETER_NAME is greater than #TO_PARAMETER_NAME", HttpStatus.BAD_REQUEST),
+    LONG_VALUE_OVERFLOW("Operation leads to long value overflow", HttpStatus.BAD_REQUEST);
+
+    private static final String ID = "#ID";
+    private static final String FIELD_NAME = "#FIELD_NAME";
+    private static final String FIELD_VALUE = "#FIELD_VALUE";
+    private static final String ENTITY = "#ENTITY";
+    private static final String FROM_PARAMETER_NAME = "#FROM_PARAMETER_NAME";
+    private static final String TO_PARAMETER_NAME = "#TO_PARAMETER_NAME";
 
     private final String message;
     private final HttpStatus status;
@@ -49,7 +59,7 @@ public enum ExceptionType {
         if (modifiedMessage == null) {
             modifiedMessage = message;
         }
-        modifiedMessage = modifiedMessage.replace("#ID", Long.toString(id));
+        modifiedMessage = modifiedMessage.replace(ID, Long.toString(id));
         return this;
     }
 
@@ -57,19 +67,19 @@ public enum ExceptionType {
         if (modifiedMessage == null) {
             modifiedMessage = message;
         }
-        modifiedMessage = modifiedMessage.replace("#ENTITY", entity);
+        modifiedMessage = modifiedMessage.replace(ENTITY, entity);
         return this;
     }
 
     public synchronized ExceptionType setEntity(Class entity) {
-        return setEntity(entity.getSimpleName().replace("Entity", ""));
+        return setEntity(entity.getSimpleName().replace("Entity", Strings.EMPTY));
     }
 
     public synchronized ExceptionType setFieldName(String field) {
         if (modifiedMessage == null) {
             modifiedMessage = message;
         }
-        modifiedMessage = modifiedMessage.replace("#FIELD_NAME", field);
+        modifiedMessage = modifiedMessage.replace(FIELD_NAME, field);
         return this;
     }
 
@@ -77,7 +87,23 @@ public enum ExceptionType {
         if (modifiedMessage == null) {
             modifiedMessage = message;
         }
-        modifiedMessage = modifiedMessage.replace("#FIELD_VALUE", fieldValue.toString());
+        modifiedMessage = modifiedMessage.replace(FIELD_VALUE, fieldValue.toString());
+        return this;
+    }
+
+    public synchronized ExceptionType setFrom(String parameter) {
+        if (modifiedMessage == null) {
+            modifiedMessage = message;
+        }
+        modifiedMessage = modifiedMessage.replace(FROM_PARAMETER_NAME, parameter);
+        return this;
+    }
+
+    public synchronized ExceptionType setTo(String parameter) {
+        if (modifiedMessage == null) {
+            modifiedMessage = message;
+        }
+        modifiedMessage = modifiedMessage.replace(TO_PARAMETER_NAME, parameter);
         return this;
     }
 

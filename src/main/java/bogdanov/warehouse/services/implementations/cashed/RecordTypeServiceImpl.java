@@ -10,14 +10,16 @@ import bogdanov.warehouse.services.interfaces.RecordTypeService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
-@Primary
 @Service
+@Primary
+@Qualifier("cached")
 @RequiredArgsConstructor
 public class RecordTypeServiceImpl implements RecordTypeService {
 

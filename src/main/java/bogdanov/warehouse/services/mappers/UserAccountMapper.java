@@ -19,6 +19,8 @@ public class UserAccountMapper {
     private final BCryptPasswordEncoder adminEncoder;
     private final RoleService roleService;
 
+    private final RoleEntity ROLE_ADMIN = new RoleEntity(Role.ROLE_ADMIN);
+
     public UserAccountMapper(@Qualifier("user") BCryptPasswordEncoder userEncoder,
                              @Qualifier("admin") BCryptPasswordEncoder adminEncoder,
                              RoleService roleService) {
@@ -29,7 +31,7 @@ public class UserAccountMapper {
 
     UserEntity convert(UserAccountWithPasswordDTO user) {
         UserEntity userEntity = convert((UserAccountDTO) user);
-        if (userEntity.getRoles().contains(new RoleEntity(Role.ROLE_ADMIN))) {
+        if (userEntity.getRoles().contains(ROLE_ADMIN)) {
             userEntity.setPassword(adminEncoder.encode(user.getPassword()));
         } else {
             userEntity.setPassword(userEncoder.encode(user.getPassword()));
@@ -41,24 +43,16 @@ public class UserAccountMapper {
         UserEntity userEntity = new UserEntity();
         userEntity.setId(user.getId());
         userEntity.setUsername(user.getUsername());
-        userEntity.getRoles().addAll(roleService.findEntitiesByName(user.getRoles()));
+        userEntity.getRoles().addAll(user.getRoles().stream().map(roleService::getEntityByName).toList());
         return userEntity;
     }
 
     UserAccountDTO convert(UserEntity user) {
-        UserAccountDTO regInfo = new UserAccountDTO();
-        regInfo.setId(user.getId());
-        regInfo.setUsername(user.getUsername());
-        if (user.getPerson() != null) {
-            regInfo.setPersonId(user.getPerson().getId());
-        }
-        String[] roles = new String[user.getRoles().size()];
-        int i = 0;
-        for (RoleEntity role : user.getRoles()) {
-            roles[i++] = role.getName();
-        }
-        regInfo.setRoles(roles);
-        return regInfo;
+        return new UserAccountDTO(
+                user.getId(),
+                user.getUsername(),
+                user.getPerson().getId(),
+                user.getRoles().stream().map(RoleEntity::getName).toList());
     }
 
 }

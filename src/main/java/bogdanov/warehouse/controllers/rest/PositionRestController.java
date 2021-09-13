@@ -44,11 +44,6 @@ public class PositionRestController {
         return positionService.getByName(name);
     }
 
-    @DeleteMapping(params = "name")
-    public PositionDTO deleteByName(@RequestParam String name) {
-        return positionService.delete(name);
-    }
-
     @GetMapping(params = {"search", "name"})
     public List<PositionDTO> findAllByNameContaining(@RequestParam String name) {
         return positionService.findAllByNameContaining(name);

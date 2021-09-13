@@ -1,10 +1,7 @@
 package bogdanov.warehouse.database.entities;
 
 import bogdanov.warehouse.database.enums.Role;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 
 import javax.persistence.*;
@@ -12,16 +9,13 @@ import java.util.Collection;
 import java.util.Locale;
 
 @Entity
-@Getter
-@Setter
-@ToString
-@EqualsAndHashCode
+@Data
 @Table(name = "roles")
 public class RoleEntity implements GrantedAuthority {
 
     @Id
     @GeneratedValue
-    private long id;
+    private Long id;
 
     @Column(nullable = false, unique = true)
     private String name;
@@ -38,13 +32,9 @@ public class RoleEntity implements GrantedAuthority {
         this(role.getId(), role.name());
     }
 
-    public RoleEntity(long id, String name){
+    public RoleEntity(Long id, String name) {
         this.id = id;
         setName(name);
-    }
-
-    public void setName(String name) {
-        this.name = name.toUpperCase(Locale.ROOT);
     }
 
     @Override

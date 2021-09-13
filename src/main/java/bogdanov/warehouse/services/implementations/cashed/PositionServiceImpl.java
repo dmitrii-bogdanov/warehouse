@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
@@ -22,9 +24,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
-@RequiredArgsConstructor
 @Service
 @Primary
+@Qualifier("cached")
+@RequiredArgsConstructor
 public class PositionServiceImpl implements PositionService {
 
     private final PositionRepository positionRepository;
@@ -103,11 +106,7 @@ public class PositionServiceImpl implements PositionService {
     }
 
     @Override
-    public PositionDTO delete(String name) {
-        return delete(getEntityByName(name));
-    }
-
-    @Override
+    @CacheEvict(value = "positions", allEntries = true)
     public PositionDTO delete(Long id) {
         return delete(getEntityById(id));
     }

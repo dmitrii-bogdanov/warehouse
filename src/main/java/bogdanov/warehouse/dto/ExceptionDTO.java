@@ -1,5 +1,6 @@
 package bogdanov.warehouse.dto;
 
+import bogdanov.warehouse.exceptions.WarehouseExeption;
 import bogdanov.warehouse.exceptions.enums.ExceptionType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
@@ -28,6 +29,12 @@ public class ExceptionDTO {
         setMessage(e.getModifiedMessage());
         setStatus(e.getStatus());
         setType(e.name());
+    }
+
+    public ExceptionDTO(WarehouseExeption e) {
+        setMessage(e.getMessage());
+        setType(e.getExceptionType().name());
+        setStatus(e.getExceptionType().getStatus());
     }
 
 }

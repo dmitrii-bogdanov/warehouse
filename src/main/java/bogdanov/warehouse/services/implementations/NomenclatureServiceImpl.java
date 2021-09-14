@@ -10,8 +10,7 @@ import bogdanov.warehouse.services.interfaces.NomenclatureService;
 import bogdanov.warehouse.services.mappers.Mapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.cache.annotation.Cacheable;
+import org.hibernate.PropertyValueException;
 import org.springframework.context.annotation.Primary;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -78,43 +77,59 @@ public class NomenclatureServiceImpl implements NomenclatureService {
         return entity;
     }
 
-    private RuntimeException explainException(DataIntegrityViolationException e) {
-        StringBuilder sb = new StringBuilder(e.getMessage());
+    private RuntimeException wrapException(DataIntegrityViolationException e) {
+        String message = e.getMessage();
+        message = message == null ? Strings.EMPTY : message;
+        if (PropertyValueException.class.equals(e.getCause().getClass())) {
+            message = message
+                    .replaceAll(";.*", Strings.EMPTY)
+                    .replace(NomenclatureEntity.class.getName(), NOMENCLATURE);
+            throw new ArgumentException(ExceptionType.NULL_PROPERTY_WAS_PASSED.setMessage(message));
+        }
+
+        StringBuilder sb = new StringBuilder(message);
         int index;
         if ((index = sb.indexOf(DATA_INTEGRITY_EXCEPTION_SUBSTRING)) > -1) {
             ExceptionType type = null;
             sb.delete(0, index + DATA_INTEGRITY_EXCEPTION_SUBSTRING.length());
             long id = Long.parseLong(sb.substring(13, sb.indexOf("\"")));
             Optional<NomenclatureEntity> entity = nomenclatureRepository.findById(id);
+            String field = "unknown field";
             if (entity.isPresent()) {
-                String field = sb.substring(0, 4);
-                if (CODE.equalsIgnoreCase(field)) {
+                if (CODE.equalsIgnoreCase(sb.substring(0, CODE.length()))) {
                     type = ExceptionType.ALREADY_RECORDED_NAME_OR_CODE
-                            .setFieldName(CODE).setFieldValue(entity.get().getCode()).setId(id);
-                }
-                if (NAME.equalsIgnoreCase(field)) {
+                            .setFieldName(field = CODE).setFieldValue(entity.get().getCode()).setId(id);
+                } else if (NAME.equalsIgnoreCase(sb.substring(0, NAME.length()))) {
                     type = ExceptionType.ALREADY_RECORDED_NAME_OR_CODE
-                            .setFieldName(NAME).setFieldValue(entity.get().getName()).setId(id);
+                            .setFieldName(field = NAME).setFieldValue(entity.get().getName()).setId(id);
                 }
             } else {
                 type = ExceptionType.LIST_CONTAINS_REPEATING_VALUES
-                        .setFieldName(sb.substring(0, 4).toLowerCase(Locale.ROOT));
+                        .setFieldName(field.toLowerCase(Locale.ROOT));
             }
             return new ArgumentException(type);
         } else {
             return e;
         }
     }
+
+    private boolean isListNotEmpty(Collection collection) {
+        if (collection.isEmpty()) {
+            throw new ArgumentException(ExceptionType.NO_OBJECT_WAS_PASSED);
+        }
+        return true;
+    }
     //endregion
 
     @Override
-    public List<NomenclatureDTO> createNew(List<NomenclatureDTO> nomenclature) {
+    public List<NomenclatureDTO> createNew(Collection<NomenclatureDTO> nomenclature) {
+        isListNotEmpty(nomenclature);
         try {
             return nomenclatureRepository
                     .saveAll(nomenclature.stream().filter(this::isCodeNotReserved).map(mapper::convert).toList())
                     .stream().map(mapper::convert).toList();
         } catch (DataIntegrityViolationException e) {
-            throw explainException(e);
+            throw wrapException(e);
         }
     }
 
@@ -134,6 +149,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
 
     @Override
     public List<NomenclatureDTO> update(List<NomenclatureDTO> nomenclature) {
+        isListNotEmpty(nomenclature);
         try {
             return nomenclatureRepository.saveAll(
                     nomenclature
@@ -152,7 +168,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
                     .map(mapper::convert)
                     .toList();
         } catch (DataIntegrityViolationException e) {
-            throw explainException(e);
+            throw wrapException(e);
         }
     }
 

@@ -7,7 +7,7 @@ public abstract class WarehouseExeption extends RuntimeException{
     private ExceptionType exceptionType;
 
     protected WarehouseExeption(ExceptionType exceptionType) {
-        super();
+        super(exceptionType.getModifiedMessage());
         setExceptionType(exceptionType);
     }
 

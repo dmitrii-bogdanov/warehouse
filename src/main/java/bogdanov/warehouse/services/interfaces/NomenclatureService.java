@@ -4,13 +4,14 @@ import bogdanov.warehouse.database.entities.NomenclatureEntity;
 import bogdanov.warehouse.dto.NomenclatureDTO;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
 
 //TODO
 @Service
 public interface NomenclatureService {
 
-    List<NomenclatureDTO> createNew(List<NomenclatureDTO> nomenclature);
+    List<NomenclatureDTO> createNew(Collection<NomenclatureDTO> nomenclature);
 
     NomenclatureDTO getById(Long id);
 

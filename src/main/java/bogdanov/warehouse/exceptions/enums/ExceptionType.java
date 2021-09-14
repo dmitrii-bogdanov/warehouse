@@ -37,7 +37,9 @@ public enum ExceptionType {
     RESERVED_VALUE("Value of #FIELD_NAME : \"#FIELD_VALUE\" is reserved", HttpStatus.BAD_REQUEST),
     INVALID_PHONE_NUMBER("Phone number contains no digit", HttpStatus.BAD_REQUEST),
     INCORRECT_RANGE("#FROM_PARAMETER_NAME is greater than #TO_PARAMETER_NAME", HttpStatus.BAD_REQUEST),
-    LONG_VALUE_OVERFLOW("Operation leads to long value overflow", HttpStatus.BAD_REQUEST);
+    LONG_VALUE_OVERFLOW("Operation leads to long value overflow", HttpStatus.BAD_REQUEST),
+    NO_OBJECT_WAS_PASSED("No object was passed", HttpStatus.BAD_REQUEST),
+    NULL_PROPERTY_WAS_PASSED("#MESSAGE", HttpStatus.BAD_REQUEST);
 
     private static final String ID = "#ID";
     private static final String FIELD_NAME = "#FIELD_NAME";
@@ -45,6 +47,7 @@ public enum ExceptionType {
     private static final String ENTITY = "#ENTITY";
     private static final String FROM_PARAMETER_NAME = "#FROM_PARAMETER_NAME";
     private static final String TO_PARAMETER_NAME = "#TO_PARAMETER_NAME";
+    private static final String MESSAGE = "#MESSAGE";
 
     private final String message;
     private final HttpStatus status;
@@ -104,6 +107,14 @@ public enum ExceptionType {
             modifiedMessage = message;
         }
         modifiedMessage = modifiedMessage.replace(TO_PARAMETER_NAME, parameter);
+        return this;
+    }
+
+    public synchronized ExceptionType setMessage(String message) {
+        if (modifiedMessage == null) {
+            modifiedMessage = message;
+        }
+        modifiedMessage = modifiedMessage.replace(MESSAGE, message);
         return this;
     }
 

@@ -64,6 +64,7 @@ class NomenclatureServiceTest {
 
     @BeforeEach
     private void clear() {
+        recordRepository.deleteAll();
         nomenclatureRepository.deleteAll();
         dto = null;
     }
@@ -532,6 +533,23 @@ class NomenclatureServiceTest {
     }
 
     @Test
+    void addAmount_LongOverflow() {
+        dto = createSimpleRecords();
+        dto = addAmount(dto);
+        NomenclatureDTO dto1 = dto.get(1);
+        NomenclatureDTO dtoAdd = new NomenclatureDTO(dto1.getId(), dto1.getName(), dto1.getCode(), dto1.getAmount());
+
+        dtoAdd.setAmount(Long.MAX_VALUE - ADD_AMOUNT + 1);
+
+        dto = nomenclatureService.getAll();
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> nomenclatureService.addAmount(dtoAdd));
+        assertEquals(ExceptionType.LONG_VALUE_OVERFLOW, e.getExceptionType());
+        assertEquals(dto, nomenclatureService.getAll());
+    }
+
+    @Test
     void addAmount_NotRecordedId() {
         dto = createSimpleRecords();
         dto = addAmount(dto);
@@ -808,7 +826,7 @@ class NomenclatureServiceTest {
     }
 
     @Test
-    void delete_ExistingRecord() {
+    void delete_ExistingRecords() {
         dto = createSimpleRecords();
 
         PersonDTO person = new PersonDTO();
@@ -835,12 +853,19 @@ class NomenclatureServiceTest {
 
         assertNotNull(recordService.add(record, username));
 
+        record = new RecordInputDTO();
+        record.setType(RecordType.RELEASE.name());
+        record.setAmount(2L);
+        record.setNomenclatureId(deleted.getId());
+
+        assertNotNull(recordService.add(record, username));
+
+        dto = nomenclatureService.getAll();
+
         ProhibitedRemovingException e = assertThrows(ProhibitedRemovingException.class,
                 () -> nomenclatureService.delete(deleted.getId()));
         assertEquals(ExceptionType.NOMENCLATURE_HAS_RECORDS, e.getExceptionType());
         assertEquals(dto, nomenclatureService.getAll());
-
-        recordRepository.deleteAll();
     }
 
     @Test
@@ -1054,6 +1079,26 @@ class NomenclatureServiceTest {
         ArgumentException e = assertThrows(ArgumentException.class,
                 () -> nomenclatureService.search(null, null, 20L, 10L));
         assertEquals(ExceptionType.INCORRECT_RANGE, e.getExceptionType());
+        assertEquals(dto, nomenclatureService.getAll());
+    }
+
+    @Test
+    void search_MinAmountNegative() {
+        dto = createForSearch();
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> nomenclatureService.search(null, null, -2L, 20L));
+        assertEquals(ExceptionType.NOT_POSITIVE_AMOUNT, e.getExceptionType());
+        assertEquals(dto, nomenclatureService.getAll());
+    }
+
+    @Test
+    void search_MaxAmountNegative() {
+        dto = createForSearch();
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> nomenclatureService.search(null, null, null, -10L));
+        assertEquals(ExceptionType.NOT_POSITIVE_AMOUNT, e.getExceptionType());
         assertEquals(dto, nomenclatureService.getAll());
     }
 

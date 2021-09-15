@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
+import javax.validation.ConstraintViolationException;
 import java.util.*;
 
 @Slf4j
@@ -29,6 +30,8 @@ public class NomenclatureServiceImpl implements NomenclatureService {
     private final Mapper mapper;
 
     private static final String DATA_INTEGRITY_EXCEPTION_SUBSTRING = "ON PUBLIC.NOMENCLATURE(";
+    private static final String EXISTING_REFERENCE_SUBSTRING = "REFERENCES PUBLIC.NOMENCLATURE";
+    private static final String RECORD_FOREIGN_KEY_SUBSTRING = "PUBLIC.RECORD_ENTITY FOREIGN KEY(NOMENCLATURE";
     private static final String NOMENCLATURE = "Nomenclature";
     private static final String ID = "id";
     private static final String NAME = "name";
@@ -90,11 +93,16 @@ public class NomenclatureServiceImpl implements NomenclatureService {
     private RuntimeException wrapException(DataIntegrityViolationException e, boolean isUpdate, Collection<NomenclatureDTO> dto) {
         String message = e.getMessage();
         message = message == null ? Strings.EMPTY : message;
+        if (message.contains(EXISTING_REFERENCE_SUBSTRING)) {
+            if (message.contains(RECORD_FOREIGN_KEY_SUBSTRING)) {
+                return new ProhibitedRemovingException(ExceptionType.NOMENCLATURE_HAS_RECORDS);
+            }
+        }
         if (PropertyValueException.class.equals(e.getCause().getClass())) {
             message = message
                     .replaceAll(";.*", Strings.EMPTY)
                     .replace(NomenclatureEntity.class.getName(), NOMENCLATURE);
-            throw new ArgumentException(ExceptionType.NULL_PROPERTY_WAS_PASSED.setMessage(message));
+            return new ArgumentException(ExceptionType.NULL_PROPERTY_WAS_PASSED.setMessage(message));
         }
 
         StringBuilder sb = new StringBuilder(message);
@@ -266,12 +274,12 @@ public class NomenclatureServiceImpl implements NomenclatureService {
         }
         if (isMinAmountAbsent) {
             minAmount = ZERO;
-        } else if (minAmount < 0){
+        } else if (minAmount < 0) {
             isAmountPositive(minAmount);
         }
         if (isMaxAmountAbsent) {
             maxAmount = Long.MAX_VALUE;
-        } else if (maxAmount < 0){
+        } else if (maxAmount < 0) {
             isAmountPositive(maxAmount);
         }
         if (minAmount > maxAmount) {
@@ -296,13 +304,14 @@ public class NomenclatureServiceImpl implements NomenclatureService {
     @Override
     public NomenclatureDTO delete(Long id) {
         NomenclatureEntity entity = getEntityById(id);
-        if (recordRepository.existsByNomenclature_Id(id)) {
-            throw new ProhibitedRemovingException(ExceptionType.NOMENCLATURE_HAS_RECORDS.setId(id));
-        }
         if (entity.getAmount() > 0) {
             throw new ProhibitedRemovingException(ExceptionType.NOMENCLATURE_AMOUNT_IS_POSITIVE.setId(id));
         }
-        nomenclatureRepository.delete(entity);
+        try {
+            nomenclatureRepository.delete(entity);
+        } catch (DataIntegrityViolationException e) {
+            throw wrapException(e);
+        }
         return mapper.convert(entity);
     }
 }

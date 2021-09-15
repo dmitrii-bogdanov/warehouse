@@ -70,7 +70,7 @@ public class RecordServiceImpl implements RecordService {
     public RecordDTO revert(Long id, String username) {
         RecordEntity revertedRecord = getEntityById(id);
         RecordEntity generatedRecord = new RecordEntity();
-        generatedRecord.setUser(userRepository.findByUsername(username));
+        generatedRecord.setUser(userAccountService.getEntityByUsername(username));
         generatedRecord.setNomenclature(revertedRecord.getNomenclature());
         generatedRecord.setAmount(revertedRecord.getAmount());
         switch (revertedRecord.getType().getName()) {

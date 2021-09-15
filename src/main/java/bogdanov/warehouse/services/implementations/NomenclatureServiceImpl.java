@@ -266,12 +266,12 @@ public class NomenclatureServiceImpl implements NomenclatureService {
         }
         if (isMinAmountAbsent) {
             minAmount = ZERO;
-        } else {
+        } else if (minAmount < 0){
             isAmountPositive(minAmount);
         }
         if (isMaxAmountAbsent) {
             maxAmount = Long.MAX_VALUE;
-        } else {
+        } else if (maxAmount < 0){
             isAmountPositive(maxAmount);
         }
         if (minAmount > maxAmount) {

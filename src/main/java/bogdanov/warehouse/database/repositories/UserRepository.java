@@ -13,7 +13,7 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
-    UserEntity findByUsername(String username);
+    UserEntity findByUsernameIgnoreCase(String username);
 
     //TODO Check what it does
     List<UserEntity> findAllByUsernameStartingWith(String startsWith);

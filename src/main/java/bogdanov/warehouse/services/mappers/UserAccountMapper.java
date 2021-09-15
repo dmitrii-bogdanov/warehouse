@@ -7,9 +7,12 @@ import bogdanov.warehouse.dto.UserAccountWithPasswordDTO;
 import bogdanov.warehouse.dto.UserAccountDTO;
 import bogdanov.warehouse.services.interfaces.RoleService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
+
+import java.util.Locale;
 
 @Slf4j
 @Component
@@ -29,6 +32,10 @@ public class UserAccountMapper {
         this.roleService = roleService;
     }
 
+    private String toUpperCase(String str) {
+        return Strings.isBlank(str) ? null : str.toUpperCase(Locale.ROOT);
+    }
+
     UserEntity convert(UserAccountWithPasswordDTO user) {
         UserEntity userEntity = convert((UserAccountDTO) user);
         if (userEntity.getRoles().contains(ROLE_ADMIN)) {
@@ -42,7 +49,7 @@ public class UserAccountMapper {
     UserEntity convert(UserAccountDTO user) {
         UserEntity userEntity = new UserEntity();
         userEntity.setId(user.getId());
-        userEntity.setUsername(user.getUsername());
+        userEntity.setUsername(toUpperCase(user.getUsername()));
         userEntity.getRoles().addAll(user.getRoles().stream().map(roleService::getEntityByName).toList());
         return userEntity;
     }
@@ -51,7 +58,7 @@ public class UserAccountMapper {
         return new UserAccountDTO(
                 user.getId(),
                 user.getUsername(),
-                user.getPerson().getId(),
+                user.getPerson() == null ? null : user.getPerson().getId(),
                 user.getRoles().stream().map(RoleEntity::getName).toList());
     }
 

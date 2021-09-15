@@ -7,9 +7,7 @@ import bogdanov.warehouse.database.enums.Role;
 import bogdanov.warehouse.database.repositories.NomenclatureRepository;
 import bogdanov.warehouse.database.repositories.RecordRepository;
 import bogdanov.warehouse.database.repositories.UserRepository;
-import bogdanov.warehouse.dto.NomenclatureDTO;
-import bogdanov.warehouse.dto.RecordDTO;
-import bogdanov.warehouse.dto.RecordInputDTO;
+import bogdanov.warehouse.dto.*;
 import bogdanov.warehouse.exceptions.ArgumentException;
 import bogdanov.warehouse.exceptions.ProhibitedRemovingException;
 import bogdanov.warehouse.exceptions.ResourceNotFoundException;
@@ -25,6 +23,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.lang.annotation.ElementType;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -41,6 +40,8 @@ class NomenclatureServiceTest {
     private NomenclatureRepository nomenclatureRepository;
     @Autowired
     private RecordService recordService;
+    @Autowired
+    private PersonService personService;
     @Autowired
     private RecordRepository recordRepository;
     @Autowired
@@ -810,9 +811,20 @@ class NomenclatureServiceTest {
     void delete_ExistingRecord() {
         dto = createSimpleRecords();
 
-        assertFalse(userAccountService.getAll().isEmpty());
-        String username = userAccountService.getAll().get(0).getUsername();
-        assertNotNull(userAccountService.getByUsername(username));
+        PersonDTO person = new PersonDTO();
+        person.setFirstname("firstname");
+        person.setLastname("lastname");
+        person.setBirth(LocalDate.now());
+        person.setPosition("User");
+        person = personService.add(person);
+
+        String username = "some_username";
+        UserAccountWithPasswordDTO user = new UserAccountWithPasswordDTO();
+        user.setUsername(username);
+        user.setPassword("password");
+        user.setPersonId(person.getId());
+        user.setRoles(Arrays.stream(Role.values()).map(Role::name).toList());
+        username = userAccountService.add(user).getUsername();
 
         NomenclatureDTO deleted = dto.get(1);
 

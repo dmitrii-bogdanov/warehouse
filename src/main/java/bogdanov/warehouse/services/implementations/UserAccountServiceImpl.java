@@ -45,7 +45,7 @@ public class UserAccountServiceImpl implements UserAccountService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByUsername(username.toUpperCase(Locale.ROOT));
+        return userRepository.findByUsernameIgnoreCase(username.toUpperCase(Locale.ROOT));
     }
 
     @Override
@@ -160,9 +160,8 @@ public class UserAccountServiceImpl implements UserAccountService {
     }
 
     @Override
-    @Cacheable("users")
     public UserEntity getEntityByUsername(String username) {
-        return Optional.ofNullable(userRepository.findByUsername(StringUtils.toRootUpperCase(username)))
+        return Optional.ofNullable(userRepository.findByUsernameIgnoreCase(StringUtils.toRootUpperCase(username)))
                 .orElseThrow(() -> new ResourceNotFoundException(USER, USERNAME, username));
     }
 
@@ -183,13 +182,7 @@ public class UserAccountServiceImpl implements UserAccountService {
 
     @Override
     public UserAccountDTO getByUsername(String username) {
-        username = username.toUpperCase(Locale.ROOT);
-        UserEntity entity = userRepository.findByUsername(username);
-        if (entity != null) {
-            return mapper.convert(entity, UserAccountDTO.class);
-        } else {
-            throw new ResourceNotFoundException(USER, USERNAME, username);
-        }
+        return mapper.convert(getEntityByUsername(username), UserAccountDTO.class);
     }
 
     @Override

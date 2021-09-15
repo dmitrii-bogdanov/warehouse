@@ -9,6 +9,7 @@ import bogdanov.warehouse.exceptions.enums.ExceptionType;
 import bogdanov.warehouse.services.interfaces.NomenclatureService;
 import bogdanov.warehouse.services.mappers.Mapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.hibernate.PropertyValueException;
 import org.springframework.context.annotation.Primary;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+@Slf4j
 @Primary
 @Service
 @RequiredArgsConstructor
@@ -39,7 +41,11 @@ public class NomenclatureServiceImpl implements NomenclatureService {
 
     //region Utility Methods
     private boolean isCodeNotReserved(NomenclatureDTO dto) {
-        if (RESERVED_NULL_CODE_VALUE.equalsIgnoreCase(dto.getCode())) {
+        return isCodeNotReserved(dto.getCode());
+    }
+
+    private boolean isCodeNotReserved(String code) {
+        if (RESERVED_NULL_CODE_VALUE.equalsIgnoreCase(code)) {
             throw new ArgumentException(ExceptionType.RESERVED_VALUE
                     .setFieldName(CODE).setFieldValue(RESERVED_NULL_CODE_VALUE));
         }
@@ -47,7 +53,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
     }
 
     private boolean isAmountPositive(Long amount) {
-        if (amount == null || amount < 0) {
+        if (amount == null || amount <= 0) {
             throw new ArgumentException(ExceptionType.NOT_POSITIVE_AMOUNT);
         }
         return true;
@@ -78,6 +84,10 @@ public class NomenclatureServiceImpl implements NomenclatureService {
     }
 
     private RuntimeException wrapException(DataIntegrityViolationException e) {
+        return wrapException(e, false, null);
+    }
+
+    private RuntimeException wrapException(DataIntegrityViolationException e, boolean isUpdate, Collection<NomenclatureDTO> dto) {
         String message = e.getMessage();
         message = message == null ? Strings.EMPTY : message;
         if (PropertyValueException.class.equals(e.getCause().getClass())) {
@@ -103,10 +113,25 @@ public class NomenclatureServiceImpl implements NomenclatureService {
                     type = ExceptionType.ALREADY_RECORDED_NAME_OR_CODE
                             .setFieldName(field = NAME).setFieldValue(entity.get().getName()).setId(id);
                 }
+
+                if (isUpdate) {
+                    List<String> strings = null;
+                    if (CODE.equals(field)) {
+                        strings = dto.stream().map(NomenclatureDTO::getCode).filter(Strings::isNotEmpty).toList();
+                    } else if (NAME.equals(field)) {
+                        strings = dto.stream().map(NomenclatureDTO::getName).toList();
+                    }
+                    if (strings != null && strings.size() > strings.stream().distinct().toList().size()) {
+                        type = ExceptionType.LIST_CONTAINS_REPEATING_VALUES
+                                .setFieldName(field.toLowerCase(Locale.ROOT));
+                    }
+                }
+
             } else {
                 type = ExceptionType.LIST_CONTAINS_REPEATING_VALUES
                         .setFieldName(field.toLowerCase(Locale.ROOT));
             }
+
             return new ArgumentException(type);
         } else {
             return e;
@@ -168,7 +193,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
                     .map(mapper::convert)
                     .toList();
         } catch (DataIntegrityViolationException e) {
-            throw wrapException(e);
+            throw wrapException(e, true, nomenclature);
         }
     }
 
@@ -185,9 +210,10 @@ public class NomenclatureServiceImpl implements NomenclatureService {
     @Override
     public NomenclatureDTO getByCode(String code) {
         if (Strings.isBlank(code)) {
-            final String GET_BY_NULL_CODE_COMMENT = "If system allows to use blank codes, try ?search?code=null";
-            throw new ArgumentException(ExceptionType.BLANK_CODE.addComment(GET_BY_NULL_CODE_COMMENT));
+            final String COMMENT = "If system allows to use blank codes, try ?search?code=null";
+            throw new ArgumentException(ExceptionType.BLANK_CODE.addComment(COMMENT));
         }
+        isCodeNotReserved(code);
         return mapper.convert(
                 nomenclatureRepository.findByCodeIgnoreCase(code)
                         .orElseThrow(() -> new ResourceNotFoundException(NOMENCLATURE, CODE, code)));
@@ -252,11 +278,17 @@ public class NomenclatureServiceImpl implements NomenclatureService {
             throw new ArgumentException(ExceptionType.INCORRECT_RANGE.setFrom(MIN_AMOUNT).setTo(MAX_AMOUNT));
         }
 
-        List<NomenclatureEntity> entities = shouldCodeBeNull
-                ? nomenclatureRepository.findAllByNameContainingIgnoreCaseAndCodeIsNullAndAmountBetween(
-                name, minAmount, maxAmount)
-                : nomenclatureRepository.findAllByNameContainingIgnoreCaseAndCodeContainingIgnoreCaseAndAmountBetween(
-                name, code, minAmount, maxAmount);
+        List<NomenclatureEntity> entities;
+        if (shouldCodeBeNull) {
+            entities = nomenclatureRepository.findAllByNameContainingIgnoreCaseAndCodeIsNullAndAmountBetween(
+                    name, minAmount, maxAmount);
+        } else if (isCodeBlank) {
+            entities = nomenclatureRepository.findAllByNameContainingIgnoreCaseAndAmountBetween(
+                    name, minAmount, maxAmount);
+        } else {
+            entities = nomenclatureRepository.findAllByNameContainingIgnoreCaseAndCodeContainingIgnoreCaseAndAmountBetween(
+                    name, code, minAmount, maxAmount);
+        }
 
         return entities.stream().map(mapper::convert).toList();
     }

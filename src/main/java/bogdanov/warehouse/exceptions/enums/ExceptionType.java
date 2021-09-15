@@ -90,7 +90,7 @@ public enum ExceptionType {
         if (modifiedMessage == null) {
             modifiedMessage = message;
         }
-        modifiedMessage = modifiedMessage.replace(FIELD_VALUE, fieldValue.toString());
+        modifiedMessage = modifiedMessage.replace(FIELD_VALUE, String.valueOf(fieldValue));
         return this;
     }
 

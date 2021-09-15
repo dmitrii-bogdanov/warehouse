@@ -23,7 +23,7 @@ public class NomenclatureEntity {
     @Column(nullable = false, unique = true)
     private String name;
 
-    @Column(unique = true)
+    @Column(nullable = true, unique = true)
     private String code;
 
     @Column(nullable = false)

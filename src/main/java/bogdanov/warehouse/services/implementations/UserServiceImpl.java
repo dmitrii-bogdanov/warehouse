@@ -6,6 +6,7 @@ import bogdanov.warehouse.dto.UserDTO;
 import bogdanov.warehouse.exceptions.ResourceNotFoundException;
 import bogdanov.warehouse.exceptions.enums.ExceptionType;
 import bogdanov.warehouse.services.interfaces.PersonService;
+import bogdanov.warehouse.services.interfaces.UserAccountService;
 import bogdanov.warehouse.services.interfaces.UserService;
 import bogdanov.warehouse.services.mappers.Mapper;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final Mapper mapper;
     private final PersonService personService;
+    private final UserAccountService accountService;
 
     @Override
     public List<UserDTO> getAll() {
@@ -41,15 +43,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO getByUsername(String username) {
-        if (Strings.isBlank(username)) {
-            throw new IllegalArgumentException(ExceptionType.BLANK_USERNAME.getMessage());
-        }
-        UserEntity entity = userRepository.findByUsername(username);
-        if (entity != null) {
-            return mapper.convert(entity);
-        } else {
-            throw new ResourceNotFoundException("User", "username", username);
-        }
+        return mapper.convert(accountService.getEntityByUsername(username));
     }
 
     @Override

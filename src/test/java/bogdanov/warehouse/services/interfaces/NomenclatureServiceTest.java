@@ -603,8 +603,11 @@ class NomenclatureServiceTest {
         assertTrue(nomenclatureService.getAll().contains(dtoZero));
         result = null;
 
-        NomenclatureDTO deleted = nomenclatureService.delete(dto.get(1).getId());
+        NomenclatureDTO deleted = dto.get(1);
         dto.remove(1);
+        deleted.setAmount(deleted.getAmount());
+        deleted = nomenclatureService.subtractAmount(deleted);
+        deleted = nomenclatureService.delete(deleted.getId());
 
         result = nomenclatureService.getAllAvailable();
         assertTrue(result.containsAll(dto));
@@ -835,7 +838,7 @@ class NomenclatureServiceTest {
         List<NomenclatureDTO> dtoWithoutNullCode = dto.stream().filter(n -> n.getCode() != null).toList();
 
         for (NomenclatureDTO n : dtoWithoutNullCode) {
-            assertEquals(n, nomenclatureService.getByCode(n.getName().toLowerCase(Locale.ROOT)));
+            assertEquals(n, nomenclatureService.getByCode(n.getCode().toLowerCase(Locale.ROOT)));
         }
 
         assertEquals(dto, nomenclatureService.getAll());
@@ -1014,9 +1017,9 @@ class NomenclatureServiceTest {
             d.setAmount((long) ++i);
         }
         dto = dto.stream()
-                .peek(nomenclatureService::addAmount)
+                .map(nomenclatureService::addAmount)
                 .peek(d -> d.setAmount(1L))
-                .peek(nomenclatureService::subtractAmount)
+                .map(nomenclatureService::subtractAmount)
                 .toList();
 
         return new LinkedList<>(dto);

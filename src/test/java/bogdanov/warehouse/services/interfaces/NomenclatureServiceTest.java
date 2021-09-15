@@ -594,7 +594,7 @@ class NomenclatureServiceTest {
         result = null;
 
         NomenclatureDTO dtoZero = new NomenclatureDTO(null, "some name", null, null);
-        nomenclatureService.createNew(Collections.singletonList(dtoZero));
+        dtoZero = nomenclatureService.createNew(Collections.singletonList(dtoZero)).get(0);
         result = nomenclatureService.getAllAvailable();
         assertEquals(dto.size(), result.size());
         assertTrue(result.containsAll(dto));
@@ -748,7 +748,7 @@ class NomenclatureServiceTest {
 
     @Test
     void delete() {
-        dto = addAmount(createSimpleRecords());
+        dto = createSimpleRecords();
 
         NomenclatureDTO deleted = dto.get(1);
         dto.remove(1);
@@ -764,8 +764,24 @@ class NomenclatureServiceTest {
     }
 
     @Test
+    void delete_PositiveAmount() {
+        dto = createSimpleRecords();
+
+        NomenclatureDTO deleted = dto.get(1);
+
+        deleted.setAmount(ADD_AMOUNT);
+        deleted = nomenclatureService.addAmount(deleted);
+        long id = deleted.getId();
+
+        ProhibitedRemovingException e = assertThrows(ProhibitedRemovingException.class,
+                () -> nomenclatureService.delete(id));
+        assertEquals(ExceptionType.NOMENCLATURE_AMOUNT_IS_POSITIVE, e.getExceptionType());
+        assertEquals(dto, nomenclatureService.getAll());
+    }
+
+    @Test
     void delete_NullId() {
-        dto = addAmount(createSimpleRecords());
+        dto = createSimpleRecords();
 
         Long id = null;
 
@@ -777,7 +793,7 @@ class NomenclatureServiceTest {
 
     @Test
     void delete_NotRegisteredId() {
-        dto = addAmount(createSimpleRecords());
+        dto = createSimpleRecords();
 
         long id = getNotRecordedId(dto);
 
@@ -789,7 +805,7 @@ class NomenclatureServiceTest {
 
     @Test
     void delete_ExistingRecord() {
-        dto = addAmount(createSimpleRecords());
+        dto = createSimpleRecords();
 
         assertFalse(userAccountService.getAll().isEmpty());
         String username = userAccountService.getAll().get(0).getUsername();
@@ -995,9 +1011,13 @@ class NomenclatureServiceTest {
 
         i = 0;
         for (NomenclatureDTO d : dto) {
-            d.setAmount((long) i++);
+            d.setAmount((long) ++i);
         }
-        dto = dto.stream().peek(nomenclatureService::addAmount).toList();
+        dto = dto.stream()
+                .peek(nomenclatureService::addAmount)
+                .peek(d -> d.setAmount(1L))
+                .peek(nomenclatureService::subtractAmount)
+                .toList();
 
         return new LinkedList<>(dto);
     }

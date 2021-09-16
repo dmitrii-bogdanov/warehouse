@@ -55,6 +55,8 @@ public interface PersonRepository extends JpaRepository<PersonEntity, Long> {
 
     List<PersonEntity> findAllByPosition_Id(Long id);
 
+    List<PersonEntity> findAllByPositionEquals(PositionEntity position);
+
     boolean existsByPosition_Id(Long id);
 
 }

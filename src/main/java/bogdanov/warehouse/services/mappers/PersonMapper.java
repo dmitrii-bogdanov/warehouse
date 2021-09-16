@@ -27,14 +27,14 @@ public class PersonMapper {
         if (Strings.isNotBlank(str)) {
             str =  str.toUpperCase(Locale.ROOT);
         } else {
-            str = null;
+            str = Strings.EMPTY;
         }
         return str;
     }
 
     private String formatPhoneNumber(String phoneNumber) {
         if (Strings.isBlank(phoneNumber)) {
-            return null;
+            return Strings.EMPTY;
         }
             Matcher matcher = Pattern.compile("\\d").matcher(phoneNumber);
             if (!matcher.find()) {
@@ -60,15 +60,19 @@ public class PersonMapper {
         );
     }
 
+    private String getBackOrNull(String str) {
+        return Strings.isBlank(str) ? null : str;
+    }
+
     PersonDTO convert(PersonEntity person) {
         return new PersonDTO(
                 person.getId(),
                 person.getFirstname(),
                 person.getLastname(),
-                person.getPatronymic(),
+                getBackOrNull(person.getPatronymic()),
                 person.getBirth(),
-                person.getPhoneNumber(),
-                person.getEmail(),
+                getBackOrNull(person.getPhoneNumber()),
+                getBackOrNull(person.getEmail()),
                 person.getPosition().getName()
         );
     }

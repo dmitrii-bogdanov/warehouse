@@ -147,7 +147,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
     }
 
     private boolean isListNotEmpty(Collection collection) {
-        if (collection.isEmpty()) {
+        if (collection == null || collection.isEmpty()) {
             throw new ArgumentException(ExceptionType.NO_OBJECT_WAS_PASSED);
         }
         return true;

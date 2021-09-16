@@ -87,7 +87,7 @@ public class PersonServiceImpl implements PersonService {
     }
 
     private boolean isListNotEmpty(Collection<PersonDTO> collection) {
-        if (collection.isEmpty()) {
+        if (collection == null || collection.isEmpty()) {
             throw new ArgumentException(ExceptionType.NO_OBJECT_WAS_PASSED);
         }
         return true;
@@ -269,17 +269,18 @@ public class PersonServiceImpl implements PersonService {
         return personRepository.findAllByFirstnameContainingIgnoreCaseAndLastnameContainingIgnoreCaseAndPatronymicContainingIgnoreCaseAndPositionInAndPhoneNumberContainingAndEmailContainingIgnoreCaseAndBirthBetween(
                 firstname, lastname, patronymic, positions, phoneNumber, email, startDate, endDate);
     }
-    //endregion  Ut Utili
+    //endregion
 
     @Override
     public List<PersonDTO> findAllByPosition(Long id) {
-        isIdNotNull(id);
-        return personRepository.findAllByPosition_Id(id).stream().map(mapper::convert).toList();
+        PositionEntity position = positionService.getEntityById(id);
+        return personRepository.findAllByPositionEquals(positionService.getEntityById(id))
+                .stream().map(mapper::convert).toList();
     }
 
     @Override
     public List<PersonDTO> findAllByPosition(String position) {
-        isNameNotBlank(position);
-        return personRepository.findAllByPosition_NameEqualsIgnoreCase(position).stream().map(mapper::convert).toList();
+        return personRepository.findAllByPositionEquals(positionService.getEntityByName(position))
+                .stream().map(mapper::convert).toList();
     }
 }

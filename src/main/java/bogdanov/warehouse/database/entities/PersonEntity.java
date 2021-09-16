@@ -27,14 +27,14 @@ public class PersonEntity {
     @Column(nullable = false)
     private String lastname;
 
-    private String patronymic;
+    private String patronymic = Strings.EMPTY;
 
     @Column(nullable = false)
     private LocalDate birth;
 
-    private String phoneNumber;
+    private String phoneNumber = Strings.EMPTY;
 
-    private String email;
+    private String email = Strings.EMPTY;
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     private PositionEntity position;

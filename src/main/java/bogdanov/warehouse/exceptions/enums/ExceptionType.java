@@ -39,7 +39,8 @@ public enum ExceptionType {
     INCORRECT_RANGE("#FROM_PARAMETER_NAME is greater than #TO_PARAMETER_NAME", HttpStatus.BAD_REQUEST),
     LONG_VALUE_OVERFLOW("Operation leads to long value overflow", HttpStatus.BAD_REQUEST),
     NO_OBJECT_WAS_PASSED("No object was passed", HttpStatus.BAD_REQUEST),
-    NULL_PROPERTY_WAS_PASSED("#MESSAGE", HttpStatus.BAD_REQUEST);
+    NULL_PROPERTY_WAS_PASSED("#MESSAGE", HttpStatus.BAD_REQUEST),
+    INTERNAL_SERVER_ERROR("Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private static final String ID = "#ID";
     private static final String FIELD_NAME = "#FIELD_NAME";

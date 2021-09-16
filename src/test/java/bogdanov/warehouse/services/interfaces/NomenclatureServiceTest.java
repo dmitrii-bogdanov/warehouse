@@ -834,7 +834,7 @@ class NomenclatureServiceTest {
         person.setLastname("lastname");
         person.setBirth(LocalDate.now());
         person.setPosition("User");
-        person = personService.add(person);
+        person = personService.add(Collections.singletonList(person)).get(0);
 
         String username = "some_username";
         UserAccountWithPasswordDTO user = new UserAccountWithPasswordDTO();

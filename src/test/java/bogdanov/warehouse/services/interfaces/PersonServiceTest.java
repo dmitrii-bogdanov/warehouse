@@ -1,1088 +1,380 @@
-//package bogdanov.warehouse.services.interfaces;
-//
-//import bogdanov.warehouse.database.entities.PersonEntity;
-//import bogdanov.warehouse.database.entities.PositionEntity;
-//import bogdanov.warehouse.database.entities.UserEntity;
-//import bogdanov.warehouse.database.repositories.PersonRepository;
-//import bogdanov.warehouse.database.repositories.UserRepository;
-//import bogdanov.warehouse.dto.PersonDTO;
-//import bogdanov.warehouse.dto.UserAccountDTO;
-//import bogdanov.warehouse.exceptions.*;
-//import bogdanov.warehouse.services.interfaces.PersonService;
-//import com.fasterxml.jackson.databind.ObjectMapper;
-//import lombok.extern.slf4j.Slf4j;
-//import org.apache.logging.log4j.util.Strings;
-//import org.aspectj.lang.annotation.Before;
-//import org.junit.jupiter.api.BeforeEach;
-//import org.junit.jupiter.api.Test;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-//import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-//import org.springframework.boot.test.context.SpringBootTest;
-//import org.springframework.dao.InvalidDataAccessApiUsageException;
-//import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-//
-//import java.time.LocalDate;
-//import java.util.Arrays;
-//import java.util.LinkedList;
-//import java.util.List;
-//import java.util.Locale;
-//
-//import static org.junit.jupiter.api.Assertions.*;
-//
-//@Slf4j
-//@SpringBootTest
-//@AutoConfigureTestDatabase
-//class PersonServiceTest {
-//
-//    @Autowired
-//    private PersonService personService;
-//    @Autowired
-//    private PersonRepository personRepository;
-//    @Autowired
-//    private UserRepository userRepository;
-//    @Autowired
-//    private ObjectMapper objectMapper;
-//
-//    @BeforeEach
-//    private void clear() {
-//        userRepository.deleteAll();
-//        personRepository.deleteAll();
-//    }
-//
-//    private PersonDTO dto, result;
-//    private PersonEntity entity;
-//    private final String FIRSTNAME = "firstname".toUpperCase(Locale.ROOT);
-//    private final String LASTNAME = "lastname".toUpperCase(Locale.ROOT);
-//    private final String PATRONYMIC = "patronymic".toUpperCase(Locale.ROOT);
-//    private final String POSITION = "position".toUpperCase(Locale.ROOT);
-//    private final LocalDate DATE = LocalDate.now();
-//    private final String PHONE_NUMBER = "+71234567890";
-//    private final String EMAIL = "EMAIL@DOMAIN.EXT";
-//
-//    @BeforeEach
-//    private void initializeVariables() {
-//        dto = new PersonDTO();
-//        result = null;
-//        entity = new PersonEntity();
-//    }
-//
-//    private PersonDTO clone(PersonDTO dto) {
-//        return objectMapper.convertValue(dto, PersonDTO.class);
-//    }
-//
-//    @Test
-//    void addDto_AllFieldsCorrect() {
-//        dto.setFirstname(FIRSTNAME);
-//        dto.setLastname(LASTNAME);
-//        dto.setPatronymic(PATRONYMIC);
-//        dto.setPosition(POSITION);
-//        dto.setBirth(DATE);
-//        dto.setPhoneNumber(PHONE_NUMBER);
-//        dto.setEmail(EMAIL);
-//
-//        result = personService.add(dto);
-//
-//        assertNotNull(result);
-//        assertNotNull(result.getId());
-//        assertTrue(result.getId() > 0);
-//        assertEquals(FIRSTNAME, result.getFirstname());
-//        assertEquals(LASTNAME, result.getLastname());
-//        assertEquals(PATRONYMIC, result.getPatronymic());
-//        assertEquals(POSITION, result.getPosition());
-//        assertEquals(DATE, result.getBirth());
-//        assertEquals(PHONE_NUMBER, result.getPhoneNumber());
-//        assertEquals(EMAIL, result.getEmail());
-//
-//    }
-//
-//
-//    @Test
-//    void addDto_NotAllRequiredFields() {
-//        dto.setFirstname(null);
-//        dto.setLastname(null);
-//        dto.setBirth(null);
-//        dto.setPosition(null);
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.add(dto));
-//    }
-//
-//    @Test
-//    void addDto_FirstnameLastnameBirthDatePosition() {
-//        dto.setFirstname(FIRSTNAME);
-//        dto.setLastname(LASTNAME);
-//        dto.setBirth(DATE);
-//        dto.setPosition(POSITION);
-//
-//        result = personService.add(dto);
-//
-//        assertNotNull(result);
-//        assertEquals(FIRSTNAME, result.getFirstname());
-//        assertEquals(LASTNAME, result.getLastname());
-//        assertEquals(DATE, result.getBirth());
-//    }
-//
-//    @Test
-//    void addDto_FirstnameLastnamePositionWithoutBirthDate() {
-//        dto.setFirstname(FIRSTNAME);
-//        dto.setLastname(LASTNAME);
-//        dto.setBirth(null);
-//        dto.setPosition(POSITION);
-//
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.add(dto));
-//    }
-//
-//    @Test
-//    void addDto_FirstnameBirthDatePositionWithoutLastname() {
-//        dto.setFirstname(FIRSTNAME);
-//        dto.setLastname(null);
-//        dto.setBirth(DATE);
-//        dto.setPosition(POSITION);
-//
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.add(dto));
-//    }
-//
-//    @Test
-//    void addDto_LastnameBirtDatePositionWithoutFirstname() {
-//        dto.setFirstname(null);
-//        dto.setLastname(LASTNAME);
-//        dto.setBirth(DATE);
-//        dto.setPosition(POSITION);
-//
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.add(dto));
-//    }
-//
-//    @Test
-//    void addDto_FirstnameLastnameBirtDateWithoutPosition() {
-//        dto.setFirstname(FIRSTNAME);
-//        dto.setLastname(LASTNAME);
-//        dto.setBirth(DATE);
-//        dto.setPosition(null);
-//
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.add(dto));
-//    }
-//
-//    @Test
-//    void addDtoList() {
-//        //ok
-//        dto.setFirstname(FIRSTNAME);
-//        dto.setLastname(LASTNAME);
-//        dto.setPatronymic(PATRONYMIC);
-//        dto.setPosition(POSITION);
-//        dto.setBirth(DATE);
-//        dto.setPhoneNumber(PHONE_NUMBER);
-//        dto.setEmail(EMAIL);
-//        //ok
-//        PersonDTO dto1 = new PersonDTO();
-//        dto1.setFirstname("firstname1");
-//        dto1.setLastname("lastname1");
-//        dto1.setBirth(LocalDate.now());
-//        dto1.setPosition("position1");
-//        //not ok
-//        PersonDTO dto2 = new PersonDTO();
-//        dto2.setFirstname("firstname2");
-//        dto2.setLastname("lastname2");
-//        dto2.setBirth(null);
-//        dto2.setPosition("position2");
-//        //not ok
-//        PersonDTO dto3 = new PersonDTO();
-//        dto3.setFirstname("firstname3");
-//        dto3.setLastname(null);
-//        dto3.setBirth(LocalDate.now());
-//        dto3.setPosition("position3");
-//        //not ok
-//        PersonDTO dto4 = new PersonDTO();
-//        dto4.setFirstname(null);
-//        dto4.setLastname("lastname6");
-//        dto4.setBirth(LocalDate.now());
-//        dto4.setPosition("position6");
-//        //not ok
-//        PersonDTO dto5 = new PersonDTO();
-//        dto5.setFirstname("firstname4");
-//        dto5.setLastname("lastname4");
-//        dto5.setBirth(LocalDate.now());
-//        dto5.setPosition(null);
-//        //not ok
-//        PersonDTO dto6 = new PersonDTO();
-//        dto6.setFirstname(Strings.EMPTY);
-//        dto6.setLastname("lastname6");
-//        dto6.setBirth(LocalDate.now());
-//        dto6.setPosition("position6");
-//        //not ok
-//        PersonDTO dto7 = new PersonDTO();
-//        dto7.setFirstname("firstname3");
-//        dto7.setLastname(Strings.EMPTY);
-//        dto7.setBirth(LocalDate.now());
-//        dto7.setPosition("position3");
-//        //not ok
-//        PersonDTO dto8 = new PersonDTO();
-//        dto8.setFirstname("firstname4");
-//        dto8.setLastname("lastname4");
-//        dto8.setBirth(LocalDate.now());
-//        dto8.setPosition(Strings.EMPTY);
-//        //not ok
-//        PersonDTO dto9 = new PersonDTO();
-//        dto9.setFirstname(" ");
-//        dto9.setLastname("lastname6");
-//        dto9.setBirth(LocalDate.now());
-//        dto9.setPosition("position6");
-//        //not ok
-//        PersonDTO dto10 = new PersonDTO();
-//        dto10.setFirstname("firstname3");
-//        dto10.setLastname(" ");
-//        dto10.setBirth(LocalDate.now());
-//        dto10.setPosition("position3");
-//        //not ok
-//        PersonDTO dto11 = new PersonDTO();
-//        dto11.setFirstname("firstname4");
-//        dto11.setLastname("lastname4");
-//        dto11.setBirth(LocalDate.now());
-//        dto11.setPosition(" ");
-//        //not ok
-//        PersonDTO dto12 = new PersonDTO();
-//        dto12.setFirstname("\t");
-//        dto12.setLastname("lastname6");
-//        dto12.setBirth(LocalDate.now());
-//        dto12.setPosition("position6");
-//        //not ok
-//        PersonDTO dto13 = new PersonDTO();
-//        dto13.setFirstname("firstname3");
-//        dto13.setLastname("\t");
-//        dto13.setBirth(LocalDate.now());
-//        dto13.setPosition("position3");
-//        //not ok
-//        PersonDTO dto14 = new PersonDTO();
-//        dto14.setFirstname("firstname4");
-//        dto14.setLastname("lastname4");
-//        dto14.setBirth(LocalDate.now());
-//        dto14.setPosition("\t");
-//        //ok
-//        PersonDTO dto15 = new PersonDTO();
-//        dto15.setFirstname(FIRSTNAME);
-//        dto15.setLastname(LASTNAME);
-//        dto15.setBirth(DATE);
-//        dto15.setPosition(POSITION);
-//
-//        List<PersonDTO> list = new LinkedList<>();
-//        list.addAll(Arrays.asList(
-//                dto, dto1, dto2, dto3, dto4, dto5, dto6, dto7, dto8,
-//                dto9, dto10, dto11, dto12, dto13, dto14, dto15));
-//
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.add(list));
-//        list.remove(dto2);
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.add(list));
-//        list.remove(dto3);
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.add(list));
-//        list.remove(dto4);
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.add(list));
-//        list.remove(dto5);
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.add(list));
-//        list.remove(dto6);
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.add(list));
-//        list.remove(dto7);
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.add(list));
-//        list.remove(dto8);
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.add(list));
-//        list.remove(dto9);
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.add(list));
-//        list.remove(dto10);
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.add(list));
-//        list.remove(dto11);
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.add(list));
-//        list.remove(dto12);
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.add(list));
-//        list.remove(dto13);
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.add(list));
-//        list.remove(dto14);
-//
-//        List<PersonDTO> result = personService.add(list);
-//
-//        assertNotNull(result);
-//        assertEquals(3, result.size());
-//        for (int i = 0; i < result.size(); i++) {
-//            assertNotNull(result.get(i));
-//            assertNotNull(result.get(i).getId());
-//            assertTrue(result.get(i).getId() > 0);
-//            assertEquals(list.get(i).getFirstname(), result.get(i).getFirstname());
-//            assertEquals(list.get(i).getLastname(), result.get(i).getLastname());
-//            assertEquals(list.get(i).getPatronymic(), result.get(i).getPatronymic());
-//            assertEquals(list.get(i).getBirth(), result.get(i).getBirth());
-//            assertEquals(list.get(i).getPhoneNumber(), result.get(i).getPhoneNumber());
-//            assertEquals(list.get(i).getEmail(), result.get(i).getEmail());
-//            assertEquals(list.get(i).getPosition(), result.get(i).getPosition());
-//        }
-//    }
-//
-//    private PersonDTO setFieldsAndSave() {
-//        dto.setFirstname(FIRSTNAME);
-//        dto.setLastname(LASTNAME);
-//        dto.setPatronymic(PATRONYMIC);
-//        dto.setPosition(POSITION);
-//        dto.setBirth(DATE);
-//        dto.setPhoneNumber(PHONE_NUMBER);
-//        dto.setEmail(EMAIL);
-//        return personService.add(dto);
-//    }
-//
-//    @Test
-//    void updateDto_ExistingIdAllFieldsCorrect() {
-//        dto = setFieldsAndSave();
-//        dto.setFirstname("firstname1");
-//        dto.setLastname("lastname1");
-//        dto.setPatronymic("patronymic1");
-//        dto.setBirth(LocalDate.now());
-//        dto.setPosition("position1");
-//        dto.setPhoneNumber("+91234567890");
-//        dto.setEmail("email1@domain.ext");
-//
-//        result = personService.update(dto);
-//        assertNotNull(result);
-//        assertEquals(dto.getId(), result.getId());
-//        assertEquals(dto.getFirstname(), result.getFirstname());
-//        assertEquals(dto.getLastname(), result.getLastname());
-//        assertEquals(dto.getPatronymic(), result.getPatronymic());
-//        assertEquals(dto.getBirth(), result.getBirth());
-//        assertEquals(dto.getPosition(), result.getPosition());
-//        assertEquals(dto.getPhoneNumber(), result.getPhoneNumber());
-//        assertEquals(dto.getEmail(), result.getEmail());
-//    }
-//
-//    @Test
-//    void updateDTO_NotExistingIdAllFieldsCorrect() {
-//        dto = setFieldsAndSave();
-//        log.info(dto.toString());
-//        dto.setId(dto.getId() + 353);
-//        log.info(dto.toString());
-//        assertFalse(personRepository.existsById(dto.getId()));
-//        assertThrows(ResourceNotFoundException.class,
-//                () -> personService.update(dto));
-//    }
-//
-//
-//    @Test
-//    void updateDTO_NullIdAllFieldsCorrect() {
-//        dto = setFieldsAndSave();
-//        dto.setId(null);
-//        assertThrows(InvalidDataAccessApiUsageException.class,
-//                () -> personService.update(dto));
-//    }
-//
-//    @Test
-//    void updateDto_AllRequiredFields() {
-//        dto = setFieldsAndSave();
-//        dto.setEmail(null);
-//        dto.setPatronymic(null);
-//        dto.setPhoneNumber(null);
-//
-//        result = personService.update(dto);
-//        assertNotNull(result);
-//        assertEquals(dto.getId(), result.getId());
-//        assertEquals(dto.getFirstname(), result.getFirstname());
-//        assertEquals(dto.getLastname(), result.getLastname());
-//        assertEquals(dto.getPatronymic(), result.getPatronymic());
-//        assertEquals(dto.getBirth(), result.getBirth());
-//        assertEquals(dto.getPosition(), result.getPosition());
-//        assertEquals(dto.getPhoneNumber(), result.getPhoneNumber());
-//        assertEquals(dto.getEmail(), result.getEmail());
-//    }
-//
-//    @Test
-//    void updateDto_FirstnameLastnameBirthDateWithoutPosition() {
-//        dto = setFieldsAndSave();
-//
-//        dto.setPosition(null);
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.update(dto));
-//        dto.setPosition(Strings.EMPTY);
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.update(dto));
-//        dto.setPosition(" ");
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.update(dto));
-//        dto.setPosition("\t");
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.update(dto));
-//    }
-//
-//    @Test
-//    void updateDto_FirstnamePositionBirthDateWithoutLastname() {
-//        dto = setFieldsAndSave();
-//
-//        dto.setLastname(null);
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.update(dto));
-//        dto.setLastname(Strings.EMPTY);
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.update(dto));
-//        dto.setLastname(" ");
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.update(dto));
-//        dto.setLastname("\t");
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.update(dto));
-//    }
-//
-//    @Test
-//    void updateDto_LastnamePositionBirthDateWithoutFirstname() {
-//        dto = setFieldsAndSave();
-//
-//        dto.setFirstname(null);
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.update(dto));
-//        dto.setFirstname(Strings.EMPTY);
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.update(dto));
-//        dto.setFirstname(" ");
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.update(dto));
-//        dto.setFirstname("\t");
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.update(dto));
-//    }
-//
-//    @Test
-//    void updateDto_FirstnameLastnamePositionWithoutBirthDate() {
-//        dto = setFieldsAndSave();
-//
-//        dto.setBirth(null);
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.update(dto));
-//    }
-//
-//    @Test
-//    void updateDtoList() {
-//        dto = setFieldsAndSave();
-//        PersonDTO anotherDto = clone(dto);
-//        anotherDto.setId(null);
-//        anotherDto = personService.add(anotherDto);
-//        //ok
-//        dto.setFirstname(FIRSTNAME + "0");
-//        dto.setLastname(LASTNAME + "0");
-//        dto.setPatronymic(PATRONYMIC + "0");
-//        dto.setPosition(POSITION + "0");
-//        dto.setBirth(LocalDate.now());
-//        dto.setPhoneNumber("+81234567890");
-//        dto.setEmail("EMAIL0@DOMAIN.EXT");
-//        //ok
-//        PersonDTO dto1 = anotherDto;
-//        dto1.setFirstname("firstname1");
-//        dto1.setLastname("lastname1");
-//        dto1.setBirth(LocalDate.now());
-//        dto1.setPosition("position1");
-//        //not ok
-//        PersonDTO dto2 = clone(dto);
-//        dto2.setFirstname("firstname2");
-//        dto2.setLastname("lastname2");
-//        dto2.setBirth(null);
-//        dto2.setPosition("position2");
-//        //not ok
-//        PersonDTO dto3 = clone(dto);
-//        dto3.setFirstname("firstname3");
-//        dto3.setLastname(null);
-//        dto3.setBirth(LocalDate.now());
-//        dto3.setPosition("position3");
-//        //not ok
-//        PersonDTO dto4 = clone(dto);
-//        dto4.setFirstname(null);
-//        dto4.setLastname("lastname6");
-//        dto4.setBirth(LocalDate.now());
-//        dto4.setPosition("position6");
-//        //not ok
-//        PersonDTO dto5 = clone(dto);
-//        dto5.setFirstname("firstname4");
-//        dto5.setLastname("lastname4");
-//        dto5.setBirth(LocalDate.now());
-//        dto5.setPosition(null);
-//        //not ok
-//        PersonDTO dto6 = clone(dto);
-//        dto6.setFirstname(Strings.EMPTY);
-//        dto6.setLastname("lastname6");
-//        dto6.setBirth(LocalDate.now());
-//        dto6.setPosition("position6");
-//        //not ok
-//        PersonDTO dto7 = clone(dto);
-//        dto7.setFirstname("firstname3");
-//        dto7.setLastname(Strings.EMPTY);
-//        dto7.setBirth(LocalDate.now());
-//        dto7.setPosition("position3");
-//        //not ok
-//        PersonDTO dto8 = clone(dto);
-//        dto8.setFirstname("firstname4");
-//        dto8.setLastname("lastname4");
-//        dto8.setBirth(LocalDate.now());
-//        dto8.setPosition(Strings.EMPTY);
-//        //not ok
-//        PersonDTO dto9 = clone(dto);
-//        dto9.setFirstname(" ");
-//        dto9.setLastname("lastname6");
-//        dto9.setBirth(LocalDate.now());
-//        dto9.setPosition("position6");
-//        //not ok
-//        PersonDTO dto10 = clone(dto);
-//        dto10.setFirstname("firstname3");
-//        dto10.setLastname(" ");
-//        dto10.setBirth(LocalDate.now());
-//        dto10.setPosition("position3");
-//        //not ok
-//        PersonDTO dto11 = clone(dto);
-//        dto11.setFirstname("firstname4");
-//        dto11.setLastname("lastname4");
-//        dto11.setBirth(LocalDate.now());
-//        dto11.setPosition(" ");
-//        //not ok
-//        PersonDTO dto12 = clone(dto);
-//        dto12.setFirstname("\t");
-//        dto12.setLastname("lastname6");
-//        dto12.setBirth(LocalDate.now());
-//        dto12.setPosition("position6");
-//        //not ok
-//        PersonDTO dto13 = clone(dto);
-//        dto13.setFirstname("firstname3");
-//        dto13.setLastname("\t");
-//        dto13.setBirth(LocalDate.now());
-//        dto13.setPosition("position3");
-//        //not ok
-//        PersonDTO dto14 = clone(dto);
-//        dto14.setFirstname("firstname4");
-//        dto14.setLastname("lastname4");
-//        dto14.setBirth(LocalDate.now());
-//        dto14.setPosition("\t");
-//        //not ok
-//        PersonDTO dto15 = clone(dto);
-//        dto15.setId(null);
-//        dto15.setFirstname(FIRSTNAME);
-//        dto15.setLastname(LASTNAME);
-//        dto15.setBirth(DATE);
-//        dto15.setPosition(POSITION);
-//        //not ok
-//        PersonDTO dto16 = clone(dto);
-//        dto16.setId(dto16.getId() + 355532);
-//        dto16.setFirstname(FIRSTNAME);
-//        dto16.setLastname(LASTNAME);
-//        dto16.setBirth(DATE);
-//        dto16.setPosition(POSITION);
-//
-//
-//        List<PersonDTO> list = new LinkedList<>();
-//        list.addAll(Arrays.asList(
-//                dto, dto1, dto2, dto3, dto4, dto5, dto6, dto7, dto8,
-//                dto9, dto10, dto11, dto12, dto13, dto14, dto15, dto16));
-//
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.update(list));
-//        list.remove(dto2);
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.update(list));
-//        list.remove(dto3);
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.update(list));
-//        list.remove(dto4);
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.update(list));
-//        list.remove(dto5);
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.update(list));
-//        list.remove(dto6);
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.update(list));
-//        list.remove(dto7);
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.update(list));
-//        list.remove(dto8);
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.update(list));
-//        list.remove(dto9);
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.update(list));
-//        list.remove(dto10);
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.update(list));
-//        list.remove(dto11);
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.update(list));
-//        list.remove(dto12);
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.update(list));
-//        list.remove(dto13);
-//        assertThrows(IllegalArgumentException.class,
-//                () -> personService.update(list));
-//        list.remove(dto14);
-//        assertThrows(InvalidDataAccessApiUsageException.class,
-//                () -> personService.update(list));
-//        list.remove(dto15);
-//        assertThrows(ResourceNotFoundException.class,
-//                () -> personService.update(list));
-//        list.remove(dto16);
-//
-//
-//        List<PersonDTO> result = personService.update(list);
-//
-//        assertNotNull(result);
-//        assertEquals(2, result.size());
-//        for (int i = 0; i < result.size(); i++) {
-//            assertNotNull(result.get(i));
-//            assertNotNull(result.get(i).getId());
-//            assertTrue(result.get(i).getId() > 0);
-//            assertEquals(list.get(i).getFirstname(), result.get(i).getFirstname());
-//            assertEquals(list.get(i).getLastname(), result.get(i).getLastname());
-//            assertEquals(list.get(i).getPatronymic(), result.get(i).getPatronymic());
-//            assertEquals(list.get(i).getBirth(), result.get(i).getBirth());
-//            assertEquals(list.get(i).getPhoneNumber(), result.get(i).getPhoneNumber());
-//            assertEquals(list.get(i).getEmail(), result.get(i).getEmail());
-//            assertEquals(list.get(i).getPosition(), result.get(i).getPosition());
-//        }
-//    }
-//
-//    @Test
-//    void deleteId_CorrectIdNoUser() {
-//        dto = setFieldsAndSave();
-//        assertFalse(userRepository.existsByPerson_Id(dto.getId()));
-//        result = personService.delete(dto.getId());
-//        assertNotNull(result);
-//        assertEquals(dto, result);
-//    }
-//
-//    @Test
-//    void deleteId_NullId() {
-//        dto = setFieldsAndSave();
-//        assertThrows(InvalidDataAccessApiUsageException.class,
-//                () -> personService.delete(null));
-//    }
-//
-//    @Test
-//    void deleteId_NotExistingId() {
-//        dto = setFieldsAndSave();
-//        dto.setId(dto.getId() + 32434434);
-//        assertFalse(personRepository.existsById(dto.getId()));
-//        assertThrows(ResourceNotFoundException.class,
-//                () -> personService.delete(dto.getId()));
-//    }
-//
-//    @Test
-//    void deleteId_CorrectIdRegisteredUser(){
-//        dto = setFieldsAndSave();
-//        entity = personRepository.getById(dto.getId());
-//        UserEntity user = new UserEntity();
-//        user.setPerson(entity);
-//        user.setUsername("username");
-//        user.setPassword(new BCryptPasswordEncoder(11).encode("password"));
-//        user = userRepository.save(user);
-//        assertNotNull(user);
-//        assertTrue(userRepository.existsByPerson_Id(dto.getId()));
-//        assertThrows(ProhibitedRemovingException.class,
-//                () -> personService.delete(dto.getId()));
-//    }
-//
-//    @Test
-//    void getById_ExistingId() {
-//        dto = setFieldsAndSave();
-//        assertTrue(personRepository.existsById(dto.getId()));
-//        result = personService.getById(dto.getId());
-//        assertNotNull(result);
-//        assertEquals(dto, result);
-//    }
-//
-//    @Test
-//    void getById_NotExistingId() {
-//        dto = setFieldsAndSave();
-//        assertTrue(personRepository.existsById(dto.getId()));
-//        Long id = dto.getId() + 23423;
-//        assertFalse(personRepository.existsById(id));
-//        assertThrows(ResourceNotFoundException.class,
-//                () -> personService.getById(id));
-//    }
-//
-//    @Test
-//    void getById_NullId() {
-//        dto = setFieldsAndSave();
-//        assertTrue(personRepository.existsById(dto.getId()));
-//        assertThrows(InvalidDataAccessApiUsageException.class,
-//                () -> personService.getById(null));
-//    }
-//
-//    @Test
-//    void getEntityById_ExistingId() {
-//        dto = setFieldsAndSave();
-//        entity = personRepository.getById(dto.getId());
-//        assertNotNull(entity);
-//        assertEquals(dto.getId(), entity.getId());
-//        PersonEntity result = personService.getEntityById(dto.getId());
-//        assertNotNull(result);
-//        assertEquals(entity, result);
-//    }
-//
-//    @Test
-//    void getEntityById_NotExistingId() {
-//        dto = setFieldsAndSave();
-//        assertTrue(personRepository.existsById(dto.getId()));
-//        Long id = dto.getId() + 23423;
-//        assertFalse(personRepository.existsById(id));
-//        assertThrows(ResourceNotFoundException.class,
-//                () -> personService.getEntityById(id));
-//    }
-//
-//    @Test
-//    void getEntityById_NullId() {
-//        dto = setFieldsAndSave();
-//        assertTrue(personRepository.existsById(dto.getId()));
-//        assertThrows(InvalidDataAccessApiUsageException.class,
-//                () -> personService.getEntityById(null));
-//    }
-//
-//    @Test
-//    void getAll() {
-//        dto = setFieldsAndSave();
-//        PersonDTO dto2 = clone(dto);
-//        dto2.setId(null);
-//        dto2.setFirstname("firstname2");
-//        dto2.setLastname("lastname2");
-//        dto2.setBirth(LocalDate.now());
-//        dto2.setPosition("position2");
-//        dto2.setPatronymic(null);
-//        dto2.setPhoneNumber(null);
-//        dto2.setEmail(null);
-//        dto2 = personService.add(dto2);
-//        assertTrue(personRepository.existsById(dto.getId()));
-//        assertTrue(personRepository.existsById(dto2.getId()));
-//        //log.info
-//        for (PersonEntity e : personRepository.findAll()) {
-//            log.info(e.toString());
-//        }
-//        List<PersonDTO> result = personService.getAll();
-//        assertNotNull(result);
-//        assertEquals(2, result.size());
-//        assertTrue(result.contains(dto));
-//        assertTrue(result.contains(dto2));
-//    }
-//
-//    @Test
-//    void findAllByFirstname_Exist() {
-//        dto = setFieldsAndSave();
-//        PersonDTO dto1 = clone(dto);
-//        dto1.setLastname("lastname1");
-//        dto1 = personService.add(dto1);
-//        PersonDTO dto2 = clone(dto);
-//        dto2.setFirstname("firstname2");
-//        dto2 = personService.add(dto2);
-//
-//        List<PersonDTO> result = personService.findAllByFirstname(dto.getFirstname());
-//        assertNotNull(result);
-//        assertEquals(2, result.size());
-//        assertTrue(result.contains(dto));
-//        assertTrue(result.contains(dto1));
-//        assertFalse(result.contains(dto2));
-//    }
-//
-//    @Test
-//    void findAllByFirstname_Blank() {
-//        dto = setFieldsAndSave();
-//        PersonDTO dto1 = clone(dto);
-//        dto1.setLastname("lastname1");
-//        dto1 = personService.add(dto1);
-//        PersonDTO dto2 = clone(dto);
-//        dto2.setFirstname("firstname2");
-//        dto2 = personService.add(dto2);
-//
-//        List<PersonDTO> result = personService.findAllByFirstname(null);
-//        assertNotNull(result);
-//        assertTrue(result.isEmpty());
-//        result = personService.findAllByFirstname(Strings.EMPTY);
-//        assertNotNull(result);
-//        assertTrue(result.isEmpty());
-//        result = personService.findAllByFirstname(" ");
-//        assertNotNull(result);
-//        assertTrue(result.isEmpty());
-//        result = personService.findAllByFirstname("\t");
-//        assertNotNull(result);
-//        assertTrue(result.isEmpty());
-//    }
-//
-//    @Test
-//    void findAllByFirstname_NotExist() {
-//        dto = setFieldsAndSave();
-//        PersonDTO dto1 = clone(dto);
-//        dto1.setLastname("lastname1");
-//        dto1 = personService.add(dto1);
-//        PersonDTO dto2 = clone(dto);
-//        dto2.setFirstname("firstname2");
-//        dto2 = personService.add(dto2);
-//
-//        String firstname = "something";
-//        assertFalse(Strings.isBlank(firstname));
-//        assertNotEquals(dto.getFirstname(), firstname);
-//        assertNotEquals(dto1.getFirstname(), firstname);
-//        assertNotEquals(dto2.getFirstname(), firstname);
-//
-//        List<PersonDTO> result = personService.findAllByFirstname(firstname);
-//
-//        assertNotNull(result);
-//        assertTrue(result.isEmpty());
-//    }
-//
-//    @Test
-//    void findAllByLastname_Exist() {
-//        dto = setFieldsAndSave();
-//        log.info(dto.toString());
-//        PersonDTO dto1 = clone(dto);
-//        dto1.setFirstname("firstname1");
-//        dto1 = personService.add(dto1);
-//        log.info(dto1.toString());
-//        PersonDTO dto2 = clone(dto);
-//        dto2.setLastname("lastname2");
-//        dto2 = personService.add(dto2);
-//        log.info(dto2.toString());
-//
-//        //log.info
-//        personRepository.findAll().forEach(e -> log.info(e.toString()));
-//
-//        List<PersonDTO> result = personService.findAllByLastname(dto.getLastname());
-//        assertNotNull(result);
-//        assertEquals(2, result.size());
-//        assertTrue(result.contains(dto));
-//        assertTrue(result.contains(dto1));
-//        assertFalse(result.contains(dto2));
-//    }
-//
-//    @Test
-//    void findAllByLastname_Blank() {
-//        dto = setFieldsAndSave();
-//        PersonDTO dto1 = clone(dto);
-//        dto1.setFirstname("firstname1");
-//        dto1 = personService.add(dto1);
-//        PersonDTO dto2 = clone(dto);
-//        dto2.setLastname("lastname2");
-//        dto2 = personService.add(dto2);
-//
-//        List<PersonDTO> result = personService.findAllByLastname(null);
-//        assertNotNull(result);
-//        assertTrue(result.isEmpty());
-//        result = personService.findAllByLastname(Strings.EMPTY);
-//        assertNotNull(result);
-//        assertTrue(result.isEmpty());
-//        result = personService.findAllByLastname(" ");
-//        assertNotNull(result);
-//        assertTrue(result.isEmpty());
-//        result = personService.findAllByLastname("\t");
-//        assertNotNull(result);
-//        assertTrue(result.isEmpty());
-//    }
-//
-//    @Test
-//    void findAllByLastname_NotExist() {
-//        dto = setFieldsAndSave();
-//        PersonDTO dto1 = clone(dto);
-//        dto1.setFirstname("firstname1");
-//        dto1 = personService.add(dto1);
-//        PersonDTO dto2 = clone(dto);
-//        dto2.setLastname("lastname2");
-//        dto2 = personService.add(dto2);
-//
-//        String lastname = "something";
-//        assertFalse(Strings.isBlank(lastname));
-//        assertNotEquals(dto.getLastname(), lastname);
-//        assertNotEquals(dto1.getLastname(), lastname);
-//        assertNotEquals(dto2.getLastname(), lastname);
-//
-//        List<PersonDTO> result = personService.findAllByLastname(lastname);
-//
-//        assertNotNull(result);
-//        assertTrue(result.isEmpty());
-//    }
-//
-//    @Test
-//    void findAllByBirthDate_Exist() {
-//        dto = setFieldsAndSave();
-//        assertTrue(personRepository.existsById(dto.getId()));
-//        PersonDTO dto2 = clone(dto);
-//        dto2.setBirth(dto.getBirth().minusDays(34));
-//        dto2 = personService.add(dto2);
-//        assertTrue(personRepository.existsById(dto2.getId()));
-//
-//        List<PersonDTO> result = personService.findAllByBirthDate(dto.getBirth());
-//
-//        assertNotNull(result);
-//        assertEquals(1, result.size());
-//        assertTrue(result.contains(dto));
-//        assertFalse(result.contains(dto2));
-//    }
-//
-//    @Test
-//    void findAllByBirthDate_NotExist() {
-//        dto = setFieldsAndSave();
-//        assertTrue(personRepository.existsById(dto.getId()));
-//        PersonDTO dto2 = clone(dto);
-//        dto2.setBirth(dto.getBirth().minusDays(34));
-//        dto2 = personService.add(dto2);
-//        assertTrue(personRepository.existsById(dto2.getId()));
-//
-//        LocalDate date = dto.getBirth().minusDays(1234);
-//        assertEquals(0, personRepository.findAllByBirthEquals(date).size());
-//
-//        List<PersonDTO> result = personService.findAllByBirthDate(date);
-//
-//        assertNotNull(result);
-//        assertEquals(0, result.size());
-//    }
-//
-//    @Test
-//    void findAllByBirthDate_Null() {
-//        dto = setFieldsAndSave();
-//        assertTrue(personRepository.existsById(dto.getId()));
-//        PersonDTO dto2 = clone(dto);
-//        dto2.setBirth(dto.getBirth().minusDays(34));
-//        dto2 = personService.add(dto2);
-//        assertTrue(personRepository.existsById(dto2.getId()));
-//
-//        List<PersonDTO> result = personService.findAllByBirthDate(null);
-//
-//        assertNotNull(result);
-//        assertEquals(0, result.size());
-//    }
-//
-//    @Test
-//    void findAllOlderThan_Exist() {
-//        dto = setFieldsAndSave();
-//        assertTrue(personRepository.existsById(dto.getId()));
-//        PersonDTO dto2 = clone(dto);
-//        int diff = 22;
-//        dto2.setBirth(dto.getBirth().minusYears(diff));
-//        dto2 = personService.add(dto2);
-//        assertTrue(personRepository.existsById(dto2.getId()));
-//
-//        List<PersonDTO> result = personService.findAllOlderThan(diff - 2);
-//
-//        assertNotNull(result);
-//        assertEquals(1, result.size());
-//        assertFalse(result.contains(dto));
-//        assertTrue(result.contains(dto2));
-//    }
-//
-//    @Test
-//    void findAllOlderThan_NotExist() {
-//        dto = setFieldsAndSave();
-//        assertTrue(personRepository.existsById(dto.getId()));
-//        PersonDTO dto2 = clone(dto);
-//        int diff = 22;
-//        dto2.setBirth(dto.getBirth().minusYears(diff));
-//        dto2 = personService.add(dto2);
-//        assertTrue(personRepository.existsById(dto2.getId()));
-//
-//        Integer age = 50;
-//        LocalDate date = LocalDate.now().minusYears(50);
-//        assertEquals(0, personRepository.findAllByBirthBefore(date).size());
-//
-//        List<PersonDTO> result = personService.findAllOlderThan(age);
-//
-//        assertNotNull(result);
-//        assertEquals(0, result.size());
-//    }
-//
-//    @Test
-//    void findAllOlderThan_Null() {
-//        dto = setFieldsAndSave();
-//        assertTrue(personRepository.existsById(dto.getId()));
-//        PersonDTO dto2 = clone(dto);
-//        dto2.setBirth(dto.getBirth().minusYears(22));
-//        dto2 = personService.add(dto2);
-//        assertTrue(personRepository.existsById(dto2.getId()));
-//
-//        List<PersonDTO> result = personService.findAllOlderThan(null);
-//
-//        assertNotNull(result);
-//        assertEquals(0, result.size());
-//    }
-//
-//    @Test
-//    void findAllYoungerThan_Exist() {
-//        dto = setFieldsAndSave();
-//        assertTrue(personRepository.existsById(dto.getId()));
-//        PersonDTO dto2 = clone(dto);
-//        int diff = 22;
-//        dto2.setBirth(dto.getBirth().minusYears(diff));
-//        dto2 = personService.add(dto2);
-//        assertTrue(personRepository.existsById(dto2.getId()));
-//
-//        List<PersonDTO> result = personService.findAllOlderThan(diff-2);
-//
-//        assertNotNull(result);
-//        assertEquals(1, result.size());
-//        assertTrue(result.contains(dto));
-//        assertFalse(result.contains(dto2));
-//    }
-//
-//    @Test
-//    void findAllYoungerThan_NotExist() {
-//        dto = setFieldsAndSave();
-//        assertTrue(personRepository.existsById(dto.getId()));
-//        personService.delete(dto.getId());
-//        assertFalse(personRepository.existsById(dto.getId()));
-//        PersonDTO dto2 = clone(dto);
-//        int diff = 22;
-//        dto2.setBirth(dto.getBirth().minusYears(diff));
-//        dto2 = personService.add(dto2);
-//        assertTrue(personRepository.existsById(dto2.getId()));
-//
-//        List<PersonDTO> result = personService.findAllOlderThan(diff - 2);
-//
-//        assertNotNull(result);
-//        assertEquals(0, result.size());
-//    }
-//
-//    @Test
-//    void findAllYoungerThan_Null() {
-//        dto = setFieldsAndSave();
-//        assertTrue(personRepository.existsById(dto.getId()));
-//        PersonDTO dto2 = clone(dto);
-//        int diff = 22;
-//        dto2.setBirth(dto.getBirth().minusYears(diff));
-//        dto2 = personService.add(dto2);
-//        assertTrue(personRepository.existsById(dto2.getId()));
-//
-//        List<PersonDTO> result = personService.findAllOlderThan(null);
-//
-//        assertNotNull(result);
-//        assertEquals(0, result.size());
-//    }
-//
-//}
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
+package bogdanov.warehouse.services.interfaces;
+
+import bogdanov.warehouse.dto.PersonDTO;
+import bogdanov.warehouse.exceptions.ArgumentException;
+import bogdanov.warehouse.exceptions.enums.ExceptionType;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.util.Strings;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import java.time.LocalDate;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+@Slf4j
+@SpringBootTest
+@AutoConfigureTestDatabase
+class PersonServiceTest {
+
+    @Autowired
+    private PersonService personService;
+    @Autowired
+    private UserAccountService accountService;
+    @Autowired
+    private PositionService positionService;
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    private final String NULL_STR = null;
+    private final String EMPTY_STR = Strings.EMPTY;
+    private final String SPACE_STR = " ";
+    private final String BLANK_STR = "\t  \t\t      \t\t\t\t \t   ";
+    private final String RESERVED_NULL_PATRONYMIC = "nULl";
+
+    private List<PersonDTO> dto;
+    private List<PersonDTO> result;
+
+    @BeforeEach
+    void clear() {
+        accountService.getAll().forEach(a -> accountService.delete(a.getId()));
+        personService.getAll().forEach(p -> personService.delete(p.getId()));
+        positionService.getAll().forEach(p -> positionService.delete(p.getId()));
+
+        dto = null;
+        result = null;
+    }
+
+    private String formatPhoneNumber(String phoneNumber) {
+        if (Strings.isBlank(phoneNumber)) {
+            return null;
+        }
+        Matcher matcher = Pattern.compile("\\d").matcher(phoneNumber);
+        if (!matcher.find()) {
+            return null;
+        }
+        int plusIndex;
+        boolean isStartingWithPlus = ((plusIndex = phoneNumber.indexOf('+')) > -1)
+                && (plusIndex < matcher.start());
+        phoneNumber = phoneNumber.replaceAll("[\\D]+", Strings.EMPTY);
+        return isStartingWithPlus ? ('+' + phoneNumber) : phoneNumber;
+    }
+
+    private String toUpperCase(String str) {
+        if (Strings.isNotBlank(str)) {
+            str =  str.toUpperCase(Locale.ROOT);
+        } else {
+            str = null;
+        }
+        return str;
+    }
+
+    private PersonDTO format(PersonDTO dto) {
+        return new PersonDTO(
+                dto.getId(),
+                toUpperCase(dto.getFirstname()),
+                toUpperCase(dto.getLastname()),
+                toUpperCase(dto.getPatronymic()),
+                dto.getBirth(),
+                formatPhoneNumber(dto.getPhoneNumber()),
+                toUpperCase(dto.getEmail()),
+                toUpperCase(dto.getPosition())
+        );
+    }
+
+    private List<PersonDTO> format(List<PersonDTO> dto) {
+        return dto.stream().map(this::format).toList();
+    }
+
+    private PersonDTO newDto(Long id, String firstname, String lastname, String patronymic, LocalDate date, String phoneNumber, String email, String position){
+        new PersonDTO(id, firstname, lastname, patronymic, date, phoneNumber, email, position);
+        PersonDTO p = new PersonDTO();
+        p.setId(id);
+        p.setFirstname(firstname);
+        p.setLastname(lastname);
+        p.setPatronymic(patronymic);
+        p.setBirth(date);
+        p.setPhoneNumber(phoneNumber);
+        p.setEmail(email);
+        p.setPosition(position);
+        return p;
+    }
+
+    private void init() {
+        dto = new LinkedList<>();
+    }
+
+    @Test
+    void add() {
+        init();
+        dto.add(newDto(1L, "firstnameA", "lastnameA", "patronymicA", LocalDate.of(1991,1,1), "+6 (833) 87 788-33", "ddda2_4.3@452fff_df.gkg", "position1"));
+        dto.add(newDto(1L, "firstnameA", "lastnameA", "patronymicA", LocalDate.of(1991,1,1), "+6 (833) 87 788-33", "ddda2_4.3@452fff_df.gkg", "position1"));
+        dto.add(newDto(1L, "firstnameB", "lastnameB", "patronymicB", LocalDate.of(1992,2,2), "+6 (833) 87 788-33", "ddda2_4.3@452fff_df.gkg", "position2"));
+        dto.add(newDto(1L, "firstnameC", "lastnameC", "patronymicC", LocalDate.of(1993,3,3), "+6 (833) 87 788-33", NULL_STR, "position3"));
+        dto.add(newDto(1L, "firstnameC", "lastnameC", "patronymicC", LocalDate.of(1993,3,3), NULL_STR, NULL_STR, "position3"));
+        dto.add(newDto(1L, "firstnameC", "lastnameC", NULL_STR, LocalDate.of(1993,3,3), NULL_STR, NULL_STR, "position3"));
+        dto.add(newDto(1L, "firstnameC", "lastnameC", EMPTY_STR, LocalDate.of(1993,3,3), EMPTY_STR, EMPTY_STR, "position 3 dd"));
+        dto.add(newDto(1L, "firstnameC", "lastnameC", SPACE_STR, LocalDate.of(1993,3,3), SPACE_STR, SPACE_STR, "position_sddd"));
+        dto.add(newDto(1L, "firstnameC", "lastnameC", BLANK_STR, LocalDate.of(1993,3,3), BLANK_STR, BLANK_STR, "position-sadd, dd"));
+
+        result = personService.add(dto);
+
+        dto = format(dto);
+
+        assertNotNull(result);
+        assertEquals(dto.size(), result.size());
+        for (int i = 0; i < dto.size(); i++) {
+            dto.get(i).setId(result.get(i).getId());
+        }
+        assertEquals(dto, result);
+        assertFalse(personService.getAll().isEmpty());
+        assertEquals(result, personService.getAll());
+
+        dto = result.stream().peek(p -> p.setPatronymic(null)).toList();
+        List<PersonDTO> result2 = personService.add(dto);
+        assertEquals(dto.size(), result2.size());
+        for (int i = 0; i < dto.size(); i++) {
+            dto.get(i).setId(result.get(i).getId());
+        }
+        assertEquals(dto, result2);
+        result.addAll(result2);
+        assertEquals(result, personService.getAll());
+    }
+
+    @Test
+    void add_EmptyList() {
+        init();
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> personService.add(dto));
+        assertEquals(ExceptionType.NO_OBJECT_WAS_PASSED, e.getExceptionType());
+        assertTrue(personService.getAll().isEmpty());
+    }
+
+    @Test
+    void add_ReservedPatronymic() {
+        init();
+        dto.add(newDto(1L, "firstnameA", "lastnameA", "patronymicA", LocalDate.of(1991,1,1), "+6 (833) 87 788-33", "ddda2_4.3@452fff_df.gkg", "position1"));
+        dto.add(newDto(1L, "firstnameA", "lastnameA", RESERVED_NULL_PATRONYMIC, LocalDate.of(1992,2,2), null, null, "position2"));
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> personService.add(dto));
+        assertEquals(ExceptionType.RESERVED_VALUE, e.getExceptionType());
+        assertTrue(personService.getAll().isEmpty());
+    }
+
+    @Test
+    void add_NullFirstname() {
+        init();
+        final String FIRSTNAME = NULL_STR;
+        final String LASTNAME = "lastname";
+        final LocalDate DATE = LocalDate.of(2000, 1,1);
+        final String POSITION = "position";
+
+        dto.add(newDto(1L, "firstnameA", "lastnameA", "patronymicA", LocalDate.of(1991,1,1), "+6 (833) 87 788-33", "ddda2_4.3@452fff_df.gkg", "position1"));
+        dto.add(newDto(1L, FIRSTNAME, LASTNAME, null, DATE, null, null, POSITION));
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> personService.add(dto));
+        assertEquals(ExceptionType.NOT_ALL_PERSON_REQUIRED_FIELDS, e.getExceptionType());
+        assertTrue(personService.getAll().isEmpty());
+    }
+
+    @Test
+    void add_EmptyFirstname() {
+        init();
+        final String FIRSTNAME = EMPTY_STR;
+        final String LASTNAME = "lastname";
+        final LocalDate DATE = LocalDate.of(2000, 1,1);
+        final String POSITION = "position";
+
+        dto.add(newDto(1L, "firstnameA", "lastnameA", "patronymicA", LocalDate.of(1991,1,1), "+6 (833) 87 788-33", "ddda2_4.3@452fff_df.gkg", "position1"));
+        dto.add(newDto(1L, FIRSTNAME, LASTNAME, null, DATE, null, null, POSITION));
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> personService.add(dto));
+        assertEquals(ExceptionType.NOT_ALL_PERSON_REQUIRED_FIELDS, e.getExceptionType());
+        assertTrue(personService.getAll().isEmpty());
+    }
+
+    @Test
+    void add_SpaceFirstname() {
+        init();
+        final String FIRSTNAME = SPACE_STR;
+        final String LASTNAME = "lastname";
+        final LocalDate DATE = LocalDate.of(2000, 1,1);
+        final String POSITION = "position";
+
+        dto.add(newDto(1L, "firstnameA", "lastnameA", "patronymicA", LocalDate.of(1991,1,1), "+6 (833) 87 788-33", "ddda2_4.3@452fff_df.gkg", "position1"));
+        dto.add(newDto(1L, FIRSTNAME, LASTNAME, null, DATE, null, null, POSITION));
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> personService.add(dto));
+        assertEquals(ExceptionType.NOT_ALL_PERSON_REQUIRED_FIELDS, e.getExceptionType());
+        assertTrue(personService.getAll().isEmpty());
+    }
+
+    @Test
+    void add_BlankFirstname() {
+        init();
+        final String FIRSTNAME = BLANK_STR;
+        final String LASTNAME = "lastname";
+        final LocalDate DATE = LocalDate.of(2000, 1,1);
+        final String POSITION = "position";
+
+        dto.add(newDto(1L, "firstnameA", "lastnameA", "patronymicA", LocalDate.of(1991,1,1), "+6 (833) 87 788-33", "ddda2_4.3@452fff_df.gkg", "position1"));
+        dto.add(newDto(1L, FIRSTNAME, LASTNAME, null, DATE, null, null, POSITION));
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> personService.add(dto));
+        assertEquals(ExceptionType.NOT_ALL_PERSON_REQUIRED_FIELDS, e.getExceptionType());
+        assertTrue(personService.getAll().isEmpty());
+    }
+
+    @Test
+    void add_NullLastname() {
+        init();
+        final String FIRSTNAME = "firstname";
+        final String LASTNAME = NULL_STR;
+        final LocalDate DATE = LocalDate.of(2000, 1,1);
+        final String POSITION = "position";
+
+        dto.add(newDto(1L, "firstnameA", "lastnameA", "patronymicA", LocalDate.of(1991,1,1), "+6 (833) 87 788-33", "ddda2_4.3@452fff_df.gkg", "position1"));
+        dto.add(newDto(1L, FIRSTNAME, LASTNAME, null, DATE, null, null, POSITION));
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> personService.add(dto));
+        assertEquals(ExceptionType.NOT_ALL_PERSON_REQUIRED_FIELDS, e.getExceptionType());
+        assertTrue(personService.getAll().isEmpty());
+    }
+
+    @Test
+    void add_EmptyLastname() {
+        init();
+        final String FIRSTNAME = "firstname";
+        final String LASTNAME = EMPTY_STR;
+        final LocalDate DATE = LocalDate.of(2000, 1,1);
+        final String POSITION = "position";
+
+        dto.add(newDto(1L, "firstnameA", "lastnameA", "patronymicA", LocalDate.of(1991,1,1), "+6 (833) 87 788-33", "ddda2_4.3@452fff_df.gkg", "position1"));
+        dto.add(newDto(1L, FIRSTNAME, LASTNAME, null, DATE, null, null, POSITION));
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> personService.add(dto));
+        assertEquals(ExceptionType.NOT_ALL_PERSON_REQUIRED_FIELDS, e.getExceptionType());
+        assertTrue(personService.getAll().isEmpty());
+    }
+
+    @Test
+    void add_SpaceLastname() {
+        init();
+        final String FIRSTNAME = "firstname";
+        final String LASTNAME = SPACE_STR;
+        final LocalDate DATE = LocalDate.of(2000, 1,1);
+        final String POSITION = "position";
+
+        dto.add(newDto(1L, "firstnameA", "lastnameA", "patronymicA", LocalDate.of(1991,1,1), "+6 (833) 87 788-33", "ddda2_4.3@452fff_df.gkg", "position1"));
+        dto.add(newDto(1L, FIRSTNAME, LASTNAME, null, DATE, null, null, POSITION));
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> personService.add(dto));
+        assertEquals(ExceptionType.NOT_ALL_PERSON_REQUIRED_FIELDS, e.getExceptionType());
+        assertTrue(personService.getAll().isEmpty());
+    }
+
+    @Test
+    void add_BlankLastname() {
+        init();
+        final String FIRSTNAME = "firstname";
+        final String LASTNAME = BLANK_STR;
+        final LocalDate DATE = LocalDate.of(2000, 1,1);
+        final String POSITION = "position";
+
+        dto.add(newDto(1L, "firstnameA", "lastnameA", "patronymicA", LocalDate.of(1991,1,1), "+6 (833) 87 788-33", "ddda2_4.3@452fff_df.gkg", "position1"));
+        dto.add(newDto(1L, FIRSTNAME, LASTNAME, null, DATE, null, null, POSITION));
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> personService.add(dto));
+        assertEquals(ExceptionType.NOT_ALL_PERSON_REQUIRED_FIELDS, e.getExceptionType());
+        assertTrue(personService.getAll().isEmpty());
+    }
+
+    @Test
+    void add_NullDate() {
+        init();
+        final String FIRSTNAME = "firstname";
+        final String LASTNAME = "lastname";
+        final LocalDate DATE = null;
+        final String POSITION = "position";
+
+        dto.add(newDto(1L, "firstnameA", "lastnameA", "patronymicA", LocalDate.of(1991,1,1), "+6 (833) 87 788-33", "ddda2_4.3@452fff_df.gkg", "position1"));
+        dto.add(newDto(1L, FIRSTNAME, LASTNAME, null, DATE, null, null, POSITION));
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> personService.add(dto));
+        assertEquals(ExceptionType.NOT_ALL_PERSON_REQUIRED_FIELDS, e.getExceptionType());
+        assertTrue(personService.getAll().isEmpty());
+    }
+
+    @Test
+    void add_NullPosition() {
+        init();
+        final String FIRSTNAME = "firstname";
+        final String LASTNAME = "lastname";
+        final LocalDate DATE = LocalDate.of(2000, 1,1);
+        final String POSITION = NULL_STR;
+
+        dto.add(newDto(1L, "firstnameA", "lastnameA", "patronymicA", LocalDate.of(1991,1,1), "+6 (833) 87 788-33", "ddda2_4.3@452fff_df.gkg", "position1"));
+        dto.add(newDto(1L, FIRSTNAME, LASTNAME, null, DATE, null, null, POSITION));
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> personService.add(dto));
+        assertEquals(ExceptionType.NOT_ALL_PERSON_REQUIRED_FIELDS, e.getExceptionType());
+        assertTrue(personService.getAll().isEmpty());
+    }
+
+    @Test
+    void add_EmptyPosition() {
+        init();
+        final String FIRSTNAME = "firstname";
+        final String LASTNAME = "lastname";
+        final LocalDate DATE = LocalDate.of(2000, 1,1);
+        final String POSITION = NULL_STR;
+
+        dto.add(newDto(1L, "firstnameA", "lastnameA", "patronymicA", LocalDate.of(1991,1,1), "+6 (833) 87 788-33", "ddda2_4.3@452fff_df.gkg", "position1"));
+        dto.add(newDto(1L, FIRSTNAME, LASTNAME, null, DATE, null, null, POSITION));
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> personService.add(dto));
+        assertEquals(ExceptionType.NOT_ALL_PERSON_REQUIRED_FIELDS, e.getExceptionType());
+        assertTrue(personService.getAll().isEmpty());
+    }
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

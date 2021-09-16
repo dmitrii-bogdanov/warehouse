@@ -20,7 +20,7 @@ public interface PersonRepository extends JpaRepository<PersonEntity, Long> {
     List<PersonEntity> findAllByPhoneNumberContaining(String partialPhoneNumber);
 
     //full
-    List<PersonEntity> findAllByFirstnameContainingIgnoreCaseAndLastnameContainingIgnoreCaseAndPatronymicContainingIgnoreCaseAndPositionInAndPhoneNumberContainingAndEmailContainingIgnoreCaseAndBirthBetween(
+    List<PersonEntity> findAllByFirstnameContainingIgnoreCaseAndLastnameContainingIgnoreCaseAndPatronymicContainingIgnoreCaseAndPositionInAndPhoneNumberContainingIgnoreCaseAndEmailContainingIgnoreCaseAndBirthBetween(
             String firstname, String lastname, String patronymic,
             List<PositionEntity> positions, String phoneNumber, String email,
             LocalDate startDate, LocalDate endDate);

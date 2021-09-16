@@ -7,7 +7,9 @@ import bogdanov.warehouse.database.repositories.PositionRepository;
 import bogdanov.warehouse.database.repositories.UserRepository;
 import bogdanov.warehouse.dto.PersonDTO;
 import bogdanov.warehouse.dto.PositionDTO;
+import bogdanov.warehouse.dto.UserAccountWithPasswordDTO;
 import bogdanov.warehouse.exceptions.ArgumentException;
+import bogdanov.warehouse.exceptions.ProhibitedRemovingException;
 import bogdanov.warehouse.exceptions.ResourceNotFoundException;
 import bogdanov.warehouse.exceptions.enums.ExceptionType;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -59,7 +61,7 @@ class PersonServiceTest {
     private final String NAME = "name";
     private final String LASTNAME = "lastname";
     private final String PATRONYMIC = "patronymic";
-    private final LocalDate DATE = LocalDate.of(1980, 1, 1);
+    private final LocalDate DATE = LocalDate.of(1981, 1, 1);
     private final String PHONE_812 = "812";
     private final String PHONE_800 = "800";
     private final String DOT_COM = ".com";
@@ -72,7 +74,6 @@ class PersonServiceTest {
         accountService.getAll().forEach(a -> accountService.delete(a.getId()));
         personService.getAll().forEach(p -> personService.delete(p.getId()));
         positionService.getAll().forEach(p -> positionService.delete(p.getId()));
-
 
 
         dto = null;
@@ -286,11 +287,11 @@ class PersonServiceTest {
 
     private List<PositionEntity> getPositionEntitiesFromString(String positions) {
         final String SEARCH_POSITION_DELIMITER = ",";
-            return Arrays.stream(positions.split(SEARCH_POSITION_DELIMITER))
-                    .filter(Strings::isNotBlank)
-                    .map(Long::parseLong)
-                    .map(positionService::getEntityById)
-                    .toList();
+        return Arrays.stream(positions.split(SEARCH_POSITION_DELIMITER))
+                .filter(Strings::isNotBlank)
+                .map(Long::parseLong)
+                .map(positionService::getEntityById)
+                .toList();
 
     }
 
@@ -304,17 +305,14 @@ class PersonServiceTest {
                     getPositionEntitiesFromString(positionString)
                             .stream().map(PositionEntity::getName).map(StringUtils::toRootUpperCase).toList());
         }
-        return list.stream()
-                .filter(p -> Strings.isBlank(firstname) || p.getFirstname().contains(firstname.toUpperCase(Locale.ROOT)))
+        return list.stream().filter(p -> Strings.isBlank(firstname) || p.getFirstname().contains(firstname.toUpperCase(Locale.ROOT)))
                 .filter(p -> Strings.isBlank(lastname) || p.getLastname().contains(lastname.toUpperCase(Locale.ROOT)))
                 .filter(p -> Strings.isBlank(patronymic) || (Strings.isNotBlank(p.getPatronymic()) && p.getPatronymic().contains(patronymic.toUpperCase(Locale.ROOT))))
                 .filter(p -> positions.isEmpty() || positions.contains(p.getPosition().toUpperCase(Locale.ROOT)))
-                .filter(p -> Strings.isBlank(phoneNumber) || (Strings.isNotBlank(p.getEmail()) && p.getEmail().contains(email.toUpperCase(Locale.ROOT))))
+                .filter(p -> Strings.isBlank(phoneNumber) || (Strings.isNotBlank(p.getPhoneNumber()) && p.getPhoneNumber().contains(phoneNumber.toUpperCase(Locale.ROOT))))
                 .filter(p -> Strings.isBlank(email) || (Strings.isNotBlank(p.getEmail()) && p.getEmail().contains(email.toUpperCase(Locale.ROOT))))
                 .filter(p -> fromDate == null || p.getBirth().compareTo(fromDate) >= 0)
-                .filter(p -> toDate == null || p.getBirth().compareTo(fromDate) <= 0)
-                .toList();
-
+                .filter(p -> toDate == null || p.getBirth().compareTo(toDate) <= 0).toList();
     }
 
     @Test
@@ -343,15 +341,18 @@ class PersonServiceTest {
         assertFalse(personService.getAll().isEmpty());
         assertEquals(result, personService.getAll());
 
-        dto = result.stream().peek(p -> p.setPatronymic(null)).toList();
+        dto = new LinkedList<>(result.stream().peek(p -> p.setPatronymic(null)).toList());
         List<PersonDTO> result2 = personService.add(dto);
+        //TODO remove log
+        personService.getAll().forEach(p -> log.info(p.toString()));
+//        assertTrue(personService.getAll().containsAll(result));
+//        assertTrue(personService.getAll().containsAll(result2));
+        assertEquals(result.size() + result2.size(), personService.getAll().size());
         assertEquals(dto.size(), result2.size());
         for (int i = 0; i < dto.size(); i++) {
             dto.get(i).setId(result2.get(i).getId());
         }
         assertEquals(dto, result2);
-        result.addAll(result2);
-        assertEquals(result, personService.getAll());
     }
 
     @Test
@@ -1208,6 +1209,7 @@ class PersonServiceTest {
         positionString = getPositionString(positions, 0, 2);
         correct = correct(dto, FIRSTNAME, LASTNAME, PATRONYMIC, positionString, PHONE_800, RU, DATE.plusYears(1), DATE.plusYears(4));
         result = personService.search(FIRSTNAME, LASTNAME, PATRONYMIC, positionString, PHONE_800, RU, DATE.plusYears(1), DATE.plusYears(4));
+
         assertEquals(correct.size(), result.size());
         assertTrue(result.containsAll(correct));
         correct = null;
@@ -1221,8 +1223,8 @@ class PersonServiceTest {
         correct = null;
         result = null;
 
-        positionString = getPositionString(positions, 0, 1, 2, 3);
-        correct = correct(dto, FIRSTNAME, LASTNAME, PATRONYMIC, positionString, null, RU,null, DATE.plusYears(4));
+        positionString = getPositionString(positions);
+        correct = correct(dto, FIRSTNAME, LASTNAME, PATRONYMIC, positionString, BLANK_STR, RU, null, DATE.plusYears(4));
         result = personService.search(FIRSTNAME, LASTNAME, PATRONYMIC, positionString, BLANK_STR, RU, null, DATE.plusYears(4));
         assertEquals(correct.size(), result.size());
         assertTrue(result.containsAll(correct));
@@ -1230,7 +1232,7 @@ class PersonServiceTest {
         result = null;
 
         positionString = getPositionString(positions, 0, 1, 2, 3);
-        correct = correct(dto, null, null, PATRONYMIC, positionString, PHONE_800, null,null, null);
+        correct = correct(dto, null, null, PATRONYMIC, positionString, PHONE_800, null, null, null);
         result = personService.search(BLANK_STR, EMPTY_STR, PATRONYMIC, positionString, PHONE_800, SPACE_STR, null, null);
         assertEquals(correct.size(), result.size());
         assertTrue(result.containsAll(correct));
@@ -1238,7 +1240,7 @@ class PersonServiceTest {
         result = null;
 
         positionString = getPositionString(positions);
-        correct = correct(dto, null, null, null, positionString, null, null,null, null);
+        correct = correct(dto, null, null, null, positionString, null, null, null, null);
         result = personService.search(NULL_STR, SPACE_STR, BLANK_STR, positionString, null, null, null, null);
         assertEquals(correct.size(), result.size());
         assertTrue(result.containsAll(correct));
@@ -1262,7 +1264,7 @@ class PersonServiceTest {
         result = null;
 
         positionString = BLANK_STR;
-        correct = correct(dto, FIRSTNAME, LASTNAME, PATRONYMIC, positionString, null, RU,null, DATE.plusYears(4));
+        correct = correct(dto, FIRSTNAME, LASTNAME, PATRONYMIC, positionString, null, RU, null, DATE.plusYears(4));
         result = personService.search(FIRSTNAME, LASTNAME, PATRONYMIC, positionString, BLANK_STR, RU, null, DATE.plusYears(4));
         assertEquals(correct.size(), result.size());
         assertTrue(result.containsAll(correct));
@@ -1270,7 +1272,7 @@ class PersonServiceTest {
         result = null;
 
         positionString = SPACE_STR;
-        correct = correct(dto, null, null, PATRONYMIC, positionString, PHONE_800, null,null, null);
+        correct = correct(dto, null, null, PATRONYMIC, positionString, PHONE_800, null, null, null);
         result = personService.search(BLANK_STR, EMPTY_STR, PATRONYMIC, positionString, PHONE_800, SPACE_STR, null, null);
         assertEquals(correct.size(), result.size());
         assertTrue(result.containsAll(correct));
@@ -1278,14 +1280,101 @@ class PersonServiceTest {
         result = null;
 
         positionString = EMPTY_STR;
-        correct = correct(dto, null, null, null, positionString, null, null,null, null);
-        result = personService.search(NULL_STR, SPACE_STR, BLANK_STR, positionString, null, null, null, null);
+        correct = correct(dto, null, null, null, positionString, null, DOMAIN, null, null);
+        result = personService.search(NULL_STR, SPACE_STR, BLANK_STR, positionString, null, DOMAIN, null, null);
         assertEquals(correct.size(), result.size());
         assertTrue(result.containsAll(correct));
         correct = null;
         result = null;
     }
 
+    @Test
+    void delete() {
+        dto = create();
+        PersonDTO deleted;
+        List<PersonDTO> listOfDeleted = new LinkedList<>();
+        List<PersonDTO> all;
+
+        deleted = dto.get(2);
+        listOfDeleted.add(deleted);
+        dto.remove(2);
+        assertEquals(deleted, personService.delete(deleted.getId()));
+        all = personService.getAll();
+        assertEquals(dto.size(), all.size());
+        assertTrue(all.containsAll(dto));
+        for (PersonDTO p : listOfDeleted) {
+            assertFalse(all.contains(p));
+        }
+        deleted = null;
+        all = null;
+
+        deleted = dto.get(0);
+        listOfDeleted.add(deleted);
+        dto.remove(0);
+        assertEquals(deleted, personService.delete(deleted.getId()));
+        all = personService.getAll();
+        assertEquals(dto.size(), all.size());
+        assertTrue(all.containsAll(dto));
+        for (PersonDTO p : listOfDeleted) {
+            assertFalse(all.contains(p));
+        }
+        deleted = null;
+        all = null;
+
+        deleted = dto.get(0);
+        listOfDeleted.add(deleted);
+        dto.remove(0);
+        assertEquals(deleted, personService.delete(deleted.getId()));
+        all = personService.getAll();
+        assertEquals(dto.size(), all.size());
+        assertTrue(all.containsAll(dto));
+        for (PersonDTO p : listOfDeleted) {
+            assertFalse(all.contains(p));
+        }
+    }
+
+    @Test
+    void delete_NullId() {
+        dto = create();
+
+        Long id = null;
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> personService.delete(id));
+        assertEquals(ExceptionType.NULL_ID, e.getExceptionType());
+        assertEquals(dto, personService.getAll());
+    }
+
+    @Test
+    void delete_NotRecordedId() {
+        dto = create();
+
+        Long id = getNotRecordedId(dto);
+
+        ResourceNotFoundException e = assertThrows(ResourceNotFoundException.class,
+                () -> personService.delete(id));
+        assertEquals(ExceptionType.RESOURCE_NOT_FOUND, e.getExceptionType());
+        assertEquals(dto, personService.getAll());
+    }
+
+    @Test
+    void delete_RegisteredUser() {
+        dto = create();
+
+        Long id = dto.get(1).getId();
+
+        UserAccountWithPasswordDTO user = new UserAccountWithPasswordDTO();
+        user.setUsername("username_222");
+        user.setPassword("password");
+        user.setPersonId(id);
+        user.setRoles(Collections.singletonList("ROLE_USER"));
+        accountService.add(user);
+
+        ProhibitedRemovingException e = assertThrows(ProhibitedRemovingException.class,
+                () -> personService.delete(id));
+        assertEquals(ExceptionType.ALREADY_REGISTERED_PERSON, e.getExceptionType());
+        assertEquals(dto, personService.getAll());
+    }
 
 }
 

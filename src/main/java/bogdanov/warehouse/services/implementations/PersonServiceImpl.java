@@ -11,6 +11,7 @@ import bogdanov.warehouse.services.interfaces.PersonService;
 import bogdanov.warehouse.services.interfaces.PositionService;
 import bogdanov.warehouse.services.mappers.Mapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.*;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class PersonServiceImpl implements PersonService {
@@ -35,7 +37,7 @@ public class PersonServiceImpl implements PersonService {
     private static final String TO_DATE = "toDate";
     private static final String POSITION = "Position";
     private static final String EXISTING_REFERENCE_SUBSTRING = "REFERENCES PUBLIC.PERSON";
-    private static final String USER_FOREIGN_KEY_SUBSTRING = "PUBLIC.USER_ENTITY FOREIGN KEY(PERSON";
+    private static final String USER_FOREIGN_KEY_SUBSTRING = "PUBLIC.USERS FOREIGN KEY(PERSON";
 
 
     //region Util methods
@@ -53,13 +55,6 @@ public class PersonServiceImpl implements PersonService {
     private boolean isIdNotNull(Long id) {
         if (id == null) {
             throw new ArgumentException(ExceptionType.NULL_ID);
-        }
-        return true;
-    }
-
-    private boolean isNameNotBlank(String name) {
-        if (Strings.isBlank(name)) {
-            throw new ArgumentException(ExceptionType.BLANK_NAME);
         }
         return true;
     }
@@ -114,16 +109,12 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public PersonDTO delete(Long id) {
         PersonEntity entity = getEntityById(id);
-        if (userRepository.existsByPerson_Id(id)) {
-            throw new ProhibitedRemovingException(ExceptionType.ALREADY_REGISTERED_PERSON.setId(id));
-        } else {
-            try {
-                personRepository.delete(entity);
-            } catch (DataIntegrityViolationException e) {
-                throw wrapException(e, entity);
-            }
-            return mapper.convert(entity);
+        try {
+            personRepository.delete(entity);
+        } catch (DataIntegrityViolationException e) {
+            throw wrapException(e, entity);
         }
+        return mapper.convert(entity);
     }
 
     @Override
@@ -163,7 +154,7 @@ public class PersonServiceImpl implements PersonService {
         List<PersonEntity> entities;
 
         if (isFirstnameBlank && isLastnameBlank && isPatronymicBlank
-                && isPhoneNumberBlank && isEmailBlank
+                && isPositionBlank && isPhoneNumberBlank && isEmailBlank
                 && isFromDateAbsent && isToDateAbsent) {
             throw new ArgumentException(ExceptionType.NO_PARAMETER_IS_PRESENT);
         }
@@ -185,10 +176,10 @@ public class PersonServiceImpl implements PersonService {
             email = Strings.EMPTY;
         }
         if (isFromDateAbsent) {
-            fromDate = LocalDate.MIN;
+            fromDate = LocalDate.of(0, 1, 1);
         }
         if (isToDateAbsent) {
-            toDate = LocalDate.MAX;
+            toDate = LocalDate.of(2200, 12, 31);
         }
         if (fromDate.compareTo(toDate) > 0) {
             throw new ArgumentException(ExceptionType.INCORRECT_RANGE.setFrom(FROM_DATE).setTo(TO_DATE));
@@ -198,8 +189,8 @@ public class PersonServiceImpl implements PersonService {
         }
 
         entities = isPositionBlank
-                    ? searchWithAnyPosition(firstname, lastname, patronymic, phoneNumber, email, fromDate, toDate)
-                    : searchFull(firstname, lastname, patronymic, positions, phoneNumber, email, fromDate, toDate);
+                ? searchWithAnyPosition(firstname, lastname, patronymic, phoneNumber, email, fromDate, toDate)
+                : searchFull(firstname, lastname, patronymic, positions, phoneNumber, email, fromDate, toDate);
 
         return entities.stream().map(mapper::convert).toList();
     }
@@ -218,14 +209,6 @@ public class PersonServiceImpl implements PersonService {
         }
     }
 
-    //patronymic is null, any position
-    private List<PersonEntity> searchWithNullPatronymicAndAnyPosition(String firstname, String lastname,
-                                                                      String phoneNumber, String email,
-                                                                      LocalDate startDate, LocalDate endDate) {
-        return personRepository.findAllByFirstnameContainingIgnoreCaseAndLastnameContainingIgnoreCaseAndPatronymicIsNullAndPhoneNumberContainingAndEmailContainingIgnoreCaseAndBirthBetween(
-                firstname, lastname, phoneNumber, email, startDate, endDate);
-    }
-
     //any position
     private List<PersonEntity> searchWithAnyPosition(String firstname, String lastname, String patronymic,
                                                      String phoneNumber, String email,
@@ -234,19 +217,11 @@ public class PersonServiceImpl implements PersonService {
                 firstname, lastname, patronymic, phoneNumber, email, startDate, endDate);
     }
 
-    //patronymic is null
-    private List<PersonEntity> searchWithNullPatronymic(String firstname, String lastname,
-                                                        List<PositionEntity> positions, String phoneNumber, String email,
-                                                        LocalDate startDate, LocalDate endDate) {
-        return personRepository.findAllByFirstnameContainingIgnoreCaseAndLastnameContainingIgnoreCaseAndPatronymicIsNullAndPositionInAndPhoneNumberContainingAndEmailContainingIgnoreCaseAndBirthBetween(
-                firstname, lastname, positions, phoneNumber, email, startDate, endDate);
-    }
-
     //full
     private List<PersonEntity> searchFull(String firstname, String lastname, String patronymic,
                                           List<PositionEntity> positions, String phoneNumber, String email,
                                           LocalDate startDate, LocalDate endDate) {
-        return personRepository.findAllByFirstnameContainingIgnoreCaseAndLastnameContainingIgnoreCaseAndPatronymicContainingIgnoreCaseAndPositionInAndPhoneNumberContainingAndEmailContainingIgnoreCaseAndBirthBetween(
+        return personRepository.findAllByFirstnameContainingIgnoreCaseAndLastnameContainingIgnoreCaseAndPatronymicContainingIgnoreCaseAndPositionInAndPhoneNumberContainingIgnoreCaseAndEmailContainingIgnoreCaseAndBirthBetween(
                 firstname, lastname, patronymic, positions, phoneNumber, email, startDate, endDate);
     }
     //endregion

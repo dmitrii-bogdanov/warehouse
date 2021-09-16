@@ -26,7 +26,6 @@ import java.util.*;
 public class NomenclatureServiceImpl implements NomenclatureService {
 
     private final NomenclatureRepository nomenclatureRepository;
-    private final RecordRepository recordRepository;
     private final Mapper mapper;
 
     private static final String DATA_INTEGRITY_EXCEPTION_SUBSTRING = "ON PUBLIC.NOMENCLATURE(";
@@ -110,7 +109,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
         if ((index = sb.indexOf(DATA_INTEGRITY_EXCEPTION_SUBSTRING)) > -1) {
             ExceptionType type = null;
             sb.delete(0, index + DATA_INTEGRITY_EXCEPTION_SUBSTRING.length());
-            long id = Long.parseLong(sb.substring(13, sb.indexOf("\"")));
+            long id = Long.parseLong(sb.substring(13, sb.indexOf("\"")));//todo
             Optional<NomenclatureEntity> entity = nomenclatureRepository.findById(id);
             String field = "unknown field";
             if (entity.isPresent()) {
@@ -209,7 +208,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
     public NomenclatureDTO getByName(String name) {
         if (Strings.isBlank(name)) {
             throw new ArgumentException(ExceptionType.BLANK_NAME);
-        }
+        }//todo name
         return mapper.convert(
                 nomenclatureRepository.findByNameIgnoreCase(name)
                         .orElseThrow(() -> new ResourceNotFoundException(NOMENCLATURE, NAME, name)));

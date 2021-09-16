@@ -56,7 +56,7 @@ public class PersonMapper {
                 person.getBirth(),
                 formatPhoneNumber(person.getPhoneNumber()),
                 toUpperCase(person.getEmail()),
-                positionService.add(person.getPosition())
+                positionService.add(toUpperCase(person.getPosition()))
         );
     }
 

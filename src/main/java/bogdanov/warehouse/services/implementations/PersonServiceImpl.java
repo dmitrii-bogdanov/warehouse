@@ -29,7 +29,6 @@ public class PersonServiceImpl implements PersonService {
 
     private static final String PERSON = "Person";
     private static final String ID = "id";
-    private static final String RESERVED_NULL_PATRONYMIC = "NULL";
     private static final String PATRONYMIC = "patronymic";
     private static final String SEARCH_POSITION_DELIMITER = ",";
     private static final String FROM_DATE = "fromDate";
@@ -49,16 +48,6 @@ public class PersonServiceImpl implements PersonService {
         } else {
             throw new ArgumentException(ExceptionType.NOT_ALL_PERSON_REQUIRED_FIELDS);
         }
-    }
-
-    private boolean areValuesNotReserved(PersonDTO dto) {
-        if (RESERVED_NULL_PATRONYMIC.equalsIgnoreCase(dto.getPatronymic())) {
-            throw new ArgumentException(
-                    ExceptionType.RESERVED_VALUE
-                            .setFieldName(PATRONYMIC)
-                            .setFieldValue("\"" + RESERVED_NULL_PATRONYMIC + "\""));
-        }
-        return true;
     }
 
     private boolean isIdNotNull(Long id) {
@@ -101,7 +90,6 @@ public class PersonServiceImpl implements PersonService {
         entities = persons
                 .stream()
                 .filter(this::areAllRequiredFieldsPresent)
-                .filter(this::areValuesNotReserved)
                 .map(mapper::convert)
                 .peek(e -> e.setId(null)) //TODO check alternative
                 .toList();
@@ -116,7 +104,6 @@ public class PersonServiceImpl implements PersonService {
         entities = persons
                 .stream()
                 .filter(this::areAllRequiredFieldsPresent)
-                .filter(this::areValuesNotReserved)
                 .map(mapper::convert)
                 .toList();
 
@@ -146,6 +133,7 @@ public class PersonServiceImpl implements PersonService {
 
     @Override
     public PersonEntity getEntityById(Long id) {
+        isIdNotNull(id);
         Optional<PersonEntity> optionalEntity = personRepository.findById(id);
         if (optionalEntity.isPresent()) {
             return optionalEntity.get();
@@ -173,8 +161,6 @@ public class PersonServiceImpl implements PersonService {
         boolean isToDateAbsent = toDate == null;
         List<PositionEntity> positions = new LinkedList<>();
         List<PersonEntity> entities;
-
-        boolean shouldPatronymicBeNull = RESERVED_NULL_PATRONYMIC.equalsIgnoreCase(patronymic);
 
         if (isFirstnameBlank && isLastnameBlank && isPatronymicBlank
                 && isPhoneNumberBlank && isEmailBlank
@@ -211,19 +197,9 @@ public class PersonServiceImpl implements PersonService {
             positions = getPositionEntitiesFromString(position);
         }
 
-        if (isPositionBlank) {
-            entities = shouldPatronymicBeNull
-                    //patronymic is null, any position
-                    ? searchWithNullPatronymicAndAnyPosition(firstname, lastname, phoneNumber, email, fromDate, toDate)
-                    //any position
-                    : searchWithAnyPosition(firstname, lastname, patronymic, phoneNumber, email, fromDate, toDate);
-        } else {
-            entities = shouldPatronymicBeNull
-                    //patronymic is null
-                    ? searchWithNullPatronymic(firstname, lastname, positions, phoneNumber, email, fromDate, toDate)
-                    //full
+        entities = isPositionBlank
+                    ? searchWithAnyPosition(firstname, lastname, patronymic, phoneNumber, email, fromDate, toDate)
                     : searchFull(firstname, lastname, patronymic, positions, phoneNumber, email, fromDate, toDate);
-        }
 
         return entities.stream().map(mapper::convert).toList();
     }
@@ -231,11 +207,15 @@ public class PersonServiceImpl implements PersonService {
     //region Search util methods
 
     private List<PositionEntity> getPositionEntitiesFromString(String positions) {
-        return Arrays.stream(positions.split(SEARCH_POSITION_DELIMITER))
-                .filter(Strings::isNotBlank)
-                .map(Long::parseLong)
-                .map(positionService::getEntityById)
-                .toList();
+        try {
+            return Arrays.stream(positions.split(SEARCH_POSITION_DELIMITER))
+                    .filter(Strings::isNotBlank)
+                    .map(Long::parseLong)
+                    .map(positionService::getEntityById)
+                    .toList();
+        } catch (NumberFormatException e) {
+            throw new ArgumentException(ExceptionType.NUMBER_FORMAT_EXCEPTION);
+        }
     }
 
     //patronymic is null, any position

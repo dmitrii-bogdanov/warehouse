@@ -16,6 +16,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
@@ -52,6 +53,14 @@ public class PositionServiceImpl implements PositionService {
         return objectMapper.convertValue(entity, PositionDTO.class);
     }
 
+    private boolean isIdNotNull(Long id) {
+        if (id == null) {
+            throw new ArgumentException(ExceptionType.NULL_ID);
+        }
+        return true;
+    }
+
+    //all invokes should be with upper case name
     @Override
     @Cacheable("positions")
     public PositionEntity add(String name) {
@@ -82,6 +91,7 @@ public class PositionServiceImpl implements PositionService {
 
     @Override
     public PositionEntity getEntityById(Long id) {
+        isIdNotNull(id);
         return positionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(POSITION, ID, id));
     }

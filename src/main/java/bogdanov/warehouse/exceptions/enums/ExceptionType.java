@@ -40,7 +40,8 @@ public enum ExceptionType {
     LONG_VALUE_OVERFLOW("Operation leads to long value overflow", HttpStatus.BAD_REQUEST),
     NO_OBJECT_WAS_PASSED("No object was passed", HttpStatus.BAD_REQUEST),
     NULL_PROPERTY_WAS_PASSED("#MESSAGE", HttpStatus.BAD_REQUEST),
-    INTERNAL_SERVER_ERROR("Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
+    INTERNAL_SERVER_ERROR("Internal server error", HttpStatus.INTERNAL_SERVER_ERROR),
+    NUMBER_FORMAT_EXCEPTION("Incorrect number format", HttpStatus.BAD_REQUEST);
 
     private static final String ID = "#ID";
     private static final String FIELD_NAME = "#FIELD_NAME";

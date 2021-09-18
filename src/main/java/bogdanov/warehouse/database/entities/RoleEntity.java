@@ -11,6 +11,7 @@ import java.util.Locale;
 @Entity
 @Data
 @Table(name = "roles")
+@NoArgsConstructor
 public class RoleEntity implements GrantedAuthority {
 
     @Id
@@ -23,10 +24,6 @@ public class RoleEntity implements GrantedAuthority {
     @Transient
     @ManyToMany(mappedBy = "roles")
     private Collection<UserEntity> user;
-
-    protected RoleEntity() {
-        super();
-    }
 
     public RoleEntity(Role role) {
         this(role.getId(), role.name());

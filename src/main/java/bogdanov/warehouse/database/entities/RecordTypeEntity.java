@@ -22,8 +22,7 @@ public class RecordTypeEntity {
     private String name;
 
     public RecordTypeEntity(RecordType type) {
-        this.id = type.getId();
-        this.name = type.name();
+        this(type.getId(), type.name());
     }
 
 }

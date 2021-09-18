@@ -2,6 +2,7 @@ package bogdanov.warehouse.services.interfaces;
 
 import bogdanov.warehouse.database.entities.PersonEntity;
 import bogdanov.warehouse.dto.PersonDTO;
+import bogdanov.warehouse.dto.search.SearchPersonDTO;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -23,9 +24,7 @@ public interface PersonService {
 
     PersonEntity getEntityById(Long id);
 
-    List<PersonDTO> search(String firstname, String lastname, String patronymic,
-                           String position, String phoneNumber, String email,
-                           LocalDate startDate, LocalDate endDate);
+    List<PersonDTO> search(SearchPersonDTO dto);
 
     List<PersonDTO> findAllByPosition(Long id);
 

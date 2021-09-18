@@ -1,6 +1,7 @@
 package bogdanov.warehouse.controllers.rest;
 
 import bogdanov.warehouse.dto.PersonDTO;
+import bogdanov.warehouse.dto.search.SearchPersonDTO;
 import bogdanov.warehouse.services.interfaces.PersonService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -46,28 +47,19 @@ public class PersonRestController {
         return personService.delete(id);
     }
 
-    @GetMapping(
-            params = {
-                    "search",
-                    "firstname",
-                    "lastname",
-                    "patronymic",
-                    "position",
-                    "phoneNumber",
-                    "email",
-                    "startDate",
-                    "endDate"
-            }
-            )
-    public List<PersonDTO> search(@RequestParam String firstname,
-                                  @RequestParam String lastname,
-                                  @RequestParam String patronymic,
-                                  @RequestParam String position,
-                                  @RequestParam String phoneNumber,
-                                  @RequestParam String email,
-                                  @RequestParam LocalDate startDate,
-                                  @RequestParam LocalDate endDate) {
-        return personService.search(firstname, lastname, patronymic, position, phoneNumber, email, startDate, endDate);
+    @GetMapping("/position/{id}")
+    public List<PersonDTO> getByPositionId(@PathVariable Long id) {
+        return personService.findAllByPosition(id);
+    }
+
+    @GetMapping(value = "/position/", params = "name")
+    public List<PersonDTO> getByPositionName(@RequestParam String name) {
+        return personService.findAllByPosition(name);
+    }
+
+    @GetMapping(params = "search")
+    public List<PersonDTO> search(@RequestBody SearchPersonDTO searchPersonDto) {
+        return personService.search(searchPersonDto);
     }
 
 }

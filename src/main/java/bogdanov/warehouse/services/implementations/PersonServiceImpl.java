@@ -5,6 +5,7 @@ import bogdanov.warehouse.database.entities.PositionEntity;
 import bogdanov.warehouse.database.repositories.PersonRepository;
 import bogdanov.warehouse.database.repositories.UserRepository;
 import bogdanov.warehouse.dto.PersonDTO;
+import bogdanov.warehouse.dto.search.SearchPersonDTO;
 import bogdanov.warehouse.exceptions.*;
 import bogdanov.warehouse.exceptions.enums.ExceptionType;
 import bogdanov.warehouse.services.interfaces.PersonService;
@@ -139,22 +140,33 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public List<PersonDTO> search(String firstname, String lastname, String patronymic,
-                                  String position, String phoneNumber, String email,
-                                  LocalDate fromDate, LocalDate toDate) {
+    public List<PersonDTO> search(SearchPersonDTO dto) {
+        List<PositionEntity> positions = dto.getPositions() == null
+                ? Collections.emptyList()
+                : dto.getPositions().stream().map(positionService::getEntityById).toList();
+
+        return search(
+                dto.getFirstname(), dto.getLastname(), dto.getPatronymic(),
+                positions, dto.getPhoneNumber(), dto.getEmail(),
+                dto.getFromDate(), dto.getToDate()
+        );
+    }
+
+    private List<PersonDTO> search(String firstname, String lastname, String patronymic,
+                                   List<PositionEntity> positions, String phoneNumber, String email,
+                                   LocalDate fromDate, LocalDate toDate) {
         boolean isFirstnameBlank = Strings.isBlank(firstname);
         boolean isLastnameBlank = Strings.isBlank(lastname);
-        boolean isPositionBlank = Strings.isBlank(position);
+        boolean isPositionAbsent = positions.isEmpty();
         boolean isPhoneNumberBlank = Strings.isBlank(phoneNumber);
         boolean isPatronymicBlank = Strings.isBlank(patronymic);
         boolean isEmailBlank = Strings.isBlank(email);
         boolean isFromDateAbsent = fromDate == null;
         boolean isToDateAbsent = toDate == null;
-        List<PositionEntity> positions = new LinkedList<>();
         List<PersonEntity> entities;
 
         if (isFirstnameBlank && isLastnameBlank && isPatronymicBlank
-                && isPositionBlank && isPhoneNumberBlank && isEmailBlank
+                && isPositionAbsent && isPhoneNumberBlank && isEmailBlank
                 && isFromDateAbsent && isToDateAbsent) {
             throw new ArgumentException(ExceptionType.NO_PARAMETER_IS_PRESENT);
         }
@@ -184,11 +196,8 @@ public class PersonServiceImpl implements PersonService {
         if (fromDate.compareTo(toDate) > 0) {
             throw new ArgumentException(ExceptionType.INCORRECT_RANGE.setFrom(FROM_DATE).setTo(TO_DATE));
         }
-        if (!isPositionBlank) {
-            positions = getPositionEntitiesFromString(position);
-        }
 
-        entities = isPositionBlank
+        entities = isPositionAbsent
                 ? searchWithAnyPosition(firstname, lastname, patronymic, phoneNumber, email, fromDate, toDate)
                 : searchFull(firstname, lastname, patronymic, positions, phoneNumber, email, fromDate, toDate);
 

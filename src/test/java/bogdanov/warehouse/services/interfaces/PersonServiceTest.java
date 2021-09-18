@@ -8,6 +8,7 @@ import bogdanov.warehouse.database.repositories.UserRepository;
 import bogdanov.warehouse.dto.PersonDTO;
 import bogdanov.warehouse.dto.PositionDTO;
 import bogdanov.warehouse.dto.UserAccountWithPasswordDTO;
+import bogdanov.warehouse.dto.search.SearchPersonDTO;
 import bogdanov.warehouse.exceptions.ArgumentException;
 import bogdanov.warehouse.exceptions.ProhibitedRemovingException;
 import bogdanov.warehouse.exceptions.ResourceNotFoundException;
@@ -285,26 +286,15 @@ class PersonServiceTest {
         return new LinkedList<>(personService.add(list));
     }
 
-    private List<PositionEntity> getPositionEntitiesFromString(String positions) {
-        final String SEARCH_POSITION_DELIMITER = ",";
-        return Arrays.stream(positions.split(SEARCH_POSITION_DELIMITER))
-                .filter(Strings::isNotBlank)
-                .map(Long::parseLong)
-                .map(positionService::getEntityById)
-                .toList();
-
-    }
-
     private List<PersonDTO> correct(List<PersonDTO> list,
                                     String firstname, String lastname, String patronymic,
-                                    String positionString, String phoneNumber, String email,
+                                    List<Long> positionsId, String phoneNumber, String email,
                                     LocalDate fromDate, LocalDate toDate) {
-        List<String> positions = new LinkedList<>();
-        if (Strings.isNotBlank(positionString)) {
-            positions.addAll(
-                    getPositionEntitiesFromString(positionString)
-                            .stream().map(PositionEntity::getName).map(StringUtils::toRootUpperCase).toList());
-        }
+
+        List<String> positions = positionsId == null
+                ? Collections.emptyList()
+                : positionsId.stream().map(id -> positionService.getEntityById(id).getName().toUpperCase(Locale.ROOT)).toList();
+
         return list.stream().filter(p -> Strings.isBlank(firstname) || p.getFirstname().contains(firstname.toUpperCase(Locale.ROOT)))
                 .filter(p -> Strings.isBlank(lastname) || p.getLastname().contains(lastname.toUpperCase(Locale.ROOT)))
                 .filter(p -> Strings.isBlank(patronymic) || (Strings.isNotBlank(p.getPatronymic()) && p.getPatronymic().contains(patronymic.toUpperCase(Locale.ROOT))))
@@ -1096,10 +1086,19 @@ class PersonServiceTest {
     }
 
     @Test
-    void search_NoParameterIsPassed() {
+    void search_NoParameterIsPassedWithNullList() {
         dto = create();
         ArgumentException e = assertThrows(ArgumentException.class,
-                () -> personService.search(null, null, null, null, null, null, null, null));
+                () -> personService.search(new SearchPersonDTO(null, null, null, null, null, null, null, null)));
+        assertEquals(ExceptionType.NO_PARAMETER_IS_PRESENT, e.getExceptionType());
+        assertEquals(dto, personService.getAll());
+    }
+
+    @Test
+    void search_NoParameterIsPassedWithEmptyList() {
+        dto = create();
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> personService.search(new SearchPersonDTO(null, null, null, Collections.emptyList(), null, null, null, null)));
         assertEquals(ExceptionType.NO_PARAMETER_IS_PRESENT, e.getExceptionType());
         assertEquals(dto, personService.getAll());
     }
@@ -1110,7 +1109,7 @@ class PersonServiceTest {
         LocalDate fromDate = LocalDate.now();
         LocalDate toDate = fromDate.minusYears(2);
         ArgumentException e = assertThrows(ArgumentException.class,
-                () -> personService.search(null, null, null, null, null, null, fromDate, toDate));
+                () -> personService.search(new SearchPersonDTO(null, null, null, null, null, null, fromDate, toDate)));
         assertEquals(ExceptionType.INCORRECT_RANGE, e.getExceptionType());
         assertEquals(dto, personService.getAll());
     }
@@ -1130,18 +1129,18 @@ class PersonServiceTest {
                         .toList()
         );
 
-        String position = String.valueOf(id);
+        List<Long> positionsId = Collections.singletonList(id);
 
         ResourceNotFoundException e = assertThrows(ResourceNotFoundException.class,
-                () -> personService.search(
+                () -> personService.search(new SearchPersonDTO(
                         FIRSTNAME,
                         null,
                         null,
-                        position,
+                        positionsId,
                         null,
                         null,
                         null,
-                        null));
+                        null)));
         assertEquals(ExceptionType.RESOURCE_NOT_FOUND, e.getExceptionType());
         assertEquals(dto, personService.getAll());
     }
@@ -1162,19 +1161,22 @@ class PersonServiceTest {
                         .toList()
         );
 
-        String position = String.valueOf(positions.get(0).getId())
-                + "," + id + "," + positions.get(1).getId();
+        List<Long> positionsId = new LinkedList<>();
+        positionsId.add(positions.get(0).getId());
+        positionsId.add(id);
+        positionsId.add(positions.get(1).getId());
 
         ResourceNotFoundException e = assertThrows(ResourceNotFoundException.class,
                 () -> personService.search(
-                        FIRSTNAME,
-                        null,
-                        null,
-                        position,
-                        null,
-                        null,
-                        null,
-                        null));
+                        new SearchPersonDTO(
+                                FIRSTNAME,
+                                null,
+                                null,
+                                positionsId,
+                                null,
+                                null,
+                                null,
+                                null)));
         assertEquals(ExceptionType.RESOURCE_NOT_FOUND, e.getExceptionType());
         assertEquals(dto, personService.getAll());
     }
@@ -1189,99 +1191,101 @@ class PersonServiceTest {
         return sb.toString();
     }
 
-    private String getPositionString(List<PositionDTO> positions, int... index) {
-        StringBuilder sb = new StringBuilder();
-        for (int i : index) {
-            sb.append(',');
-            sb.append(positions.get(i).getId());
+    private List<Long> getPositionIds(List<PositionDTO> positions, int... index) {
+        List<Long> positionsId = new LinkedList<>();
+        if (index.length == 0) {
+            positionsId = positions.stream().map(PositionDTO::getId).toList();
+        } else {
+            for (int i : index) {
+                positionsId.add(positions.get(i).getId());
+            }
         }
-        sb.deleteCharAt(0);
-        return sb.toString();
+        return positionsId;
     }
 
     @Test
     void search() {
         dto = createForSearch();
         List<PositionDTO> positions = positionService.getAll();
-        String positionString;
+        List<Long> positionIds;
         List<PersonDTO> correct;
 
-        positionString = getPositionString(positions, 0, 2);
-        correct = correct(dto, FIRSTNAME, LASTNAME, PATRONYMIC, positionString, PHONE_800, RU, DATE.plusYears(1), DATE.plusYears(4));
-        result = personService.search(FIRSTNAME, LASTNAME, PATRONYMIC, positionString, PHONE_800, RU, DATE.plusYears(1), DATE.plusYears(4));
+        positionIds = getPositionIds(positions, 0, 2);
+        correct = correct(dto, FIRSTNAME, LASTNAME, PATRONYMIC, positionIds, PHONE_800, RU, DATE.plusYears(1), DATE.plusYears(4));
+        result = personService.search(new SearchPersonDTO(FIRSTNAME, LASTNAME, PATRONYMIC, positionIds, PHONE_800, RU, DATE.plusYears(1), DATE.plusYears(4)));
 
         assertEquals(correct.size(), result.size());
         assertTrue(result.containsAll(correct));
         correct = null;
         result = null;
 
-        positionString = NULL_STR;
-        correct = correct(dto, FIRSTNAME, LASTNAME, PATRONYMIC, positionString, PHONE_800, RU, DATE.plusYears(1), DATE.plusYears(4));
-        result = personService.search(FIRSTNAME, LASTNAME, PATRONYMIC, positionString, PHONE_800, RU, DATE.plusYears(1), DATE.plusYears(4));
+        positionIds = null;
+        correct = correct(dto, FIRSTNAME, LASTNAME, PATRONYMIC, positionIds, PHONE_800, RU, DATE.plusYears(1), DATE.plusYears(4));
+        result = personService.search(new SearchPersonDTO(FIRSTNAME, LASTNAME, PATRONYMIC, positionIds, PHONE_800, RU, DATE.plusYears(1), DATE.plusYears(4)));
         assertEquals(correct.size(), result.size());
         assertTrue(result.containsAll(correct));
         correct = null;
         result = null;
 
-        positionString = getPositionString(positions);
-        correct = correct(dto, FIRSTNAME, LASTNAME, PATRONYMIC, positionString, BLANK_STR, RU, null, DATE.plusYears(4));
-        result = personService.search(FIRSTNAME, LASTNAME, PATRONYMIC, positionString, BLANK_STR, RU, null, DATE.plusYears(4));
+        positionIds = getPositionIds(positions);
+        correct = correct(dto, FIRSTNAME, LASTNAME, PATRONYMIC, positionIds, BLANK_STR, RU, null, DATE.plusYears(4));
+        result = personService.search(new SearchPersonDTO(FIRSTNAME, LASTNAME, PATRONYMIC, positionIds, BLANK_STR, RU, null, DATE.plusYears(4)));
         assertEquals(correct.size(), result.size());
         assertTrue(result.containsAll(correct));
         correct = null;
         result = null;
 
-        positionString = getPositionString(positions, 0, 1, 2, 3);
-        correct = correct(dto, null, null, PATRONYMIC, positionString, PHONE_800, null, null, null);
-        result = personService.search(BLANK_STR, EMPTY_STR, PATRONYMIC, positionString, PHONE_800, SPACE_STR, null, null);
+        positionIds = getPositionIds(positions, 0, 1, 2, 3);
+        correct = correct(dto, null, null, PATRONYMIC, positionIds, PHONE_800, null, null, null);
+        result = personService.search(new SearchPersonDTO(BLANK_STR, EMPTY_STR, PATRONYMIC, positionIds, PHONE_800, SPACE_STR, null, null));
         assertEquals(correct.size(), result.size());
         assertTrue(result.containsAll(correct));
         correct = null;
         result = null;
 
-        positionString = getPositionString(positions);
-        correct = correct(dto, null, null, null, positionString, null, null, null, null);
-        result = personService.search(NULL_STR, SPACE_STR, BLANK_STR, positionString, null, null, null, null);
+        positionIds = getPositionIds(positions);
+        correct = correct(dto, null, null, null, positionIds, null, null, null, null);
+        result = personService.search(new SearchPersonDTO());
         assertEquals(correct.size(), result.size());
         assertTrue(result.containsAll(correct));
         correct = null;
         result = null;
 
-        positionString = NULL_STR;
-        correct = correct(dto, FIRSTNAME, LASTNAME, PATRONYMIC, positionString, PHONE_800, RU, DATE.plusYears(1), DATE.plusYears(4));
-        result = personService.search(FIRSTNAME, LASTNAME, PATRONYMIC, positionString, PHONE_800, RU, DATE.plusYears(1), DATE.plusYears(4));
+        positionIds = Collections.emptyList();
+        correct = correct(dto, FIRSTNAME, LASTNAME, PATRONYMIC, positionIds, PHONE_800, RU, DATE.plusYears(1), DATE.plusYears(4));
+        result = personService.search(new SearchPersonDTO(FIRSTNAME, LASTNAME, PATRONYMIC, positionIds, PHONE_800, RU, DATE.plusYears(1), DATE.plusYears(4)));
         assertEquals(correct.size(), result.size());
         assertTrue(result.containsAll(correct));
         correct = null;
         result = null;
 
-        positionString = NULL_STR;
-        correct = correct(dto, FIRSTNAME, LASTNAME, PATRONYMIC, positionString, PHONE_800, RU, DATE.plusYears(1), DATE.plusYears(4));
-        result = personService.search(FIRSTNAME, LASTNAME, PATRONYMIC, positionString, PHONE_800, RU, DATE.plusYears(1), DATE.plusYears(4));
+        positionIds = null;
+        correct = correct(dto, FIRSTNAME, LASTNAME, PATRONYMIC, positionIds, PHONE_800, RU, DATE.plusYears(1), DATE.plusYears(4));
+        result = personService.search(new SearchPersonDTO(FIRSTNAME, LASTNAME, PATRONYMIC, positionIds, PHONE_800, RU, DATE.plusYears(1), DATE.plusYears(4)));
         assertEquals(correct.size(), result.size());
         assertTrue(result.containsAll(correct));
         correct = null;
         result = null;
 
-        positionString = BLANK_STR;
-        correct = correct(dto, FIRSTNAME, LASTNAME, PATRONYMIC, positionString, null, RU, null, DATE.plusYears(4));
-        result = personService.search(FIRSTNAME, LASTNAME, PATRONYMIC, positionString, BLANK_STR, RU, null, DATE.plusYears(4));
+        positionIds = Collections.emptyList();
+        correct = correct(dto, FIRSTNAME, LASTNAME, PATRONYMIC, positionIds, null, RU, null, DATE.plusYears(4));
+        result = personService.search(new SearchPersonDTO(FIRSTNAME, LASTNAME, PATRONYMIC, positionIds, BLANK_STR, RU, null, DATE.plusYears(4)));
         assertEquals(correct.size(), result.size());
         assertTrue(result.containsAll(correct));
         correct = null;
         result = null;
 
-        positionString = SPACE_STR;
-        correct = correct(dto, null, null, PATRONYMIC, positionString, PHONE_800, null, null, null);
-        result = personService.search(BLANK_STR, EMPTY_STR, PATRONYMIC, positionString, PHONE_800, SPACE_STR, null, null);
+        positionIds = Collections.emptyList();
+        correct = correct(dto, null, null, PATRONYMIC, positionIds, PHONE_800, null, null, null);
+        result = personService.search(new SearchPersonDTO(BLANK_STR, EMPTY_STR, PATRONYMIC, positionIds, PHONE_800, SPACE_STR, null, null));
         assertEquals(correct.size(), result.size());
         assertTrue(result.containsAll(correct));
         correct = null;
         result = null;
 
-        positionString = EMPTY_STR;
-        correct = correct(dto, null, null, null, positionString, null, DOMAIN, null, null);
-        result = personService.search(NULL_STR, SPACE_STR, BLANK_STR, positionString, null, DOMAIN, null, null);
+        positionIds = null;
+        correct = correct(dto, null, null, null, positionIds, null, DOMAIN, null, null);
+        result = personService.search(new SearchPersonDTO(NULL_STR, SPACE_STR, BLANK_STR, positionIds, null, DOMAIN, null, null));
         assertEquals(correct.size(), result.size());
         assertTrue(result.containsAll(correct));
         correct = null;

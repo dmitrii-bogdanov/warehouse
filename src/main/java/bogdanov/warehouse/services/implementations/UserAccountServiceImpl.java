@@ -46,6 +46,41 @@ public class UserAccountServiceImpl implements UserAccountService {
     private static final String ROLE = "Role";
     private static final String NAME = "name";
 
+
+    //region Util methods
+    private void checkRoleName(String roleName) {
+        if (Strings.isBlank(roleName)) {
+            throw new ArgumentException(ExceptionType.BLANK_ENTITY_NAME.setEntity(ROLE).setFieldName(NAME));
+        }
+    }
+
+    private void checkId(Long id) {
+        if (id == null) {
+            throw new ArgumentException(ExceptionType.NULL_ID);
+        }
+    }
+
+    private void checkIdAndUsername(UserAccountDTO dto, UserEntity entity) {
+        if (!entity.getUsername().equalsIgnoreCase(dto.getUsername())) {
+            throw new ArgumentException(ExceptionType.ID_USERNAME_INCORRECT);
+        }
+    }
+
+    private void checkUsername(String username) {
+        if (Strings.isBlank(username)) {
+            throw new ArgumentException(ExceptionType.BLANK_USERNAME);
+        }
+    }
+
+    private void checkPassword(String password) {
+        if (Strings.isBlank(password) || (password.length() < MIN_PASSWORD_LENGTH)) {
+            throw new ArgumentException(
+                    ExceptionType.NOT_VALID_PASSWORD
+                            .addComment(NOT_VALID_PASSWORD_COMMENT));
+        }
+    }
+    //endregion
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return userRepository.findByUsername(username.toUpperCase(Locale.ROOT));
@@ -58,12 +93,6 @@ public class UserAccountServiceImpl implements UserAccountService {
         checkUsername(entity.getUsername());
         entity.setPerson(personService.getEntityById(user.getId()));
         return mapper.convert(userRepository.save(entity), UserAccountDTO.class);
-    }
-
-    private void checkId(Long id) {
-        if (id == null) {
-            throw new ArgumentException(ExceptionType.NULL_ID);
-        }
     }
 
     @Override
@@ -104,26 +133,6 @@ public class UserAccountServiceImpl implements UserAccountService {
         return mapper.convert(userRepository.save(entity), UserAccountDTO.class);
     }
 
-    private void checkIdAndUsername(UserAccountDTO dto, UserEntity entity) {
-        if (!entity.getUsername().equalsIgnoreCase(dto.getUsername())) {
-            throw new ArgumentException(ExceptionType.ID_USERNAME_INCORRECT);
-        }
-    }
-
-    private void checkUsername(String username) {
-        if (Strings.isBlank(username)) {
-            throw new ArgumentException(ExceptionType.BLANK_USERNAME);
-        }
-    }
-
-    private void checkPassword(String password) {
-        if (Strings.isBlank(password) || (password.length() < MIN_PASSWORD_LENGTH)) {
-            throw new ArgumentException(
-                    ExceptionType.NOT_VALID_PASSWORD
-                            .addComment(NOT_VALID_PASSWORD_COMMENT));
-        }
-    }
-
     @Override
     public UserAccountDTO enable(Long id) {
         return setEnabled(id, true);
@@ -144,6 +153,13 @@ public class UserAccountServiceImpl implements UserAccountService {
     @Override
     public List<UserAccountDTO> getAll() {
         return userRepository.findAll().stream().map(e -> mapper.convert(e, UserAccountDTO.class)).toList();
+    }
+
+    @Override
+    public List<UserAccountDTO> getAllEnabled() {
+        final boolean isEnabled = true;
+        return userRepository.findAllByEnabled(isEnabled)
+                .stream().map(e -> mapper.convert(e, UserAccountDTO.class)).toList();
     }
 
     @Override
@@ -184,12 +200,6 @@ public class UserAccountServiceImpl implements UserAccountService {
         checkRoleName(role);
         return userRepository.findAllByRoles_NameEqualsIgnoreCase(role)
                 .stream().map(e -> mapper.convert(e, UserAccountDTO.class)).toList();
-    }
-
-    private void checkRoleName(String roleName) {
-        if (Strings.isBlank(roleName)) {
-            throw new ArgumentException(ExceptionType.BLANK_ENTITY_NAME.setEntity(ROLE).setFieldName(NAME));
-        }
     }
 
 }

@@ -33,6 +33,8 @@ public interface UserAccountService extends UserDetailsService {
 
     List<UserAccountDTO> getAll();
 
+    List<UserAccountDTO> getAllEnabled();
+
     UserAccountDTO getById(Long id);
 
     UserEntity getEntityByUsername(String username);

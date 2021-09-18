@@ -17,5 +17,6 @@ public class UserAccountDTO {
     private String username;
     private Long personId;
     private Collection<String> roles;
+    private Boolean isEnabled;
 
 }

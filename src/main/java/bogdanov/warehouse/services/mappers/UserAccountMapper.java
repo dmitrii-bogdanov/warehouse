@@ -59,7 +59,9 @@ public class UserAccountMapper {
                 user.getId(),
                 user.getUsername(),
                 user.getPerson() == null ? null : user.getPerson().getId(),
-                user.getRoles().stream().map(RoleEntity::getName).toList());
+                user.getRoles().stream().map(RoleEntity::getName).toList(),
+                user.isEnabled()
+        );
     }
 
 }

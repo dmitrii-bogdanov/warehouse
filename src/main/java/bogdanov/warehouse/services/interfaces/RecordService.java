@@ -30,4 +30,6 @@ public interface RecordService {
     RecordDTO update(Long id, String username, RecordInputDTO record);
 
     List<ReverseRecordDTO> getAllReverseRecords();
+
+    boolean existsByUserId(Long id);
 }

@@ -2,7 +2,6 @@ package bogdanov.warehouse.services.implementations;
 
 import bogdanov.warehouse.database.entities.NomenclatureEntity;
 import bogdanov.warehouse.database.repositories.NomenclatureRepository;
-import bogdanov.warehouse.database.repositories.RecordRepository;
 import bogdanov.warehouse.dto.NomenclatureDTO;
 import bogdanov.warehouse.exceptions.*;
 import bogdanov.warehouse.exceptions.enums.ExceptionType;
@@ -16,7 +15,6 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
-import javax.validation.ConstraintViolationException;
 import java.util.*;
 
 @Slf4j
@@ -39,6 +37,11 @@ public class NomenclatureServiceImpl implements NomenclatureService {
     private static final Long ZERO = 0L;
     private static final String MIN_AMOUNT = "minAmount";
     private static final String MAX_AMOUNT = "maxAmount";
+    private static final String UNKNOWN_FIELD = "unknown field";
+    private static final String REGEX_TO_DELETE_NESTED_EXCEPTIONS = ";.*";
+    private static final String APOSTROPHE = "\"";
+    private static final String SPACE_STR = " ";
+    private static final String COMMENT_FOR_GET_BY_CODE_NULL = "If system allows to use blank codes, try ?search?code=null";
 
 
     //region Utility Methods
@@ -54,23 +57,22 @@ public class NomenclatureServiceImpl implements NomenclatureService {
         return true;
     }
 
-    private boolean isAmountPositive(Long amount) {
+    private void checkAmountPositive(Long amount) {
         if (amount == null || amount <= 0) {
             throw new ArgumentException(ExceptionType.NOT_POSITIVE_AMOUNT);
         }
-        return true;
     }
 
-    private boolean isAmountAvailable(Long amount, NomenclatureEntity entity) {
-        if (isAmountPositive(amount) && (entity.getAmount() >= amount)) {
-            return true;
-        } else {
+
+    private void checkAmountAvailable(Long amount, NomenclatureEntity entity) {
+        checkAmountPositive(amount);
+        if ((entity.getAmount() < amount)) {
             throw new ArgumentException(ExceptionType.NOT_ENOUGH_AMOUNT.setId(entity.getId()));
         }
     }
 
     private NomenclatureEntity add(Long amount, NomenclatureEntity entity) {
-        isAmountPositive(amount);
+        checkAmountPositive(amount);
         long sum = entity.getAmount() + amount;
         if (sum < 0) {
             throw new ArgumentException(ExceptionType.LONG_VALUE_OVERFLOW);
@@ -80,7 +82,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
     }
 
     private NomenclatureEntity take(Long amount, NomenclatureEntity entity) {
-        isAmountAvailable(amount, entity);
+        checkAmountAvailable(amount, entity);
         entity.setAmount(entity.getAmount() - amount);
         return entity;
     }
@@ -99,7 +101,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
         }
         if (PropertyValueException.class.equals(e.getCause().getClass())) {
             message = message
-                    .replaceAll(";.*", Strings.EMPTY)
+                    .replaceAll(REGEX_TO_DELETE_NESTED_EXCEPTIONS, Strings.EMPTY)
                     .replace(NomenclatureEntity.class.getName(), NOMENCLATURE);
             return new ArgumentException(ExceptionType.NULL_PROPERTY_WAS_PASSED.setMessage(message));
         }
@@ -109,9 +111,9 @@ public class NomenclatureServiceImpl implements NomenclatureService {
         if ((index = sb.indexOf(DATA_INTEGRITY_EXCEPTION_SUBSTRING)) > -1) {
             ExceptionType type = null;
             sb.delete(0, index + DATA_INTEGRITY_EXCEPTION_SUBSTRING.length());
-            long id = Long.parseLong(sb.substring(13, sb.indexOf("\"")));//todo
+            long id = Long.parseLong(sb.substring(1 + sb.lastIndexOf(SPACE_STR), sb.indexOf(APOSTROPHE)));//was 13
             Optional<NomenclatureEntity> entity = nomenclatureRepository.findById(id);
-            String field = "unknown field";
+            String field = UNKNOWN_FIELD;
             if (entity.isPresent()) {
                 if (CODE.equalsIgnoreCase(sb.substring(0, CODE.length()))) {
                     type = ExceptionType.ALREADY_RECORDED_NAME_OR_CODE
@@ -145,17 +147,28 @@ public class NomenclatureServiceImpl implements NomenclatureService {
         }
     }
 
-    private boolean isListNotEmpty(Collection collection) {
+    private void checkListNotEmpty(Collection collection) {
         if (collection == null || collection.isEmpty()) {
             throw new ArgumentException(ExceptionType.NO_OBJECT_WAS_PASSED);
         }
-        return true;
+    }
+
+    private void checkName(String name) {
+        if (Strings.isBlank(name)) {
+            throw new ArgumentException(ExceptionType.BLANK_NAME);
+        }
+    }
+
+    private void checkCodeForGet(String code) {
+        if (Strings.isBlank(code)) {
+            throw new ArgumentException(ExceptionType.BLANK_CODE.addComment(COMMENT_FOR_GET_BY_CODE_NULL));
+        }
     }
     //endregion
 
     @Override
     public List<NomenclatureDTO> createNew(Collection<NomenclatureDTO> nomenclature) {
-        isListNotEmpty(nomenclature);
+        checkListNotEmpty(nomenclature);
         try {
             return nomenclatureRepository
                     .saveAll(nomenclature.stream().filter(this::isCodeNotReserved).map(mapper::convert).toList())
@@ -181,7 +194,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
 
     @Override
     public List<NomenclatureDTO> update(List<NomenclatureDTO> nomenclature) {
-        isListNotEmpty(nomenclature);
+        checkListNotEmpty(nomenclature);
         try {
             return nomenclatureRepository.saveAll(
                     nomenclature
@@ -206,9 +219,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
 
     @Override
     public NomenclatureDTO getByName(String name) {
-        if (Strings.isBlank(name)) {
-            throw new ArgumentException(ExceptionType.BLANK_NAME);
-        }//todo name
+        checkName(name);
         return mapper.convert(
                 nomenclatureRepository.findByNameIgnoreCase(name)
                         .orElseThrow(() -> new ResourceNotFoundException(NOMENCLATURE, NAME, name)));
@@ -216,10 +227,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
 
     @Override
     public NomenclatureDTO getByCode(String code) {
-        if (Strings.isBlank(code)) {
-            final String COMMENT = "If system allows to use blank codes, try ?search?code=null";
-            throw new ArgumentException(ExceptionType.BLANK_CODE.addComment(COMMENT));
-        }
+        checkCodeForGet(code);
         isCodeNotReserved(code);
         return mapper.convert(
                 nomenclatureRepository.findByCodeIgnoreCase(code)
@@ -274,12 +282,12 @@ public class NomenclatureServiceImpl implements NomenclatureService {
         if (isMinAmountAbsent) {
             minAmount = ZERO;
         } else if (minAmount < 0) {
-            isAmountPositive(minAmount);
+            checkAmountPositive(minAmount);
         }
         if (isMaxAmountAbsent) {
             maxAmount = Long.MAX_VALUE;
         } else if (maxAmount < 0) {
-            isAmountPositive(maxAmount);
+            checkAmountPositive(maxAmount);
         }
         if (minAmount > maxAmount) {
             throw new ArgumentException(ExceptionType.INCORRECT_RANGE.setFrom(MIN_AMOUNT).setTo(MAX_AMOUNT));

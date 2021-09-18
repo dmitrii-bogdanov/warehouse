@@ -53,11 +53,10 @@ public class PersonServiceImpl implements PersonService {
         }
     }
 
-    private boolean isIdNotNull(Long id) {
+    private void checkId(Long id) {
         if (id == null) {
             throw new ArgumentException(ExceptionType.NULL_ID);
         }
-        return true;
     }
 
     private RuntimeException wrapException(DataIntegrityViolationException e, PersonEntity entity) {
@@ -71,82 +70,11 @@ public class PersonServiceImpl implements PersonService {
         return e;
     }
 
-    private boolean isListNotEmpty(Collection<PersonDTO> collection) {
+    private void checkListNotEmpty(Collection<PersonDTO> collection) {
         if (collection == null || collection.isEmpty()) {
             throw new ArgumentException(ExceptionType.NO_OBJECT_WAS_PASSED);
         }
-        return true;
     }
-    //endregion
-
-    @Override
-    public List<PersonDTO> add(List<PersonDTO> persons) {
-        isListNotEmpty(persons);
-        for (PersonDTO p : persons) {
-            p.setId(null);
-        }
-        List<PersonEntity> entities;
-        entities = persons
-                .stream()
-                .filter(this::areAllRequiredFieldsPresent)
-                .map(mapper::convert)
-                .toList();
-        entities = personRepository.saveAll(entities);
-        return entities.stream().map(mapper::convert).toList();
-    }
-
-    @Override
-    public List<PersonDTO> update(List<PersonDTO> persons) {
-        isListNotEmpty(persons);
-        List<PersonEntity> entities;
-        entities = persons
-                .stream()
-                .filter(this::areAllRequiredFieldsPresent)
-                .map(mapper::convert)
-                .toList();
-
-        entities = personRepository.saveAll(entities);
-        return entities.stream().map(mapper::convert).toList();
-    }
-
-    @Override
-    public PersonDTO delete(Long id) {
-        PersonEntity entity = getEntityById(id);
-        try {
-            personRepository.delete(entity);
-        } catch (DataIntegrityViolationException e) {
-            throw wrapException(e, entity);
-        }
-        return mapper.convert(entity);
-    }
-
-    @Override
-    public PersonDTO getById(Long id) {
-        return mapper.convert(getEntityById(id));
-    }
-
-    @Override
-    public PersonEntity getEntityById(Long id) {
-        isIdNotNull(id);
-        Optional<PersonEntity> optionalEntity = personRepository.findById(id);
-        if (optionalEntity.isPresent()) {
-            return optionalEntity.get();
-        } else {
-            throw new ResourceNotFoundException(PERSON, ID, id);
-        }
-    }
-
-    @Override
-    public List<PersonDTO> getAll() {
-        return personRepository.findAll().stream().map(mapper::convert).toList();
-    }
-
-    @Override
-    public List<PersonDTO> search(SearchPersonDTO dto) {
-        return search(dto, formatDtoAndReturnPositions(dto)).stream().map(mapper::convert).toList();
-    }
-
-    //region Search util methods
 
     private List<PositionEntity> formatDtoAndReturnPositions(SearchPersonDTO dto) {
 
@@ -203,6 +131,74 @@ public class PersonServiceImpl implements PersonService {
                 dto.getFirstname(), dto.getLastname(), dto.getPatronymic(), dto.getPhoneNumber(), dto.getEmail(), dto.getFromDate(), dto.getToDate())
                 : personRepository.findAllByFirstnameContainingIgnoreCaseAndLastnameContainingIgnoreCaseAndPatronymicContainingIgnoreCaseAndPositionInAndPhoneNumberContainingIgnoreCaseAndEmailContainingIgnoreCaseAndBirthBetween(
                 dto.getFirstname(), dto.getLastname(), dto.getPatronymic(), positions, dto.getPhoneNumber(), dto.getEmail(), dto.getFromDate(), dto.getToDate());
+    }
+    //endregion
+
+    @Override
+    public List<PersonDTO> add(List<PersonDTO> persons) {
+        checkListNotEmpty(persons);
+        for (PersonDTO p : persons) {
+            p.setId(null);
+        }
+        List<PersonEntity> entities;
+        entities = persons
+                .stream()
+                .filter(this::areAllRequiredFieldsPresent)
+                .map(mapper::convert)
+                .toList();
+        entities = personRepository.saveAll(entities);
+        return entities.stream().map(mapper::convert).toList();
+    }
+
+    @Override
+    public List<PersonDTO> update(List<PersonDTO> persons) {
+        checkListNotEmpty(persons);
+        List<PersonEntity> entities;
+        entities = persons
+                .stream()
+                .filter(this::areAllRequiredFieldsPresent)
+                .map(mapper::convert)
+                .toList();
+
+        entities = personRepository.saveAll(entities);
+        return entities.stream().map(mapper::convert).toList();
+    }
+
+    @Override
+    public PersonDTO delete(Long id) {
+        PersonEntity entity = getEntityById(id);
+        try {
+            personRepository.delete(entity);
+        } catch (DataIntegrityViolationException e) {
+            throw wrapException(e, entity);
+        }
+        return mapper.convert(entity);
+    }
+
+    @Override
+    public PersonDTO getById(Long id) {
+        return mapper.convert(getEntityById(id));
+    }
+
+    @Override
+    public PersonEntity getEntityById(Long id) {
+        checkId(id);
+        Optional<PersonEntity> optionalEntity = personRepository.findById(id);
+        if (optionalEntity.isPresent()) {
+            return optionalEntity.get();
+        } else {
+            throw new ResourceNotFoundException(PERSON, ID, id);
+        }
+    }
+
+    @Override
+    public List<PersonDTO> getAll() {
+        return personRepository.findAll().stream().map(mapper::convert).toList();
+    }
+
+    @Override
+    public List<PersonDTO> search(SearchPersonDTO dto) {
+        return search(dto, formatDtoAndReturnPositions(dto)).stream().map(mapper::convert).toList();
     }
 
     @Override

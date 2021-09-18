@@ -23,8 +23,11 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final Mapper mapper;
-    private final PersonService personService;
     private final UserAccountService accountService;
+
+    private static final String USER = "User";
+    private static final String ID = "id";
+    private static final String PERSON = "Person";
 
     @Override
     public List<UserDTO> getAll() {
@@ -33,12 +36,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO getById(Long id) {
-        Optional<UserEntity> entity = userRepository.findById(id);
-        if (entity.isPresent()) {
-            return mapper.convert(entity.get());
-        } else {
-            throw new ResourceNotFoundException("User", "id", id);
-        }
+        return mapper.convert(accountService.getEntityById(id));
     }
 
     @Override
@@ -48,42 +46,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO getByPersonId(Long personId) {
-        Optional<UserEntity> entity = userRepository.findByPerson_Id(personId);
-        if (entity.isPresent()) {
-            return mapper.convert(entity.get());
-        } else {
-            throw new ResourceNotFoundException("Person", "id", personId);
-        }
-    }
-
-    @Override
-    public List<UserDTO> findAllByFirstname(String firstname) {
-        return userRepository.findAllByPerson_Firstname(firstname)
-                .stream().map(mapper::convert).toList();
-    }
-
-    @Override
-    public List<UserDTO> findAllByLastname(String lastname) {
-        return userRepository.findAllByPerson_Lastname(lastname)
-                .stream().map(mapper::convert).toList();
-    }
-
-    @Override
-    public List<UserDTO> findAllByPatronymic(String patronymic) {
-        return userRepository.findAllByPerson_Patronymic(patronymic)
-                .stream().map(mapper::convert).toList();
+        return mapper.convert(userRepository.findByPerson_Id(personId)
+                .orElseThrow(() -> new ResourceNotFoundException(PERSON, ID, personId)));
     }
 
     @Override
     public List<UserDTO> findAllByFullName(String firstname, String patronymic, String lastname) {
         return userRepository
-                .findAllByPerson_FirstnameAndPerson_PatronymicAndPerson_Lastname(firstname, patronymic, lastname)
+                .findAllByPerson_FirstnameIgnoreCaseAndPerson_PatronymicIgnoreCaseAndPerson_LastnameIgnoreCase(
+                        firstname, patronymic, lastname)
                 .stream().map(mapper::convert).toList();
     }
 
     @Override
     public List<UserDTO> findAllByPosition(String position) {
-        return userRepository.findAllByPerson_Position_Name(position)
+        return userRepository.findAllByPerson_Position_NameIgnoreCase(position)
                 .stream().map(mapper::convert).toList();
     }
 

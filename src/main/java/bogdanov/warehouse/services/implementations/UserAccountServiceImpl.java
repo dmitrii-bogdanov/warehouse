@@ -9,6 +9,7 @@ import bogdanov.warehouse.dto.UserAccountWithPasswordDTO;
 import bogdanov.warehouse.exceptions.*;
 import bogdanov.warehouse.exceptions.enums.ExceptionType;
 import bogdanov.warehouse.services.interfaces.PersonService;
+import bogdanov.warehouse.services.interfaces.RecordService;
 import bogdanov.warehouse.services.interfaces.UserAccountService;
 import bogdanov.warehouse.services.mappers.Mapper;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +33,7 @@ public class UserAccountServiceImpl implements UserAccountService {
     private final UserRepository userRepository;
     private final Mapper mapper;
     private final PersonService personService;
-    private final RecordRepository recordRepository;
+    private final RecordService recordService;
 
     private static final int MIN_PASSWORD_LENGTH = 8;
     private static final String NOT_VALID_PASSWORD_COMMENT =
@@ -42,32 +43,33 @@ public class UserAccountServiceImpl implements UserAccountService {
     private static final String ID = "id";
     private static final String USERNAME = "username";
     private static final String PERSON_ID = "person_id";
+    private static final String ROLE = "Role";
+    private static final String NAME = "name";
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByUsernameIgnoreCase(username.toUpperCase(Locale.ROOT));
+        return userRepository.findByUsername(username.toUpperCase(Locale.ROOT));
     }
 
     @Override
     public UserAccountDTO add(UserAccountWithPasswordDTO user) {
-        if (isUsernameAvailable(user.getUsername()) && isPasswordValid(user.getPassword())) {
-            PersonEntity person = personService.getEntityById(user.getPersonId());
-            if (userRepository.existsByPersonEquals(person)) {
-                throw new IllegalArgumentException(
-                        ExceptionType.ALREADY_REGISTERED_PERSON.setId(user.getPersonId()).getModifiedMessage());
-            } else {
-                UserEntity entity = mapper.convert(user);
-                entity.setPerson(person);
-                return mapper.convert(userRepository.save(entity), UserAccountDTO.class);
-            }
+        checkPassword(user.getPassword());
+        UserEntity entity = mapper.convert(user);
+        checkUsername(entity.getUsername());
+        entity.setPerson(personService.getEntityById(user.getId()));
+        return mapper.convert(userRepository.save(entity), UserAccountDTO.class);
+    }
+
+    private void checkId(Long id) {
+        if (id == null) {
+            throw new ArgumentException(ExceptionType.NULL_ID);
         }
-        throw new RuntimeException("Some unforeseen exception in UserAccountServiceImpl.add()!");
     }
 
     @Override
     public UserAccountDTO delete(Long id) {
         UserEntity entity = getEntityById(id);
-        if (recordRepository.existsByUser_Id(id)) {
+        if (recordService.existsByUserId(id)) {
             throw new ProhibitedRemovingException(ExceptionType.USER_HAS_RECORDS.setId(id));
         } else {
             userRepository.delete(entity);
@@ -79,56 +81,47 @@ public class UserAccountServiceImpl implements UserAccountService {
     @Override
     public UserAccountDTO updatePassword(UserAccountWithPasswordDTO user) {
         UserEntity entity = getEntityById(user.getId());
-        if (isIdAndUsernameCorrect(user, entity)) {
-            entity.setPassword(mapper.convert(user).getPassword());
-            return mapper.convert(userRepository.save(entity), UserAccountDTO.class);
-        }
-        throw new RuntimeException("Some unforeseen exception in UserAccountServiceImpl.updatePassword()!");
+        checkIdAndUsername(user, entity);
+        checkPassword(user.getPassword());
+        entity.setPassword(mapper.convert(user).getPassword());
+        return mapper.convert(userRepository.save(entity), UserAccountDTO.class);
     }
 
     @Override
     public UserAccountDTO updateRoles(UserAccountDTO user) {
         UserEntity entity = getEntityById(user.getId());
-        if (isIdAndUsernameCorrect(user, entity)) {
-            entity.setRoles(mapper.convert(user).getRoles());
-            return mapper.convert(userRepository.save(entity), UserAccountDTO.class);
-        }
-        throw new RuntimeException("Some unforeseen exception in UserAccountServiceImpl.updateRoles()!");
+        checkIdAndUsername(user, entity);
+        entity.setRoles(mapper.convert(user).getRoles());
+        return mapper.convert(userRepository.save(entity), UserAccountDTO.class);
     }
 
     @Override
     public UserAccountDTO updateUsername(UserAccountDTO user) {
         UserEntity entity = getEntityById(user.getId());
-        String newUsername = user.getUsername();
-        if (!entity.getUsername().equals(newUsername) && isUsernameAvailable(newUsername)) {
-            entity.setUsername(newUsername);
-            return mapper.convert(userRepository.save(entity), UserAccountDTO.class);
-        }
-        return mapper.convert(entity, UserAccountDTO.class);
+        String newUsername = mapper.convert(user).getUsername();
+        checkUsername(newUsername);
+        entity.setUsername(newUsername);
+        return mapper.convert(userRepository.save(entity), UserAccountDTO.class);
     }
 
-    private boolean isIdAndUsernameCorrect(UserAccountDTO dto, UserEntity entity) {
-        if (entity.getUsername().equals(dto.getUsername())) {
-            return true;
-        } else {
-            throw new IllegalArgumentException(ExceptionType.ID_USERNAME_INCORRECT.getMessage());
+    private void checkIdAndUsername(UserAccountDTO dto, UserEntity entity) {
+        if (!entity.getUsername().equalsIgnoreCase(dto.getUsername())) {
+            throw new ArgumentException(ExceptionType.ID_USERNAME_INCORRECT);
         }
     }
 
-    private boolean isUsernameAvailable(String username) {
-        if (Strings.isBlank(username) || userRepository.existsByUsername(username)) {
-            throw new IllegalArgumentException(ExceptionType.ALREADY_REGISTERED_OR_BLANK_USERNAME.getMessage());
+    private void checkUsername(String username) {
+        if (Strings.isBlank(username)) {
+            throw new ArgumentException(ExceptionType.BLANK_USERNAME);
         }
-        return true;
     }
 
-    private boolean isPasswordValid(String password) {
+    private void checkPassword(String password) {
         if (Strings.isBlank(password) || (password.length() < MIN_PASSWORD_LENGTH)) {
             throw new ArgumentException(
                     ExceptionType.NOT_VALID_PASSWORD
                             .addComment(NOT_VALID_PASSWORD_COMMENT));
         }
-        return true;
     }
 
     @Override
@@ -141,8 +134,7 @@ public class UserAccountServiceImpl implements UserAccountService {
         return setEnabled(id, false);
     }
 
-    @Override
-    public UserAccountDTO setEnabled(Long id, boolean isEnabled) {
+    private UserAccountDTO setEnabled(Long id, boolean isEnabled) {
         UserEntity entity = getEntityById(id);
         entity.setEnabled(isEnabled);
         return mapper.convert(userRepository.save(entity), UserAccountDTO.class);
@@ -161,23 +153,25 @@ public class UserAccountServiceImpl implements UserAccountService {
 
     @Override
     public UserEntity getEntityByUsername(String username) {
-        return Optional.ofNullable(userRepository.findByUsernameIgnoreCase(StringUtils.toRootUpperCase(username)))
+        checkUsername(username);
+        return userRepository.findByUsernameIgnoreCase(StringUtils.toRootUpperCase(username))
                 .orElseThrow(() -> new ResourceNotFoundException(USER, USERNAME, username));
     }
 
     @Override
     public UserEntity getEntityById(Long id) {
+        checkId(id);
         return userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(USER, ID, id));
     }
 
     @Override
     public UserAccountDTO getByPersonId(Long personId) {
-        Optional<UserEntity> optionalEntity = userRepository.findByPerson_Id(personId);
-        if (optionalEntity.isPresent()) {
-            return mapper.convert(optionalEntity.get(), UserAccountDTO.class);
-        } else {
-            throw new ResourceNotFoundException(USER, PERSON_ID, personId);
-        }
+        checkId(personId);
+        return mapper.convert(
+                userRepository.findByPerson_Id(personId)
+                        .orElseThrow(() -> new ResourceNotFoundException(USER, PERSON_ID, personId)),
+                UserAccountDTO.class
+        );
     }
 
     @Override
@@ -187,14 +181,15 @@ public class UserAccountServiceImpl implements UserAccountService {
 
     @Override
     public List<UserAccountDTO> findAllByRole(String role) {
-        return userRepository.findAllByRoles_NameEquals(role)
+        checkRoleName(role);
+        return userRepository.findAllByRoles_NameEqualsIgnoreCase(role)
                 .stream().map(e -> mapper.convert(e, UserAccountDTO.class)).toList();
     }
 
-    //TODO delete (for test)
-    @Override
-    public UserEntity getByIdWithoutNullCheck(Long id) {
-        return userRepository.getById(id);
+    private void checkRoleName(String roleName) {
+        if (Strings.isBlank(roleName)) {
+            throw new ArgumentException(ExceptionType.BLANK_ENTITY_NAME.setEntity(ROLE).setFieldName(NAME));
+        }
     }
 
 }

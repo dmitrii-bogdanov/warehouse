@@ -120,4 +120,9 @@ public class RecordServiceImpl implements RecordService {
     public List<RecordDTO> search(Long nomenclatureId, Long userId, String type, LocalDate dateFrom, LocalDate dateTo) {
         return null;
     }
+
+    @Override
+    public boolean existsByUserId(Long id) {
+        return recordRepository.existsByUser_Id(id);
+    }
 }

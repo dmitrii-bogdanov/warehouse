@@ -31,8 +31,6 @@ public interface UserAccountService extends UserDetailsService {
 
     UserAccountDTO disable(Long id);
 
-    UserAccountDTO setEnabled(Long id, boolean isEnabled);
-
     List<UserAccountDTO> getAll();
 
     UserAccountDTO getById(Long id);
@@ -49,6 +47,4 @@ public interface UserAccountService extends UserDetailsService {
 
     UserAccountDTO delete(Long id);
 
-    //TODO delete (for test)
-    UserEntity getByIdWithoutNullCheck(Long id);
 }

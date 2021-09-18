@@ -53,6 +53,7 @@ class PositionServiceTest {
 
     @BeforeEach
     private void clear() {
+        personRepository.deleteAll();
         positionRepository.deleteAll();
     }
 
@@ -334,9 +335,9 @@ class PositionServiceTest {
         entity = positionRepository.save(entity);
         assertTrue(positionRepository.existsById(entity.getId()));
 
-        InvalidDataAccessApiUsageException e = assertThrows(InvalidDataAccessApiUsageException.class,
+        ArgumentException e = assertThrows(ArgumentException.class,
                 () -> positionService.getEntityById(null));
-        assertEquals(IllegalArgumentException.class, e.getCause().getClass());
+        assertEquals(ExceptionType.NULL_ID, e.getExceptionType());
     }
 
     @Test
@@ -374,9 +375,9 @@ class PositionServiceTest {
         dto = objectMapper.convertValue(positionRepository.save(entity), PositionDTO.class);
         assertTrue(positionRepository.existsById(dto.getId()));
 
-        InvalidDataAccessApiUsageException e = assertThrows(InvalidDataAccessApiUsageException.class,
+        ArgumentException e = assertThrows(ArgumentException.class,
                 () -> positionService.getEntityById(null));
-        assertEquals(IllegalArgumentException.class, e.getCause().getClass());
+        assertEquals(ExceptionType.NULL_ID, e.getExceptionType());
     }
 
     @Test
@@ -680,9 +681,9 @@ class PositionServiceTest {
 
         final Long id = null;
 
-        InvalidDataAccessApiUsageException e = assertThrows(InvalidDataAccessApiUsageException.class,
+        ArgumentException e = assertThrows(ArgumentException.class,
                 () -> positionService.delete(id));
-        assertEquals(IllegalArgumentException.class, e.getCause().getClass());
+        assertEquals(ExceptionType.NULL_ID, e.getExceptionType());
     }
 
 }

@@ -1089,7 +1089,7 @@ class PersonServiceTest {
     void search_NoParameterIsPassedWithNullList() {
         dto = create();
         ArgumentException e = assertThrows(ArgumentException.class,
-                () -> personService.search(new SearchPersonDTO(null, null, null, null, null, null, null, null)));
+                () -> personService.search(new SearchPersonDTO()));
         assertEquals(ExceptionType.NO_PARAMETER_IS_PRESENT, e.getExceptionType());
         assertEquals(dto, personService.getAll());
     }
@@ -1097,8 +1097,10 @@ class PersonServiceTest {
     @Test
     void search_NoParameterIsPassedWithEmptyList() {
         dto = create();
+        SearchPersonDTO searchPersonDTO = new SearchPersonDTO();
+        searchPersonDTO.setPositions(Collections.emptyList());
         ArgumentException e = assertThrows(ArgumentException.class,
-                () -> personService.search(new SearchPersonDTO(null, null, null, Collections.emptyList(), null, null, null, null)));
+                () -> personService.search(searchPersonDTO));
         assertEquals(ExceptionType.NO_PARAMETER_IS_PRESENT, e.getExceptionType());
         assertEquals(dto, personService.getAll());
     }
@@ -1245,7 +1247,7 @@ class PersonServiceTest {
 
         positionIds = getPositionIds(positions);
         correct = correct(dto, null, null, null, positionIds, null, null, null, null);
-        result = personService.search(new SearchPersonDTO());
+        result = personService.search(new SearchPersonDTO(null, null, null, positionIds, null, null, null, null));
         assertEquals(correct.size(), result.size());
         assertTrue(result.containsAll(correct));
         correct = null;

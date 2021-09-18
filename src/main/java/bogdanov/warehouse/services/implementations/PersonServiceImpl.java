@@ -82,12 +82,14 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public List<PersonDTO> add(List<PersonDTO> persons) {
         isListNotEmpty(persons);
+        for (PersonDTO p : persons) {
+            p.setId(null);
+        }
         List<PersonEntity> entities;
         entities = persons
                 .stream()
                 .filter(this::areAllRequiredFieldsPresent)
                 .map(mapper::convert)
-                .peek(e -> e.setId(null)) //TODO check alternative
                 .toList();
         entities = personRepository.saveAll(entities);
         return entities.stream().map(mapper::convert).toList();
@@ -141,29 +143,22 @@ public class PersonServiceImpl implements PersonService {
 
     @Override
     public List<PersonDTO> search(SearchPersonDTO dto) {
-        List<PositionEntity> positions = dto.getPositions() == null
-                ? Collections.emptyList()
-                : dto.getPositions().stream().map(positionService::getEntityById).toList();
-
-        return search(
-                dto.getFirstname(), dto.getLastname(), dto.getPatronymic(),
-                positions, dto.getPhoneNumber(), dto.getEmail(),
-                dto.getFromDate(), dto.getToDate()
-        );
+        return search(dto, formatDtoAndReturnPositions(dto)).stream().map(mapper::convert).toList();
     }
 
-    private List<PersonDTO> search(String firstname, String lastname, String patronymic,
-                                   List<PositionEntity> positions, String phoneNumber, String email,
-                                   LocalDate fromDate, LocalDate toDate) {
-        boolean isFirstnameBlank = Strings.isBlank(firstname);
-        boolean isLastnameBlank = Strings.isBlank(lastname);
-        boolean isPositionAbsent = positions.isEmpty();
-        boolean isPhoneNumberBlank = Strings.isBlank(phoneNumber);
-        boolean isPatronymicBlank = Strings.isBlank(patronymic);
-        boolean isEmailBlank = Strings.isBlank(email);
-        boolean isFromDateAbsent = fromDate == null;
-        boolean isToDateAbsent = toDate == null;
-        List<PersonEntity> entities;
+    //region Search util methods
+
+    private List<PositionEntity> formatDtoAndReturnPositions(SearchPersonDTO dto) {
+
+        boolean isFirstnameBlank = Strings.isBlank(dto.getFirstname());
+        boolean isLastnameBlank = Strings.isBlank(dto.getLastname());
+        boolean isPositionAbsent = dto.getPositions() == null || dto.getPositions().isEmpty();
+        boolean isPhoneNumberBlank = Strings.isBlank(dto.getPhoneNumber());
+        boolean isPatronymicBlank = Strings.isBlank(dto.getPatronymic());
+        boolean isEmailBlank = Strings.isBlank(dto.getEmail());
+        boolean isFromDateAbsent = dto.getFromDate() == null;
+        boolean isToDateAbsent = dto.getToDate() == null;
+        List<PositionEntity> positions = new LinkedList<>();
 
         if (isFirstnameBlank && isLastnameBlank && isPatronymicBlank
                 && isPositionAbsent && isPhoneNumberBlank && isEmailBlank
@@ -171,69 +166,44 @@ public class PersonServiceImpl implements PersonService {
             throw new ArgumentException(ExceptionType.NO_PARAMETER_IS_PRESENT);
         }
 
-
         if (isFirstnameBlank) {
-            firstname = Strings.EMPTY;
+            dto.setFirstname(Strings.EMPTY);
         }
         if (isLastnameBlank) {
-            lastname = Strings.EMPTY;
+            dto.setLastname(Strings.EMPTY);
         }
         if (isPatronymicBlank) {
-            patronymic = Strings.EMPTY;
+            dto.setPatronymic(Strings.EMPTY);
         }
         if (isPhoneNumberBlank) {
-            phoneNumber = Strings.EMPTY;
+            dto.setPhoneNumber(Strings.EMPTY);
         }
         if (isEmailBlank) {
-            email = Strings.EMPTY;
+            dto.setEmail(Strings.EMPTY);
         }
         if (isFromDateAbsent) {
-            fromDate = LocalDate.of(0, 1, 1);
+            dto.setFromDate(LocalDate.of(0, 1, 1));
         }
         if (isToDateAbsent) {
-            toDate = LocalDate.of(2200, 12, 31);
+            dto.setToDate(LocalDate.of(2200, 12, 31));
         }
-        if (fromDate.compareTo(toDate) > 0) {
+        if (dto.getFromDate().compareTo(dto.getToDate()) > 0) {
             throw new ArgumentException(ExceptionType.INCORRECT_RANGE.setFrom(FROM_DATE).setTo(TO_DATE));
         }
-
-        entities = isPositionAbsent
-                ? searchWithAnyPosition(firstname, lastname, patronymic, phoneNumber, email, fromDate, toDate)
-                : searchFull(firstname, lastname, patronymic, positions, phoneNumber, email, fromDate, toDate);
-
-        return entities.stream().map(mapper::convert).toList();
-    }
-
-    //region Search util methods
-
-    private List<PositionEntity> getPositionEntitiesFromString(String positions) {
-        try {
-            return Arrays.stream(positions.split(SEARCH_POSITION_DELIMITER))
-                    .filter(Strings::isNotBlank)
-                    .map(Long::parseLong)
-                    .map(positionService::getEntityById)
-                    .toList();
-        } catch (NumberFormatException e) {
-            throw new ArgumentException(ExceptionType.NUMBER_FORMAT_EXCEPTION);
+        if (!isPositionAbsent) {
+            positions = dto.getPositions().stream().map(positionService::getEntityById).toList();
         }
+
+        return positions;
     }
 
-    //any position
-    private List<PersonEntity> searchWithAnyPosition(String firstname, String lastname, String patronymic,
-                                                     String phoneNumber, String email,
-                                                     LocalDate startDate, LocalDate endDate) {
-        return personRepository.findAllByFirstnameContainingIgnoreCaseAndLastnameContainingIgnoreCaseAndPatronymicContainingIgnoreCaseAndPhoneNumberContainingAndEmailContainingIgnoreCaseAndBirthBetween(
-                firstname, lastname, patronymic, phoneNumber, email, startDate, endDate);
+    private List<PersonEntity> search(SearchPersonDTO dto, List<PositionEntity> positions) {
+        return positions.isEmpty()
+                ? personRepository.findAllByFirstnameContainingIgnoreCaseAndLastnameContainingIgnoreCaseAndPatronymicContainingIgnoreCaseAndPhoneNumberContainingAndEmailContainingIgnoreCaseAndBirthBetween(
+                dto.getFirstname(), dto.getLastname(), dto.getPatronymic(), dto.getPhoneNumber(), dto.getEmail(), dto.getFromDate(), dto.getToDate())
+                : personRepository.findAllByFirstnameContainingIgnoreCaseAndLastnameContainingIgnoreCaseAndPatronymicContainingIgnoreCaseAndPositionInAndPhoneNumberContainingIgnoreCaseAndEmailContainingIgnoreCaseAndBirthBetween(
+                dto.getFirstname(), dto.getLastname(), dto.getPatronymic(), positions, dto.getPhoneNumber(), dto.getEmail(), dto.getFromDate(), dto.getToDate());
     }
-
-    //full
-    private List<PersonEntity> searchFull(String firstname, String lastname, String patronymic,
-                                          List<PositionEntity> positions, String phoneNumber, String email,
-                                          LocalDate startDate, LocalDate endDate) {
-        return personRepository.findAllByFirstnameContainingIgnoreCaseAndLastnameContainingIgnoreCaseAndPatronymicContainingIgnoreCaseAndPositionInAndPhoneNumberContainingIgnoreCaseAndEmailContainingIgnoreCaseAndBirthBetween(
-                firstname, lastname, patronymic, positions, phoneNumber, email, startDate, endDate);
-    }
-    //endregion
 
     @Override
     public List<PersonDTO> findAllByPosition(Long id) {

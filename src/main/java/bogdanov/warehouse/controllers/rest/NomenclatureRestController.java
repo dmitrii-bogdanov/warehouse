@@ -55,8 +55,6 @@ public class NomenclatureRestController {
         return nomenclatureService.getByCode(code);
     }
 
-    //TODO get name&code
-
     @GetMapping(params = {"search", "name", "code", "minAmount", "maxAmount"})
     public List<NomenclatureDTO> findAllByNameContainingAndCodeContaining(@RequestParam(required = false) String name,
                                                                           @RequestParam(required = false) String code,

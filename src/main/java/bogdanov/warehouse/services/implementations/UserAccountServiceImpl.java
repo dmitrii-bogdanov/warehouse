@@ -10,6 +10,7 @@ import bogdanov.warehouse.exceptions.*;
 import bogdanov.warehouse.exceptions.enums.ExceptionType;
 import bogdanov.warehouse.services.interfaces.PersonService;
 import bogdanov.warehouse.services.interfaces.RecordService;
+import bogdanov.warehouse.services.interfaces.RoleService;
 import bogdanov.warehouse.services.interfaces.UserAccountService;
 import bogdanov.warehouse.services.mappers.Mapper;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,7 @@ public class UserAccountServiceImpl implements UserAccountService {
     private final Mapper mapper;
     private final PersonService personService;
     private final RecordService recordService;
+    private final RoleService roleService;
 
     private static final int MIN_PASSWORD_LENGTH = 8;
     private static final String NOT_VALID_PASSWORD_COMMENT =
@@ -71,12 +73,6 @@ public class UserAccountServiceImpl implements UserAccountService {
             }
         }
         throw e;
-    }
-
-    private void checkRoleName(String roleName) {
-        if (Strings.isBlank(roleName)) {
-            throw new ArgumentException(ExceptionType.BLANK_ENTITY_NAME.setEntity(ROLE));
-        }
     }
 
     private void checkRolesNotEmpty(Collection list) {
@@ -243,7 +239,7 @@ public class UserAccountServiceImpl implements UserAccountService {
 
     @Override
     public List<UserAccountDTO> findAllByRole(String role) {
-        checkRoleName(role);
+        roleService.getByName(role);
         return userRepository.findAllByRoles_NameEqualsIgnoreCase(role)
                 .stream().map(e -> mapper.convert(e, UserAccountDTO.class)).toList();
     }

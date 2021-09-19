@@ -11,6 +11,7 @@ import bogdanov.warehouse.exceptions.ArgumentException;
 import bogdanov.warehouse.exceptions.ProhibitedRemovingException;
 import bogdanov.warehouse.exceptions.ResourceNotFoundException;
 import bogdanov.warehouse.exceptions.enums.ExceptionType;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.h2.engine.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +27,7 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Slf4j
 @SpringBootTest
 @AutoConfigureTestDatabase
 class UserAccountServiceTest {
@@ -494,8 +496,9 @@ class UserAccountServiceTest {
             rolesNames.add(ROLES.get(i).getName());
             dtoWithPassword.setRoles(rolesNames);
             dtoWithPassword.setPersonId(person.getId());
-            dtoWithPassword.setUsername(USERNAME + '_' + i++);
+            dtoWithPassword.setUsername(USERNAME + '_' + i);
             output.add(userAccountService.add(dtoWithPassword));
+            i++;
         }
         return output;
     }
@@ -1155,9 +1158,10 @@ class UserAccountServiceTest {
     void enable() {
         users = createUsers();
         List<UserAccountDTO> updated = new LinkedList<>();
-        for (UserAccountDTO user : users) {
-            dto = user;
-            users.remove(user);
+
+        while (!users.isEmpty()) {
+            dto = users.get((int) System.nanoTime() % users.size());
+            users.remove(dto);
             result = userAccountService.enable(dto.getId());
             dto.setIsEnabled(true);
             assertEquals(dto, result);
@@ -1204,9 +1208,10 @@ class UserAccountServiceTest {
     void disable() {
         users = createUsers();
         List<UserAccountDTO> updated = new LinkedList<>();
-        for (UserAccountDTO user : users) {
-            dto = user;
-            users.remove(user);
+
+        while (!users.isEmpty()) {
+            dto = users.get((int) System.nanoTime() % users.size());
+            users.remove(dto);
             userAccountService.enable(dto.getId());
 
             result = userAccountService.disable(dto.getId());
@@ -1251,10 +1256,8 @@ class UserAccountServiceTest {
         assertEquals(users.size(), all.size());
         assertTrue(all.containsAll(users));
 
-        int index;
         while (!users.isEmpty()) {
-            index = (int) System.nanoTime() % users.size();
-            dto = userAccountService.delete(users.get(index).getId());
+            dto = userAccountService.delete(users.get((int) (System.nanoTime() % users.size())).getId());
             users.remove(dto);
             all = userAccountService.getAll();
             assertEquals(users.size(), all.size());
@@ -1314,7 +1317,7 @@ class UserAccountServiceTest {
             assertEquals(user.getPersonId(), resultEntity.getPerson().getId());
             assertEquals(user.getRoles().size(), resultEntity.getRoles().size());
             assertTrue(resultEntity.getRoles().stream().map(RoleEntity::getName).toList().containsAll(user.getRoles()));
-            assertTrue(userEncoder.matches(PASSWORD + num + users.indexOf(user), resultEntity.getPassword()));
+            assertTrue(userEncoder.matches(PASSWORD + (num + users.indexOf(user)), resultEntity.getPassword()));
         }
         assertEquals(all, userAccountService.getAll());
     }
@@ -1458,6 +1461,8 @@ class UserAccountServiceTest {
         assertFalse(users.isEmpty());
         for (RoleEntity role : ROLES) {
             correct = users.stream().filter(user -> user.getRoles().contains(role.getName())).toList();
+            assertFalse(correct.isEmpty());
+            correct.forEach(u -> log.info(u.toString()));
             result = userAccountService.findAllByRole(role.getName().toLowerCase(Locale.ROOT));
             assertEquals(correct.size(), result.size());
             assertTrue(result.containsAll(correct));

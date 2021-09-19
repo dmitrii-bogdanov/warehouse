@@ -19,7 +19,7 @@ public class UserEntity implements UserDetails {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String username;
 
     @Column(nullable = false)
@@ -32,6 +32,7 @@ public class UserEntity implements UserDetails {
     private Collection<RoleEntity> roles = new HashSet<>();
 
     @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(unique = true)
     private PersonEntity person;
 
     @Override

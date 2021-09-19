@@ -27,7 +27,6 @@ public class PersonServiceImpl implements PersonService {
 
     private final PersonRepository personRepository;
     private final Mapper mapper;
-    private final UserRepository userRepository;
     private final PositionService positionService;
 
     private static final String PERSON = "Person";

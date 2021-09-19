@@ -27,7 +27,6 @@ public enum ExceptionType {
     RESOURCE_NOT_FOUND("#ENTITY with #FIELD_NAME : #FIELD_VALUE not found", HttpStatus.NOT_FOUND),
     ALREADY_REGISTERED_USERNAME("User with username : #FIELD_VALUE already registered", HttpStatus.BAD_REQUEST),
     ID_USERNAME_INCORRECT("User id/username is incorrect", HttpStatus.BAD_REQUEST),
-    ALREADY_REGISTERED_OR_BLANK_USERNAME("Username is already registered or blank", HttpStatus.BAD_REQUEST),
     BLANK_USERNAME("Username value is missing", HttpStatus.BAD_REQUEST),
     USER_HAS_RECORDS("User with id : #ID has records", HttpStatus.BAD_REQUEST),
     NOMENCLATURE_HAS_RECORDS("Nomenclature with id : #ID has records", HttpStatus.BAD_REQUEST),

@@ -1,5 +1,6 @@
 package bogdanov.warehouse.configs;
 
+import bogdanov.warehouse.services.implementations.InternalUserService;
 import bogdanov.warehouse.services.interfaces.UserAccountService;
 import bogdanov.warehouse.services.interfaces.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,9 +47,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private void configureGlobal(AuthenticationManagerBuilder auth,
-                                 UserAccountService userAccountService,
+                                 InternalUserService userService,
                                  @Qualifier("user") BCryptPasswordEncoder encoder) throws Exception{
-        auth.userDetailsService(userAccountService).passwordEncoder(encoder);
+        auth.userDetailsService(userService).passwordEncoder(encoder);
     }
 
 }

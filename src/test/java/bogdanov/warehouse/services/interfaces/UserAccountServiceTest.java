@@ -11,7 +11,6 @@ import bogdanov.warehouse.exceptions.ArgumentException;
 import bogdanov.warehouse.exceptions.ResourceNotFoundException;
 import bogdanov.warehouse.exceptions.enums.ExceptionType;
 import org.apache.logging.log4j.util.Strings;
-import org.apache.tomcat.util.http.fileupload.impl.SizeException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +21,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.LocalDate;
 import java.util.*;
-import java.util.function.Predicate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -87,7 +85,6 @@ class UserAccountServiceTest {
         resultEntity = null;
     }
 
-    @BeforeEach
     private void createPersons() {
         PersonDTO person;
         String firstname = "firstname";
@@ -107,11 +104,22 @@ class UserAccountServiceTest {
             );
             persons.add(person);
         }
-        personService.add(persons);
+        persons = new LinkedList<>(personService.add(persons));
+    }
+
+    private UserAccountWithPasswordDTO getDtoWithPassword() {
+        UserAccountWithPasswordDTO tempDto = new UserAccountWithPasswordDTO();
+        tempDto = new UserAccountWithPasswordDTO();
+        tempDto.setUsername(USERNAME);
+        tempDto.setPassword(PASSWORD);
+        tempDto.setRoles(new LinkedList<>(ROLES.stream().map(RoleEntity::getName).toList()));
+        tempDto.setPersonId(persons.get(0).getId());
+        return tempDto;
     }
 
     @Test
     void add() {
+        createPersons();
         List<UserAccountWithPasswordDTO> input = new LinkedList<>();
         List<UserAccountDTO> output = new LinkedList<>();
         List<String> rolesList = new LinkedList<>();
@@ -182,7 +190,7 @@ class UserAccountServiceTest {
     void add_NotValidPassword() {
         createPersons();
         dtoWithPassword = getDtoWithPassword();
-        String password = PASSWORD.substring(0, 8);
+        String password = PASSWORD.substring(0, 7);
         assertTrue(password.length() < 8);
 
         assertTrue(userAccountService.getAll().isEmpty());
@@ -265,16 +273,6 @@ class UserAccountServiceTest {
         assertTrue(userAccountService.getAll().isEmpty());
         assertDoesNotThrow(() -> userAccountService.add(dtoWithPassword));
         assertFalse(userAccountService.getAll().isEmpty());
-    }
-
-    private UserAccountWithPasswordDTO getDtoWithPassword() {
-        UserAccountWithPasswordDTO dto = new UserAccountWithPasswordDTO();
-        dto = new UserAccountWithPasswordDTO();
-        dto.setUsername(USERNAME);
-        dto.setPassword(PASSWORD);
-        dto.setRoles(ROLES.stream().map(RoleEntity::getName).toList());
-        dto.setPersonId(persons.get(0).getId());
-        return dto;
     }
 
     @Test
@@ -445,7 +443,7 @@ class UserAccountServiceTest {
         Random generator = new Random(System.nanoTime());
         long id = generator.nextLong();
         int i = 0;
-        while (persons.stream().map(p -> p.getId()).toList().contains(id)) {
+        while (persons.stream().map(PersonDTO::getId).toList().contains(id)) {
             id = generator.nextLong();
             if (i++ > 1000) {
                 throw new RuntimeException("Some problem in cycle");
@@ -469,8 +467,11 @@ class UserAccountServiceTest {
 
         dtoWithPassword.setUsername(dtoWithPassword.getUsername() + "something");
 
-        //TODO find out exception
-        userAccountService.add(dtoWithPassword);
+        List<UserAccountDTO> all = userAccountService.getAll();
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> userAccountService.add(dtoWithPassword));
+        assertEquals(ExceptionType.ALREADY_REGISTERED_PERSON, e.getExceptionType());
+        assertEquals(all, userAccountService.getAll());
     }
 
     @Test
@@ -479,12 +480,13 @@ class UserAccountServiceTest {
         dtoWithPassword = getDtoWithPassword();
         result = userAccountService.add(dtoWithPassword);
         assertTrue(userAccountService.getAll().contains(result));
-
-        dtoWithPassword.setUsername(dtoWithPassword.getUsername());
         dtoWithPassword.setPersonId(persons.get(1).getId());
 
-        //TODO find out exception
-        userAccountService.add(dtoWithPassword);
+        List<UserAccountDTO> all = userAccountService.getAll();
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> userAccountService.add(dtoWithPassword));
+        assertEquals(ExceptionType.ALREADY_REGISTERED_USERNAME, e.getExceptionType());
+        assertEquals(all, userAccountService.getAll());
     }
 
 }

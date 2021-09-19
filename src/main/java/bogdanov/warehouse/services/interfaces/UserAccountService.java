@@ -14,10 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public interface UserAccountService extends UserDetailsService {
-
-    @Override
-    UserDetails loadUserByUsername(String username) throws UsernameNotFoundException;
+public interface UserAccountService {
 
     UserAccountDTO add(UserAccountWithPasswordDTO user);
 

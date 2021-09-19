@@ -50,7 +50,9 @@ public class UserAccountMapper {
         UserEntity userEntity = new UserEntity();
         userEntity.setId(user.getId());
         userEntity.setUsername(toUpperCase(user.getUsername()));
-        userEntity.getRoles().addAll(user.getRoles().stream().map(roleService::getEntityByName).toList());
+        if (user.getRoles() != null) {
+            userEntity.getRoles().addAll(user.getRoles().stream().map(roleService::getEntityByName).toList());
+        }
         return userEntity;
     }
 

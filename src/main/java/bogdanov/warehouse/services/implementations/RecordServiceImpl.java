@@ -2,31 +2,23 @@ package bogdanov.warehouse.services.implementations;
 
 import bogdanov.warehouse.database.entities.RecordEntity;
 import bogdanov.warehouse.database.entities.ReverseRecordEntity;
-import bogdanov.warehouse.database.enums.RecordType;
 import bogdanov.warehouse.database.repositories.RecordRepository;
 import bogdanov.warehouse.database.repositories.ReverseRecordRepository;
-import bogdanov.warehouse.database.repositories.UserRepository;
 import bogdanov.warehouse.dto.NomenclatureDTO;
 import bogdanov.warehouse.dto.RecordDTO;
 import bogdanov.warehouse.dto.RecordInputDTO;
 import bogdanov.warehouse.dto.ReverseRecordDTO;
-import bogdanov.warehouse.exceptions.ArgumentException;
 import bogdanov.warehouse.exceptions.ResourceNotFoundException;
-import bogdanov.warehouse.exceptions.enums.ExceptionType;
 import bogdanov.warehouse.services.interfaces.NomenclatureService;
 import bogdanov.warehouse.services.interfaces.RecordService;
 import bogdanov.warehouse.services.interfaces.RecordTypeService;
-import bogdanov.warehouse.services.interfaces.UserAccountService;
 import bogdanov.warehouse.services.mappers.Mapper;
 import lombok.RequiredArgsConstructor;
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 
 @Service
@@ -36,22 +28,22 @@ public class RecordServiceImpl implements RecordService {
     private final RecordRepository recordRepository;
     private final Mapper mapper;
     private final NomenclatureService nomenclatureService;
-    private final UserRepository userRepository;
     private final RecordTypeService recordTypeService;
     private final ReverseRecordRepository reverseRecordRepository;
-    private final UserAccountService userAccountService;
+    private final InternalUserService userService;
 
     private static final String RECEPTION = "RECEPTION";
     private static final String RELEASE = "RELEASE";
     private static final String RECORD = "Record";
     private static final String ID = "id";
 
+
     @Override
     public RecordDTO add(RecordInputDTO record, String username) {
         RecordEntity entity = mapper.convert(record);
         entity.setNomenclature(nomenclatureService.getEntityById(record.getNomenclatureId()));
         entity.setType(recordTypeService.getEntityByName(record.getType()));
-        entity.setUser(userAccountService.getEntityByUsername(username));
+        entity.setUser(userService.getEntityByUsername(username));
         return mapper.convert(add(entity));
     }
 
@@ -70,7 +62,7 @@ public class RecordServiceImpl implements RecordService {
     public RecordDTO revert(Long id, String username) {
         RecordEntity revertedRecord = getEntityById(id);
         RecordEntity generatedRecord = new RecordEntity();
-        generatedRecord.setUser(userAccountService.getEntityByUsername(username));
+        generatedRecord.setUser(userService.getEntityByUsername(username));
         generatedRecord.setNomenclature(revertedRecord.getNomenclature());
         generatedRecord.setAmount(revertedRecord.getAmount());
         switch (revertedRecord.getType().getName()) {

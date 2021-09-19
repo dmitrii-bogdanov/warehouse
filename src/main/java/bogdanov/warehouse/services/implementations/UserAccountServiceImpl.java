@@ -18,6 +18,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Primary;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -45,9 +46,33 @@ public class UserAccountServiceImpl implements UserAccountService {
     private static final String PERSON_ID = "person_id";
     private static final String ROLE = "Role";
     private static final String NAME = "name";
-
+    private static final String REGEX_TO_DELETE_NESTED_EXCEPTIONS = ";.*";
+    private static final String APOSTROPHE = "\"";
+    private static final String SPACE_STR = " ";
+    private static String DATA_INTEGRITY_EXCEPTION_SUBSTRING = "ON PUBLIC.USERS(";
 
     //region Util methods
+    private WarehouseExeption wrapException(DataIntegrityViolationException e, UserAccountDTO dto) {
+        String message = e.getMessage();
+        if (message != null) {
+            int index = -1;
+            if ((index = message.indexOf(DATA_INTEGRITY_EXCEPTION_SUBSTRING)) > -1) {
+                message = message.substring(index + DATA_INTEGRITY_EXCEPTION_SUBSTRING.length());
+                ExceptionType type = null;
+                if (message.startsWith(USERNAME.toUpperCase(Locale.ROOT))) {
+                    type = ExceptionType.ALREADY_REGISTERED_USERNAME
+                            .setFieldValue(dto.getUsername().toUpperCase(Locale.ROOT));
+                } else if (message.startsWith(PERSON_ID.toUpperCase(Locale.ROOT))) {
+                    type = ExceptionType.ALREADY_REGISTERED_PERSON.setId(dto.getPersonId());
+                }
+                if (type != null) {
+                    return new ArgumentException(type);
+                }
+            }
+        }
+        throw e;
+    }
+
     private void checkRoleName(String roleName) {
         if (Strings.isBlank(roleName)) {
             throw new ArgumentException(ExceptionType.BLANK_ENTITY_NAME.setEntity(ROLE).setFieldName(NAME));
@@ -94,19 +119,18 @@ public class UserAccountServiceImpl implements UserAccountService {
     //endregion
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByUsername(username.toUpperCase(Locale.ROOT));
-    }
-
-    @Override
     public UserAccountDTO add(UserAccountWithPasswordDTO user) {
         checkDtoNotNull(user);
         checkPassword(user.getPassword());
         UserEntity entity = mapper.convert(user);
         checkUsername(entity.getUsername());
         checkRolesNotEmpty(entity.getRoles());
-        entity.setPerson(personService.getEntityById(user.getId()));
-        return mapper.convert(userRepository.save(entity), UserAccountDTO.class);
+        entity.setPerson(personService.getEntityById(user.getPersonId()));
+        try {
+            return mapper.convert(userRepository.save(entity), UserAccountDTO.class);
+        } catch (DataIntegrityViolationException e) {
+            throw wrapException(e, user);
+        }
     }
 
     @Override
@@ -148,7 +172,11 @@ public class UserAccountServiceImpl implements UserAccountService {
         String newUsername = mapper.convert(user).getUsername();
         checkUsername(newUsername);
         entity.setUsername(newUsername);
-        return mapper.convert(userRepository.save(entity), UserAccountDTO.class);
+        try {
+            return mapper.convert(userRepository.save(entity), UserAccountDTO.class);
+        } catch (DataIntegrityViolationException e) {
+            throw wrapException(e, user);
+        }
     }
 
     @Override

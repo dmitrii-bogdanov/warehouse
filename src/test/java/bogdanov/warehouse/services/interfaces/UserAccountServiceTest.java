@@ -116,10 +116,14 @@ class UserAccountServiceTest {
     }
 
     private UserAccountWithPasswordDTO getDtoWithPassword() {
+        return getDtoWithPassword(null);
+    }
+
+    private UserAccountWithPasswordDTO getDtoWithPassword(Long num) {
         UserAccountWithPasswordDTO tempDto = new UserAccountWithPasswordDTO();
         tempDto = new UserAccountWithPasswordDTO();
         tempDto.setUsername(USERNAME);
-        tempDto.setPassword(PASSWORD);
+        tempDto.setPassword(PASSWORD + (num == null ? EMPTY_STR : num));
         tempDto.setRoles(new LinkedList<>(ROLES.stream().map(RoleEntity::getName).toList()));
         tempDto.setPersonId(persons.get(0).getId());
         return tempDto;
@@ -435,15 +439,7 @@ class UserAccountServiceTest {
         createPersons();
         dtoWithPassword = getDtoWithPassword();
 
-        Random generator = new Random(System.nanoTime());
-        long id = generator.nextLong();
-        int i = 0;
-        while (persons.stream().map(PersonDTO::getId).toList().contains(id)) {
-            id = generator.nextLong();
-            if (i++ > 1000) {
-                throw new RuntimeException("Some problem in cycle");
-            }
-        }
+        long id = getNotRecordedId(persons.stream().map(PersonDTO::getId).toList());
         dtoWithPassword.setPersonId(id);
 
         assertTrue(userAccountService.getAll().isEmpty());
@@ -485,12 +481,16 @@ class UserAccountServiceTest {
     }
 
     private List<UserAccountDTO> createUsers() {
+        return createUsers(null);
+    }
+
+    private List<UserAccountDTO> createUsers(Long num) {
         createPersons();
         List<UserAccountDTO> output = new LinkedList<>();
         List<String> rolesNames = new LinkedList<>();
         int i = 0;
         for (PersonDTO person : persons) {
-            dtoWithPassword = getDtoWithPassword();
+            dtoWithPassword = getDtoWithPassword(num == null ? null : num + i);
             rolesNames.add(ROLES.get(i).getName());
             dtoWithPassword.setRoles(rolesNames);
             dtoWithPassword.setPersonId(person.getId());
@@ -524,21 +524,19 @@ class UserAccountServiceTest {
 
     @Test
     void delete_NullId() {
+        createUsers();
         Long id = null;
-        List<UserAccountDTO> all = userAccountService.getAll();
+        all = userAccountService.getAll();
         ArgumentException e = assertThrows(ArgumentException.class,
                 () -> userAccountService.delete(id));
         assertEquals(ExceptionType.NULL_ID, e.getExceptionType());
-        assertTrue(userAccountService.getAll().containsAll(all));
+        assertEquals(all, userAccountService.getAll());
     }
 
     @Test
     void delete_NotRecordedId() {
         List<UserAccountDTO> users = createUsers();
-        long id = System.nanoTime();
-        while (users.stream().map(UserAccountDTO::getId).toList().contains(id)) {
-            id = System.nanoTime();
-        }
+        long id = getNotRecordedId(users.stream().map(UserAccountDTO::getId).toList());
         long finalId = id;
         List<UserAccountDTO> all = userAccountService.getAll();
         ResourceNotFoundException e = assertThrows(ResourceNotFoundException.class,
@@ -582,7 +580,7 @@ class UserAccountServiceTest {
         long personBeforeUpdate = dto.getPersonId();
         dto.setPersonId(users.get(index + 1).getPersonId());
         dto.setIsEnabled(true);
-        String passwordBeforeUpdate = userAccountService.getEntityById(result.getId()).getPassword();
+        String passwordBeforeUpdate = userAccountService.getEntityById(dto.getId()).getPassword();
 
         result = userAccountService.updateUsername(dto);
         all = userAccountService.getAll();
@@ -670,10 +668,7 @@ class UserAccountServiceTest {
         users = createUsers();
         all = userAccountService.getAll();
 
-        long id = System.nanoTime();
-        while (users.stream().map(UserAccountDTO::getId).toList().contains(id)) {
-            id = System.nanoTime();
-        }
+        long id = getNotRecordedId(users.stream().map(UserAccountDTO::getId).toList());
 
         dto = users.get(1);
         dto.setId(id);
@@ -746,6 +741,7 @@ class UserAccountServiceTest {
         users = createUsers();
         final int index = 1;
         dto = users.get(index);
+        users.remove(index);
         Collection<String> rolesBeforeUpdate = dto.getRoles();
         dto.setRoles(Collections.singletonList(ROLES.get(2).getName()));
         long personBeforeUpdate = dto.getPersonId();
@@ -763,8 +759,9 @@ class UserAccountServiceTest {
         assertEquals(rolesBeforeUpdate, result.getRoles());
         assertEquals(personBeforeUpdate, result.getPersonId());
         assertFalse(result.getIsEnabled());
-        assertEquals(users.size(), all.size());
+        assertEquals(1 + users.size(), all.size());
         assertTrue(all.containsAll(users));
+        assertTrue(all.contains(result));
         assertTrue(userEncoder.matches(dtoWithPassword.getPassword(),
                 userAccountService.getEntityById(result.getId()).getPassword()));
 
@@ -825,10 +822,7 @@ class UserAccountServiceTest {
         users = createUsers();
         all = userAccountService.getAll();
 
-        long id = System.nanoTime();
-        while (users.stream().map(UserAccountDTO::getId).toList().contains(id)) {
-            id = System.nanoTime();
-        }
+        long id = getNotRecordedId(users.stream().map(UserAccountDTO::getId).toList());
 
         dto = users.get(1);
         dto.setId(id);
@@ -1034,10 +1028,7 @@ class UserAccountServiceTest {
         users = createUsers();
         all = userAccountService.getAll();
 
-        long id = System.nanoTime();
-        while (users.stream().map(UserAccountDTO::getId).toList().contains(id)) {
-            id = System.nanoTime();
-        }
+        long id = getNotRecordedId(users.stream().map(UserAccountDTO::getId).toList());
 
         final int index = 1;
         dto = users.get(index);
@@ -1157,6 +1148,384 @@ class UserAccountServiceTest {
         ResourceNotFoundException e = assertThrows(ResourceNotFoundException.class,
                 () -> userAccountService.updateRoles(dto));
         assertEquals(ExceptionType.RESOURCE_NOT_FOUND, e.getExceptionType());
+        assertEquals(all, userAccountService.getAll());
+    }
+
+    @Test
+    void enable() {
+        users = createUsers();
+        List<UserAccountDTO> updated = new LinkedList<>();
+        for (UserAccountDTO user : users) {
+            dto = user;
+            users.remove(user);
+            result = userAccountService.enable(dto.getId());
+            dto.setIsEnabled(true);
+            assertEquals(dto, result);
+            updated.add(result);
+            all = userAccountService.getAll();
+            assertEquals(users.size() + updated.size(), all.size());
+            assertTrue(all.containsAll(users));
+            assertTrue(all.containsAll(updated));
+        }
+    }
+
+    @Test
+    void enable_NullId() {
+        createUsers();
+        Long id = null;
+        all = userAccountService.getAll();
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> userAccountService.enable(id));
+        assertEquals(ExceptionType.NULL_ID, e.getExceptionType());
+        assertEquals(all, userAccountService.getAll());
+    }
+
+    private long getNotRecordedId(List<Long> list) {
+        Random generator = new Random(System.nanoTime());
+        long id = generator.nextLong() & 1023;
+        while (list.contains(id)) {
+            id = generator.nextLong() & 1023;
+        }
+        return id;
+    }
+
+    @Test
+    void enable_NotRecordedId() {
+        users = createUsers();
+        long id = getNotRecordedId(users.stream().map(UserAccountDTO::getId).toList());
+        all = userAccountService.getAll();
+        ResourceNotFoundException e = assertThrows(ResourceNotFoundException.class,
+                () -> userAccountService.enable(id));
+        assertEquals(ExceptionType.RESOURCE_NOT_FOUND, e.getExceptionType());
+        assertEquals(all, userAccountService.getAll());
+    }
+
+    @Test
+    void disable() {
+        users = createUsers();
+        List<UserAccountDTO> updated = new LinkedList<>();
+        for (UserAccountDTO user : users) {
+            dto = user;
+            users.remove(user);
+            userAccountService.enable(dto.getId());
+
+            result = userAccountService.disable(dto.getId());
+            dto.setIsEnabled(false);
+            assertEquals(dto, result);
+            updated.add(result);
+            all = userAccountService.getAll();
+            assertEquals(users.size() + updated.size(), all.size());
+            assertTrue(all.containsAll(users));
+            assertTrue(all.containsAll(updated));
+        }
+    }
+
+    @Test
+    void disable_NullId() {
+        createUsers();
+        Long id = null;
+        all = userAccountService.getAll();
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> userAccountService.disable(id));
+        assertEquals(ExceptionType.NULL_ID, e.getExceptionType());
+        assertEquals(all, userAccountService.getAll());
+    }
+
+    @Test
+    void disable_NotRecordedId() {
+        users = createUsers();
+        long id = getNotRecordedId(users.stream().map(UserAccountDTO::getId).toList());
+        all = userAccountService.getAll();
+        ResourceNotFoundException e = assertThrows(ResourceNotFoundException.class,
+                () -> userAccountService.disable(id));
+        assertEquals(ExceptionType.RESOURCE_NOT_FOUND, e.getExceptionType());
+        assertEquals(all, userAccountService.getAll());
+    }
+
+    @Test
+    void getAll() {
+        assertTrue(userAccountService.getAll().isEmpty());
+
+        users = createUsers();
+        all = userAccountService.getAll();
+        assertEquals(users.size(), all.size());
+        assertTrue(all.containsAll(users));
+
+        int index;
+        while (!users.isEmpty()) {
+            index = (int) System.nanoTime() % users.size();
+            dto = userAccountService.delete(users.get(index).getId());
+            users.remove(dto);
+            all = userAccountService.getAll();
+            assertEquals(users.size(), all.size());
+            assertTrue(all.containsAll(users));
+            assertFalse(all.contains(dto));
+        }
+
+        assertTrue(userAccountService.getAll().isEmpty());
+    }
+
+    @Test
+    void getById() {
+        users = createUsers();
+        all = userAccountService.getAll();
+
+        assertFalse(users.isEmpty());
+        users.forEach(user -> assertEquals(user, userAccountService.getById(user.getId())));
+        assertEquals(all, userAccountService.getAll());
+    }
+
+    @Test
+    void getById_NullId() {
+        createUsers();
+        Long id = null;
+        all = userAccountService.getAll();
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> userAccountService.getById(id));
+        assertEquals(ExceptionType.NULL_ID, e.getExceptionType());
+        assertEquals(all, userAccountService.getAll());
+    }
+
+    @Test
+    void getById_NotRecordedId() {
+        users = createUsers();
+        long id = getNotRecordedId(users.stream().map(UserAccountDTO::getId).toList());
+        all = userAccountService.getAll();
+
+        ResourceNotFoundException e = assertThrows(ResourceNotFoundException.class,
+                () -> userAccountService.getById(id));
+        assertEquals(ExceptionType.RESOURCE_NOT_FOUND, e.getExceptionType());
+        assertEquals(all, userAccountService.getAll());
+    }
+
+    @Test
+    void getEntityById() {
+        final Long num = 2L;
+        users = createUsers(num);
+        all = userAccountService.getAll();
+
+        assertFalse(users.isEmpty());
+        for (UserAccountDTO user : users) {
+            resultEntity = userAccountService.getEntityById(user.getId());
+            assertEquals(user.getId(), resultEntity.getId());
+            assertEquals(user.getUsername(), resultEntity.getUsername());
+            assertEquals(user.getIsEnabled(), resultEntity.isEnabled());
+            assertEquals(user.getPersonId(), resultEntity.getPerson().getId());
+            assertEquals(user.getRoles().size(), resultEntity.getRoles().size());
+            assertTrue(resultEntity.getRoles().stream().map(RoleEntity::getName).toList().containsAll(user.getRoles()));
+            assertTrue(userEncoder.matches(PASSWORD + num + users.indexOf(user), resultEntity.getPassword()));
+        }
+        assertEquals(all, userAccountService.getAll());
+    }
+
+    @Test
+    void getEntityById_NullId() {
+        createUsers();
+        Long id = null;
+        all = userAccountService.getAll();
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> userAccountService.getEntityById(id));
+        assertEquals(ExceptionType.NULL_ID, e.getExceptionType());
+        assertEquals(all, userAccountService.getAll());
+    }
+
+    @Test
+    void getEntityById_NotRecordedId() {
+        users = createUsers();
+        long id = getNotRecordedId(users.stream().map(UserAccountDTO::getId).toList());
+        all = userAccountService.getAll();
+
+        ResourceNotFoundException e = assertThrows(ResourceNotFoundException.class,
+                () -> userAccountService.getEntityById(id));
+        assertEquals(ExceptionType.RESOURCE_NOT_FOUND, e.getExceptionType());
+        assertEquals(all, userAccountService.getAll());
+    }
+
+    @Test
+    void getByPersonId() {
+        users = createUsers();
+        all = userAccountService.getAll();
+
+        assertFalse(users.isEmpty());
+        users.forEach(user -> assertEquals(user, userAccountService.getByPersonId(user.getPersonId())));
+        assertEquals(all, userAccountService.getAll());
+    }
+
+    @Test
+    void getByPersonId_NullId() {
+        createUsers();
+        Long id = null;
+        all = userAccountService.getAll();
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> userAccountService.getByPersonId(id));
+        assertEquals(ExceptionType.NULL_ID, e.getExceptionType());
+        assertEquals(all, userAccountService.getAll());
+    }
+
+    @Test
+    void getByPersonId_NotRecordedId() {
+        users = createUsers();
+        long id = getNotRecordedId(persons.stream().map(PersonDTO::getId).toList());
+        all = userAccountService.getAll();
+
+        ResourceNotFoundException e = assertThrows(ResourceNotFoundException.class,
+                () -> userAccountService.getByPersonId(id));
+        assertEquals(ExceptionType.RESOURCE_NOT_FOUND, e.getExceptionType());
+        assertEquals(all, userAccountService.getAll());
+    }
+
+    @Test
+    void getByUsername() {
+        users = createUsers();
+        all = userAccountService.getAll();
+
+        assertFalse(users.isEmpty());
+        users.forEach(user -> assertEquals(user,
+                userAccountService.getByUsername(user.getUsername().toLowerCase(Locale.ROOT))));
+        assertEquals(all, userAccountService.getAll());
+    }
+
+    @Test
+    void getByUsername_NotRecordedUsername() {
+        users = createUsers();
+        all = userAccountService.getAll();
+        String username = users.get(0).getUsername() + (char) (System.nanoTime() % 20 + 'A');
+
+        ResourceNotFoundException e = assertThrows(ResourceNotFoundException.class,
+                () -> userAccountService.getByUsername(username));
+        assertEquals(ExceptionType.RESOURCE_NOT_FOUND, e.getExceptionType());
+        assertEquals(all, userAccountService.getAll());
+    }
+
+    @Test
+    void getByUsername_NullUsername() {
+        createUsers();
+        all = userAccountService.getAll();
+        String username = NULL_STR;
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> userAccountService.getByUsername(username));
+        assertEquals(ExceptionType.BLANK_USERNAME, e.getExceptionType());
+        assertEquals(all, userAccountService.getAll());
+    }
+
+    @Test
+    void getByUsername_EmptyUsername() {
+        createUsers();
+        all = userAccountService.getAll();
+        String username = EMPTY_STR;
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> userAccountService.getByUsername(username));
+        assertEquals(ExceptionType.BLANK_USERNAME, e.getExceptionType());
+        assertEquals(all, userAccountService.getAll());
+    }
+
+    @Test
+    void getByUsername_SpaceUsername() {
+        createUsers();
+        all = userAccountService.getAll();
+        String username = SPACE_STR;
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> userAccountService.getByUsername(username));
+        assertEquals(ExceptionType.BLANK_USERNAME, e.getExceptionType());
+        assertEquals(all, userAccountService.getAll());
+    }
+
+    @Test
+    void getByUsername_BlankUsername() {
+        createUsers();
+        all = userAccountService.getAll();
+        String username = BLANK_STR;
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> userAccountService.getByUsername(username));
+        assertEquals(ExceptionType.BLANK_USERNAME, e.getExceptionType());
+        assertEquals(all, userAccountService.getAll());
+    }
+
+    @Test
+    void findAllByRole() {
+        users = createUsers();
+        all = userAccountService.getAll();
+        List<UserAccountDTO> correct;
+        List<UserAccountDTO> result;
+
+        assertFalse(users.isEmpty());
+        for (RoleEntity role : ROLES) {
+            correct = users.stream().filter(user -> user.getRoles().contains(role.getName())).toList();
+            result = userAccountService.findAllByRole(role.getName().toLowerCase(Locale.ROOT));
+            assertEquals(correct.size(), result.size());
+            assertTrue(result.containsAll(correct));
+            result = userAccountService.findAllByRole(role.getName().toUpperCase(Locale.ROOT));
+            assertEquals(correct.size(), result.size());
+            assertTrue(result.containsAll(correct));
+        }
+
+        assertEquals(all, userAccountService.getAll());
+    }
+
+    @Test
+    void findAllByRole_NotRecordedRoleName() {
+        users = createUsers();
+        all = userAccountService.getAll();
+        String roleName = "ROLE_SOMETHING";
+
+        ResourceNotFoundException e = assertThrows(ResourceNotFoundException.class,
+                () -> userAccountService.findAllByRole(roleName));
+        assertEquals(ExceptionType.RESOURCE_NOT_FOUND, e.getExceptionType());
+        assertEquals(all, userAccountService.getAll());
+    }
+
+    @Test
+    void findAllByRole_NullRoleName() {
+        createUsers();
+        all = userAccountService.getAll();
+        String roleName = NULL_STR;
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> userAccountService.findAllByRole(roleName));
+        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
+        assertEquals(all, userAccountService.getAll());
+    }
+
+    @Test
+    void findAllByRole_EmptyRoleName() {
+        createUsers();
+        all = userAccountService.getAll();
+        String roleName = EMPTY_STR;
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> userAccountService.findAllByRole(roleName));
+        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
+        assertEquals(all, userAccountService.getAll());
+    }
+
+    @Test
+    void findAllByRole_SpaceRoleName() {
+        createUsers();
+        all = userAccountService.getAll();
+        String roleName = SPACE_STR;
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> userAccountService.findAllByRole(roleName));
+        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
+        assertEquals(all, userAccountService.getAll());
+    }
+
+    @Test
+    void findAllByRole_BlankRoleName() {
+        createUsers();
+        all = userAccountService.getAll();
+        String roleName = BLANK_STR;
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> userAccountService.findAllByRole(roleName));
+        assertEquals(ExceptionType.BLANK_ENTITY_NAME, e.getExceptionType());
         assertEquals(all, userAccountService.getAll());
     }
 

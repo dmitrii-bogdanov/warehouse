@@ -4,6 +4,7 @@ import bogdanov.warehouse.database.entities.RoleEntity;
 import bogdanov.warehouse.database.entities.UserEntity;
 import bogdanov.warehouse.database.enums.RecordType;
 import bogdanov.warehouse.database.enums.Role;
+import bogdanov.warehouse.database.repositories.NomenclatureRepository;
 import bogdanov.warehouse.database.repositories.RecordRepository;
 import bogdanov.warehouse.dto.*;
 import bogdanov.warehouse.exceptions.ArgumentException;
@@ -40,6 +41,8 @@ class UserAccountServiceTest {
     @Autowired
     private NomenclatureService nomenclatureService;
     @Autowired
+    private NomenclatureRepository nomenclatureRepository;
+    @Autowired
     private RoleService roleService;
     @Autowired
     private @Qualifier("user")
@@ -73,7 +76,7 @@ class UserAccountServiceTest {
     @BeforeEach
     private void clear() {
         recordRepository.deleteAll();
-        nomenclatureService.getAll().forEach(n -> nomenclatureService.delete(n.getId()));
+        nomenclatureRepository.deleteAll();
         userAccountService.getAll().forEach(a -> userAccountService.delete(a.getId()));
         personService.getAll().forEach(p -> personService.delete(p.getId()));
 
@@ -603,7 +606,7 @@ class UserAccountServiceTest {
     }
 
     @Test
-    void updateUserName_UserAccountWithPasswordDto() {
+    void updateUsername_UserAccountWithPasswordDto() {
         if (UserAccountDTO.class.isAssignableFrom(UserAccountWithPasswordDTO.class)) {
             users = createUsers();
             final int index = 1;
@@ -617,7 +620,7 @@ class UserAccountServiceTest {
             dto.setPersonId(users.get(index + 1).getPersonId());
             dto.setIsEnabled(true);
 
-            String passwordBeforeUpdate = userAccountService.getEntityById(result.getId()).getPassword();
+            String passwordBeforeUpdate = userAccountService.getEntityById(dto.getId()).getPassword();
             dtoWithPassword = convert(dto);
             dtoWithPassword.setPassword(PASSWORD + USERNAME);
 
@@ -743,8 +746,6 @@ class UserAccountServiceTest {
         users = createUsers();
         final int index = 1;
         dto = users.get(index);
-        String usernameBeforeUpdate = dto.getUsername();
-        dto.setUsername("some" + dto.getUsername());
         Collection<String> rolesBeforeUpdate = dto.getRoles();
         dto.setRoles(Collections.singletonList(ROLES.get(2).getName()));
         long personBeforeUpdate = dto.getPersonId();
@@ -758,7 +759,7 @@ class UserAccountServiceTest {
         all = userAccountService.getAll();
         dto = dtoWithPassword;
         assertEquals(dto.getId(), result.getId());
-        assertTrue(result.getUsername().equalsIgnoreCase(usernameBeforeUpdate));
+        assertTrue(result.getUsername().equalsIgnoreCase(dto.getUsername()));
         assertEquals(rolesBeforeUpdate, result.getRoles());
         assertEquals(personBeforeUpdate, result.getPersonId());
         assertFalse(result.getIsEnabled());
@@ -785,6 +786,22 @@ class UserAccountServiceTest {
         result.setIsEnabled(dto.getIsEnabled());
         result.setPersonId(dto.getPersonId());
         return result;
+    }
+
+    @Test
+    void updatePassword_WrongUsername() {
+        users = createUsers();
+        all = userAccountService.getAll();
+
+        dto = users.get(1);
+        dto.setUsername(dto.getUsername() + (char) ('A' + System.nanoTime() % 20));
+        dtoWithPassword = convert(dto);
+        dtoWithPassword.setPassword(System.nanoTime() % 10 + PASSWORD);
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> userAccountService.updatePassword(dtoWithPassword));
+        assertEquals(ExceptionType.ID_USERNAME_INCORRECT, e.getExceptionType());
+        assertEquals(all, userAccountService.getAll());
     }
 
     @Test
@@ -830,8 +847,6 @@ class UserAccountServiceTest {
         all = userAccountService.getAll();
 
         dto = users.get(1);
-        dto.setId(null);
-        dto.setUsername(dto.getUsername() + System.nanoTime() % 100);
         dtoWithPassword = convert(dto);
         dtoWithPassword.setPassword(NULL_STR);
 
@@ -847,8 +862,6 @@ class UserAccountServiceTest {
         all = userAccountService.getAll();
 
         dto = users.get(1);
-        dto.setId(null);
-        dto.setUsername(dto.getUsername() + System.nanoTime() % 100);
         dtoWithPassword = convert(dto);
         dtoWithPassword.setPassword(EMPTY_STR);
 
@@ -864,8 +877,6 @@ class UserAccountServiceTest {
         all = userAccountService.getAll();
 
         dto = users.get(1);
-        dto.setId(null);
-        dto.setUsername(dto.getUsername() + System.nanoTime() % 100);
         dtoWithPassword = convert(dto);
         dtoWithPassword.setPassword(SPACE_STR);
 
@@ -881,8 +892,6 @@ class UserAccountServiceTest {
         all = userAccountService.getAll();
 
         dto = users.get(1);
-        dto.setId(null);
-        dto.setUsername(dto.getUsername() + System.nanoTime() % 100);
         dtoWithPassword = convert(dto);
         dtoWithPassword.setPassword(NULL_STR);
 
@@ -898,8 +907,6 @@ class UserAccountServiceTest {
         all = userAccountService.getAll();
 
         dto = users.get(1);
-        dto.setId(null);
-        dto.setUsername(dto.getUsername() + System.nanoTime() % 100);
         dtoWithPassword = convert(dto);
         dtoWithPassword.setPassword(PASSWORD.substring(0, 7));
 
@@ -915,8 +922,6 @@ class UserAccountServiceTest {
         final int index = 1;
         dto = users.get(index);
         users.remove(index);
-        String usernameBeforeUpdate = dto.getUsername();
-        dto.setUsername(dto.getUsername() + System.nanoTime() % 25);
         dto.setRoles(Collections.singletonList(ROLES.get(index + 1).getName()));
         long personBeforeUpdate = dto.getPersonId();
         dto.setPersonId(users.get(index + 1).getPersonId());
@@ -926,7 +931,7 @@ class UserAccountServiceTest {
         result = userAccountService.updateRoles(dto);
         all = userAccountService.getAll();
         assertEquals(dto.getId(), result.getId());
-        assertTrue(result.getUsername().equalsIgnoreCase(usernameBeforeUpdate));
+        assertTrue(result.getUsername().equalsIgnoreCase(dto.getUsername()));
         assertEquals(dto.getRoles().size(), result.getRoles().size());
         assertTrue(result.getRoles().containsAll(dto.getRoles()));
         assertEquals(personBeforeUpdate, result.getPersonId());
@@ -953,8 +958,7 @@ class UserAccountServiceTest {
             final int index = 1;
             dto = users.get(index);
             users.remove(index);
-            String usernameBeforeUpdate = dto.getUsername();
-            dto.setUsername(dto.getUsername() + System.nanoTime() % 25);
+
             dto.setRoles(Collections.singletonList(ROLES.get(index + 1).getName()));
             long personBeforeUpdate = dto.getPersonId();
             dto.setPersonId(users.get(index + 1).getPersonId());
@@ -968,7 +972,7 @@ class UserAccountServiceTest {
             all = userAccountService.getAll();
             dto = dtoWithPassword;
             assertEquals(dto.getId(), result.getId());
-            assertTrue(result.getUsername().equalsIgnoreCase(usernameBeforeUpdate));
+            assertTrue(result.getUsername().equalsIgnoreCase(dto.getUsername()));
             assertEquals(dto.getRoles().size(), result.getRoles().size());
             assertTrue(result.getRoles().containsAll(dto.getRoles()));
             assertEquals(personBeforeUpdate, result.getPersonId());
@@ -991,6 +995,22 @@ class UserAccountServiceTest {
             assertTrue(result.getIsEnabled());
             assertEquals(passwordBeforeUpdate, userAccountService.getEntityById(result.getId()).getPassword());
         }
+    }
+
+    @Test
+    void updateRoles_WrongUsername() {
+        users = createUsers();
+        all = userAccountService.getAll();
+
+        final int index = 1;
+        dto = users.get(index);
+        dto.setRoles(Collections.singletonList(ROLES.get(index + 1).getName()));
+        dto.setUsername(dto.getUsername() + (char) (System.nanoTime() % 20));
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> userAccountService.updateRoles(dto));
+        assertEquals(ExceptionType.ID_USERNAME_INCORRECT, e.getExceptionType());
+        assertEquals(all, userAccountService.getAll());
     }
 
     @Test
@@ -1067,6 +1087,7 @@ class UserAccountServiceTest {
 
         final int index = 1;
         dto = users.get(index);
+        dto.setRoles(new LinkedList<>(dto.getRoles()));
         dto.getRoles().add(NULL_STR);
 
         ArgumentException e = assertThrows(ArgumentException.class,
@@ -1082,6 +1103,7 @@ class UserAccountServiceTest {
 
         final int index = 1;
         dto = users.get(index);
+        dto.setRoles(new LinkedList<>(dto.getRoles()));
         dto.getRoles().add(EMPTY_STR);
 
         ArgumentException e = assertThrows(ArgumentException.class,
@@ -1097,6 +1119,7 @@ class UserAccountServiceTest {
 
         final int index = 1;
         dto = users.get(index);
+        dto.setRoles(new LinkedList<>(dto.getRoles()));
         dto.getRoles().add(SPACE_STR);
 
         ArgumentException e = assertThrows(ArgumentException.class,
@@ -1112,6 +1135,7 @@ class UserAccountServiceTest {
 
         final int index = 1;
         dto = users.get(index);
+        dto.setRoles(new LinkedList<>(dto.getRoles()));
         dto.getRoles().add(BLANK_STR);
 
         ArgumentException e = assertThrows(ArgumentException.class,
@@ -1127,6 +1151,7 @@ class UserAccountServiceTest {
 
         final int index = 1;
         dto = users.get(index);
+        dto.setRoles(new LinkedList<>(dto.getRoles()));
         dto.getRoles().add("ROLE_SOMETHING");
 
         ResourceNotFoundException e = assertThrows(ResourceNotFoundException.class,

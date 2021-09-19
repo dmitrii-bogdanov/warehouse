@@ -75,13 +75,13 @@ public class UserAccountServiceImpl implements UserAccountService {
 
     private void checkRoleName(String roleName) {
         if (Strings.isBlank(roleName)) {
-            throw new ArgumentException(ExceptionType.BLANK_ENTITY_NAME.setEntity(ROLE).setFieldName(NAME));
+            throw new ArgumentException(ExceptionType.BLANK_ENTITY_NAME.setEntity(ROLE));
         }
     }
 
     private void checkRolesNotEmpty(Collection list) {
         if (list == null || list.isEmpty()) {
-            throw new ArgumentException(ExceptionType.BLANK_ENTITY_NAME.setEntity(ROLE).setFieldName(NAME));
+            throw new ArgumentException(ExceptionType.BLANK_ENTITY_NAME.setEntity(ROLE));
         }
     }
 

@@ -54,6 +54,12 @@ public class UserAccountServiceImpl implements UserAccountService {
         }
     }
 
+    private void checkRolesNotEmpty(Collection list) {
+        if (list == null || list.isEmpty()) {
+            throw new ArgumentException(ExceptionType.BLANK_ENTITY_NAME.setEntity(ROLE).setFieldName(NAME));
+        }
+    }
+
     private void checkId(Long id) {
         if (id == null) {
             throw new ArgumentException(ExceptionType.NULL_ID);
@@ -79,6 +85,12 @@ public class UserAccountServiceImpl implements UserAccountService {
                             .addComment(NOT_VALID_PASSWORD_COMMENT));
         }
     }
+
+    private void checkDtoNotNull(UserAccountDTO dto) {
+        if (dto == null) {
+            throw new ArgumentException(ExceptionType.NO_OBJECT_WAS_PASSED);
+        }
+    }
     //endregion
 
     @Override
@@ -88,9 +100,11 @@ public class UserAccountServiceImpl implements UserAccountService {
 
     @Override
     public UserAccountDTO add(UserAccountWithPasswordDTO user) {
+        checkDtoNotNull(user);
         checkPassword(user.getPassword());
         UserEntity entity = mapper.convert(user);
         checkUsername(entity.getUsername());
+        checkRolesNotEmpty(entity.getRoles());
         entity.setPerson(personService.getEntityById(user.getId()));
         return mapper.convert(userRepository.save(entity), UserAccountDTO.class);
     }
@@ -109,6 +123,7 @@ public class UserAccountServiceImpl implements UserAccountService {
 
     @Override
     public UserAccountDTO updatePassword(UserAccountWithPasswordDTO user) {
+        checkDtoNotNull(user);
         UserEntity entity = getEntityById(user.getId());
         checkIdAndUsername(user, entity);
         checkPassword(user.getPassword());
@@ -118,14 +133,17 @@ public class UserAccountServiceImpl implements UserAccountService {
 
     @Override
     public UserAccountDTO updateRoles(UserAccountDTO user) {
+        checkDtoNotNull(user);
         UserEntity entity = getEntityById(user.getId());
         checkIdAndUsername(user, entity);
         entity.setRoles(mapper.convert(user).getRoles());
+        checkRolesNotEmpty(entity.getRoles());
         return mapper.convert(userRepository.save(entity), UserAccountDTO.class);
     }
 
     @Override
     public UserAccountDTO updateUsername(UserAccountDTO user) {
+        checkDtoNotNull(user);
         UserEntity entity = getEntityById(user.getId());
         String newUsername = mapper.convert(user).getUsername();
         checkUsername(newUsername);
@@ -155,12 +173,12 @@ public class UserAccountServiceImpl implements UserAccountService {
         return userRepository.findAll().stream().map(e -> mapper.convert(e, UserAccountDTO.class)).toList();
     }
 
-    @Override
-    public List<UserAccountDTO> getAllEnabled() {
-        final boolean isEnabled = true;
-        return userRepository.findAllByEnabled(isEnabled)
-                .stream().map(e -> mapper.convert(e, UserAccountDTO.class)).toList();
-    }
+//    @Override
+//    public List<UserAccountDTO> getAllEnabled() {
+//        final boolean isEnabled = true;
+//        return userRepository.findAllByEnabled(isEnabled)
+//                .stream().map(e -> mapper.convert(e, UserAccountDTO.class)).toList();
+//    }
 
     @Override
     public UserAccountDTO getById(Long id) {

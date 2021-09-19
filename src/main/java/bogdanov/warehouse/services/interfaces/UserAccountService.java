@@ -33,7 +33,7 @@ public interface UserAccountService extends UserDetailsService {
 
     List<UserAccountDTO> getAll();
 
-    List<UserAccountDTO> getAllEnabled();
+//    List<UserAccountDTO> getAllEnabled();
 
     UserAccountDTO getById(Long id);
 

@@ -652,6 +652,20 @@ class UserAccountServiceTest {
     }
 
     @Test
+    void updateUsername_AlreadyRecordedUsername() {
+        users = createUsers();
+        all = userAccountService.getAll();
+
+        dto = users.get(1);
+        dto.setUsername(users.get(0).getUsername());
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> userAccountService.updateUsername(dto));
+        assertEquals(ExceptionType.ALREADY_REGISTERED_USERNAME, e.getExceptionType());
+        assertEquals(all, userAccountService.getAll());
+    }
+
+    @Test
     void updateUsername_NullId() {
         users = createUsers();
         all = userAccountService.getAll();
@@ -1160,7 +1174,7 @@ class UserAccountServiceTest {
         List<UserAccountDTO> updated = new LinkedList<>();
 
         while (!users.isEmpty()) {
-            dto = users.get((int) System.nanoTime() % users.size());
+            dto = users.get((int) (System.nanoTime() % users.size()));
             users.remove(dto);
             result = userAccountService.enable(dto.getId());
             dto.setIsEnabled(true);
@@ -1210,7 +1224,7 @@ class UserAccountServiceTest {
         List<UserAccountDTO> updated = new LinkedList<>();
 
         while (!users.isEmpty()) {
-            dto = users.get((int) System.nanoTime() % users.size());
+            dto = users.get((int) (System.nanoTime() % users.size()));
             users.remove(dto);
             userAccountService.enable(dto.getId());
 

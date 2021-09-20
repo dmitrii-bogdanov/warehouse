@@ -3,6 +3,7 @@ package bogdanov.warehouse.services.implementations;
 import bogdanov.warehouse.database.entities.UserEntity;
 import bogdanov.warehouse.database.repositories.UserRepository;
 import bogdanov.warehouse.dto.UserDTO;
+import bogdanov.warehouse.exceptions.ArgumentException;
 import bogdanov.warehouse.exceptions.ResourceNotFoundException;
 import bogdanov.warehouse.exceptions.enums.ExceptionType;
 import bogdanov.warehouse.services.interfaces.PersonService;
@@ -25,10 +26,6 @@ public class UserServiceImpl implements UserService {
     private final Mapper mapper;
     private final UserAccountService accountService;
 
-    private static final String USER = "User";
-    private static final String ID = "id";
-    private static final String PERSON = "Person";
-
     @Override
     public List<UserDTO> getAll() {
         return userRepository.findAll().stream().map(mapper::convert).toList();
@@ -46,22 +43,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO getByPersonId(Long personId) {
-        return mapper.convert(userRepository.findByPerson_Id(personId)
-                .orElseThrow(() -> new ResourceNotFoundException(PERSON, ID, personId)));
-    }
-
-    @Override
-    public List<UserDTO> findAllByFullName(String firstname, String patronymic, String lastname) {
-        return userRepository
-                .findAllByPerson_FirstnameIgnoreCaseAndPerson_PatronymicIgnoreCaseAndPerson_LastnameIgnoreCase(
-                        firstname, patronymic, lastname)
-                .stream().map(mapper::convert).toList();
-    }
-
-    @Override
-    public List<UserDTO> findAllByPosition(String position) {
-        return userRepository.findAllByPerson_Position_NameIgnoreCase(position)
-                .stream().map(mapper::convert).toList();
+        return mapper.convert(accountService.getByPersonId(personId), UserDTO.class);
     }
 
 }

@@ -40,16 +40,4 @@ public class UserRestController {
         return userService.getByPersonId(personId);
     }
 
-    @GetMapping(params = "position")
-    public List<UserDTO> getAllByPosition(@RequestParam String position) {
-        return userService.findAllByPosition(position);
-    }
-
-    @GetMapping(params = {"search","firstname", "patronymic", "lastname"})
-    public List<UserDTO> getAllByFullName(@RequestParam String firstname,
-                                          @RequestParam String patronymic,
-                                          @RequestParam String lastname) {
-        return userService.findAllByFullName(firstname, patronymic, lastname);
-    }
-
 }

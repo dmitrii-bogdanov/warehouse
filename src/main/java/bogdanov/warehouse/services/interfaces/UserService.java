@@ -23,8 +23,4 @@ public interface UserService{
 
     UserDTO getByPersonId(Long id);
 
-    List<UserDTO> findAllByFullName(String firstname, String patronymic, String lastname);
-
-    List<UserDTO> findAllByPosition(String position);
-
 }

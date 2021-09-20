@@ -43,9 +43,13 @@ public class Mapper {
     }
     //endregion
 
-    //region UserDTO <-- UserEntity
+    //region UserDTO <-- UserEntity, UserDTO <- UserAccountDTO
     public UserDTO convert(UserEntity user) {
         return userMapper.convert(user);
+    }
+
+    public UserDTO convert(UserAccountDTO account, Class<? extends UserDTO> dto) {
+        return userMapper.convert(account);
     }
     //endregion
 

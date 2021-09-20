@@ -2,39 +2,23 @@ package bogdanov.warehouse.services.mappers;
 
 import bogdanov.warehouse.database.entities.PersonEntity;
 import bogdanov.warehouse.database.entities.UserEntity;
+import bogdanov.warehouse.dto.UserAccountDTO;
 import bogdanov.warehouse.dto.UserDTO;
+import bogdanov.warehouse.services.interfaces.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
 public class UserMapper {
 
-//    UserEntity convert(UserDTO user) {
-//        UserEntity userEntity = new UserEntity();
-//
-//        userEntity.setId(user.getId());
-//        userEntity.setUsername(user.getUsername());
-//
-//        return userEntity;
-//    }
-
     UserDTO convert(UserEntity user) {
-        UserDTO userDTO = new UserDTO();
+        return user.getPerson() == null
+                ? new UserDTO(user.getId(), user.getUsername(), null)
+                : new UserDTO(user.getId(), user.getUsername(), user.getPerson().getId());
+    }
 
-        userDTO.setId(user.getId());
-        userDTO.setUsername(user.getUsername());
-
-        PersonEntity person = user.getPerson();
-
-        if (person != null) {
-            userDTO.setFirstname(person.getFirstname());
-            userDTO.setLastname(person.getLastname());
-            userDTO.setPatronymic(person.getPatronymic());
-            if (person.getPosition() != null) {
-                userDTO.setPosition(person.getPosition().getName());
-            }
-        }
-
-        return userDTO;
+    UserDTO convert(UserAccountDTO account) {
+        return new UserDTO(account.getId(), account.getUsername(), account.getPersonId());
     }
 
 }

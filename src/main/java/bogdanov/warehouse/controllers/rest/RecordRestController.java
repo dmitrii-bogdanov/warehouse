@@ -1,22 +1,16 @@
 package bogdanov.warehouse.controllers.rest;
 
 import bogdanov.warehouse.dto.RecordDTO;
-import bogdanov.warehouse.dto.RecordInputDTO;
-import bogdanov.warehouse.dto.RecordOutputDTO;
 import bogdanov.warehouse.dto.ReverseRecordDTO;
 import bogdanov.warehouse.services.interfaces.RecordService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Locale;
 
 @RequiredArgsConstructor
 @RestController
@@ -40,7 +34,7 @@ public class RecordRestController {
     }
 
     @PostMapping
-    public RecordDTO addRecord(@RequestBody RecordInputDTO record, Principal user) {
+    public RecordDTO addRecord(@RequestBody RecordDTO record, Principal user) {
         return recordService.add(record, user.getName());
     }
 
@@ -50,7 +44,7 @@ public class RecordRestController {
     }
 
     @PutMapping("/{id}")
-    public RecordDTO updateRecord(@PathVariable Long id, Principal user, @RequestBody RecordInputDTO record) {
+    public RecordDTO updateRecord(@PathVariable Long id, Principal user, @RequestBody RecordDTO record) {
         return recordService.update(id, user.getName(), record);
     }
 

@@ -45,10 +45,10 @@ public class RecordServiceTest {
     private NomenclatureRepository nomenclatureRepository;
 
     private UserAccountDTO testUser = null;
-    private RecordInputDTO input = null;
+    private RecordDTO input = null;
     private RecordDTO dto = null;
     private RecordDTO result = null;
-    private RecordOutputDTO output = null;
+    private RecordDTO output = null;
 
     private List<PersonDTO> persons = new LinkedList<>();
     private List<UserAccountDTO> users = new LinkedList<>();
@@ -161,6 +161,7 @@ public class RecordServiceTest {
         final long releaseMult = 3;
         int i = 1;
         for (NomenclatureDTO n : nomenclature) {
+            input = new RecordDTO();
             input.setType(RECEPTION);
             input.setAmount(i * receptionMult);
             input.setNomenclatureId(n.getId());
@@ -172,6 +173,7 @@ public class RecordServiceTest {
             input.setAmount(records.get(i - 3).getAmount() / 3 + i * releaseMult);
             input.setNomenclatureId(n.getId());
             records.add(recordService.add(input, users.get(6 - i).getUsername()));
+            i++;
         }
         input = null;
     }
@@ -207,14 +209,14 @@ public class RecordServiceTest {
         assertTrue(recordService.getAll().isEmpty());
 
         for (int i = 0; i < 10; i++) {
-            input = new RecordInputDTO();
+            input = new RecordDTO();
             input.setAmount(recordAmount = rand(20));
             input.setType(RECEPTION.toLowerCase(Locale.ROOT));
             nomenclatureDTO = nomenclature.get(rand(nomenclature));
             input.setNomenclatureId(nomenclatureDTO.getId());
             amount = nomenclatureDTO.getAmount();
             user = users.get(rand(users));
-            output = (RecordOutputDTO) recordService.add(input, user.getUsername().toLowerCase(Locale.ROOT));
+            output = recordService.add(input, user.getUsername().toLowerCase(Locale.ROOT));
             records.add(output);
             assertTrue(output.getId() > 0);
             assertTrue(output.getType().equalsIgnoreCase(input.getType()));
@@ -226,18 +228,22 @@ public class RecordServiceTest {
             assertTrue(output.getTime().isBefore(LocalDateTime.now()));
             all = recordService.getAll();
             assertEquals(records.size(), all.size());
+            log.info("records");
+            records.forEach(r -> log.info(r.toString()));
+            log.info("getAll");
+            all.forEach(r -> log.info(r.toString()));
             assertTrue(all.containsAll(records));
         }
 
         for (int i = 0; i < 10; i++) {
-            input = new RecordInputDTO();
+            input = new RecordDTO();
             nomenclatureDTO = nomenclature.get(rand(nomenclature));
             input.setNomenclatureId(nomenclatureDTO.getId());
             amount = nomenclatureDTO.getAmount();
             input.setAmount(recordAmount = rand((int) amount));
             input.setType(RELEASE.toLowerCase(Locale.ROOT));
             user = users.get(rand(users));
-            output = (RecordOutputDTO) recordService.add(input, user.getUsername().toLowerCase(Locale.ROOT));
+            output = recordService.add(input, user.getUsername().toLowerCase(Locale.ROOT));
             records.add(output);
             assertTrue(output.getId() > 0);
             assertTrue(output.getType().equalsIgnoreCase(input.getType()));
@@ -252,7 +258,7 @@ public class RecordServiceTest {
             assertTrue(all.containsAll(records));
         }
 
-        input = new RecordInputDTO();
+        input = new RecordDTO();
         long id = records.get(0).getId();
         input.setId(id);
         nomenclatureDTO = nomenclature.get(rand(nomenclature));
@@ -261,7 +267,7 @@ public class RecordServiceTest {
         input.setAmount(recordAmount = rand(10));
         input.setType(RECEPTION.toUpperCase(Locale.ROOT));
         user = users.get(rand(users));
-        output = (RecordOutputDTO) recordService.add(input, user.getUsername().toLowerCase(Locale.ROOT));
+        output = recordService.add(input, user.getUsername().toLowerCase(Locale.ROOT));
         records.add(output);
         assertTrue(output.getId() > 0);
         assertNotEquals(id, output.getId());
@@ -276,7 +282,7 @@ public class RecordServiceTest {
         assertEquals(records.size(), all.size());
         assertTrue(all.containsAll(records));
 
-        input = new RecordInputDTO();
+        input = new RecordDTO();
         id = records.get(0).getId();
         input.setId(id);
         nomenclatureDTO = nomenclature.get(rand(nomenclature));
@@ -285,7 +291,7 @@ public class RecordServiceTest {
         input.setAmount(recordAmount = rand((int) amount));
         input.setType(RELEASE.toUpperCase(Locale.ROOT));
         user = users.get(rand(users));
-        output = (RecordOutputDTO) recordService.add(input, user.getUsername().toLowerCase(Locale.ROOT));
+        output = recordService.add(input, user.getUsername().toLowerCase(Locale.ROOT));
         records.add(output);
         assertTrue(output.getId() > 0);
         assertNotEquals(id, output.getId());
@@ -316,7 +322,7 @@ public class RecordServiceTest {
     @Test
     void add_NullNomenclatureId() {
         createNomenclature();
-        input = new RecordInputDTO();
+        input = new RecordDTO();
         input.setType(RECEPTION);
         input.setAmount(20L);
         input.setNomenclatureId(null);
@@ -340,7 +346,7 @@ public class RecordServiceTest {
     @Test
     void add_NotRecordedNomenclatureId() {
         createNomenclature();
-        input = new RecordInputDTO();
+        input = new RecordDTO();
         input.setType(RECEPTION);
         input.setAmount(20L);
         input.setNomenclatureId(
@@ -357,7 +363,7 @@ public class RecordServiceTest {
     @Test
     void add_NullUsername() {
         createNomenclature();
-        input = new RecordInputDTO();
+        input = new RecordDTO();
         input.setType(RECEPTION);
         input.setAmount(20L);
         input.setNomenclatureId(nomenclature.get(0).getId());
@@ -372,7 +378,7 @@ public class RecordServiceTest {
     @Test
     void add_EmptyUsername() {
         createNomenclature();
-        input = new RecordInputDTO();
+        input = new RecordDTO();
         input.setType(RECEPTION);
         input.setAmount(20L);
         input.setNomenclatureId(nomenclature.get(0).getId());
@@ -387,7 +393,7 @@ public class RecordServiceTest {
     @Test
     void add_SpaceUsername() {
         createNomenclature();
-        input = new RecordInputDTO();
+        input = new RecordDTO();
         input.setType(RECEPTION);
         input.setAmount(20L);
         input.setNomenclatureId(nomenclature.get(0).getId());
@@ -402,7 +408,7 @@ public class RecordServiceTest {
     @Test
     void add_BlankUsername() {
         createNomenclature();
-        input = new RecordInputDTO();
+        input = new RecordDTO();
         input.setType(RECEPTION);
         input.setAmount(20L);
         input.setNomenclatureId(nomenclature.get(0).getId());
@@ -417,7 +423,7 @@ public class RecordServiceTest {
     @Test
     void add_NotRegisteredUsername() {
         createNomenclature();
-        input = new RecordInputDTO();
+        input = new RecordDTO();
         input.setType(RECEPTION);
         input.setAmount(20L);
         input.setNomenclatureId(nomenclature.get(0).getId());
@@ -432,7 +438,7 @@ public class RecordServiceTest {
     @Test
     void add_NullType() {
         createNomenclature();
-        input = new RecordInputDTO();
+        input = new RecordDTO();
         input.setType(NULL_STR);
         input.setAmount(20L);
         input.setNomenclatureId(nomenclature.get(0).getId());
@@ -448,7 +454,7 @@ public class RecordServiceTest {
     @Test
     void add_EmptyType() {
         createNomenclature();
-        input = new RecordInputDTO();
+        input = new RecordDTO();
         input.setType(EMPTY_STR);
         input.setAmount(20L);
         input.setNomenclatureId(nomenclature.get(0).getId());
@@ -464,7 +470,7 @@ public class RecordServiceTest {
     @Test
     void add_SpaceType() {
         createNomenclature();
-        input = new RecordInputDTO();
+        input = new RecordDTO();
         input.setType(SPACE_STR);
         input.setAmount(20L);
         input.setNomenclatureId(nomenclature.get(0).getId());
@@ -480,7 +486,7 @@ public class RecordServiceTest {
     @Test
     void add_BlankType() {
         createNomenclature();
-        input = new RecordInputDTO();
+        input = new RecordDTO();
         input.setType(BLANK_STR);
         input.setAmount(20L);
         input.setNomenclatureId(nomenclature.get(0).getId());
@@ -496,7 +502,7 @@ public class RecordServiceTest {
     @Test
     void add_WrongType() {
         createNomenclature();
-        input = new RecordInputDTO();
+        input = new RecordDTO();
         input.setType("Something");
         input.setAmount(20L);
         input.setNomenclatureId(nomenclature.get(0).getId());
@@ -512,7 +518,7 @@ public class RecordServiceTest {
     @Test
     void add_ReceptionNullAmount() {
         createNomenclature();
-        input = new RecordInputDTO();
+        input = new RecordDTO();
         input.setType(RECEPTION);
         input.setAmount(null);
         input.setNomenclatureId(nomenclature.get(0).getId());
@@ -528,7 +534,7 @@ public class RecordServiceTest {
     @Test
     void add_ReceptionNegativeAmount() {
         createNomenclature();
-        input = new RecordInputDTO();
+        input = new RecordDTO();
         input.setType(RECEPTION);
         input.setAmount((long) -rand(10));
         input.setNomenclatureId(nomenclature.get(0).getId());
@@ -544,7 +550,7 @@ public class RecordServiceTest {
     @Test
     void add_ReceptionZeroAmount() {
         createNomenclature();
-        input = new RecordInputDTO();
+        input = new RecordDTO();
         input.setType(RECEPTION);
         input.setAmount(0L);
         input.setNomenclatureId(nomenclature.get(0).getId());
@@ -560,7 +566,7 @@ public class RecordServiceTest {
     @Test
     void add_ReleaseNullAmount() {
         createNomenclature();
-        input = new RecordInputDTO();
+        input = new RecordDTO();
         input.setType(RELEASE);
         input.setAmount(null);
         input.setNomenclatureId(nomenclature.get(0).getId());
@@ -576,7 +582,7 @@ public class RecordServiceTest {
     @Test
     void add_ReleaseNegativeAmount() {
         createNomenclature();
-        input = new RecordInputDTO();
+        input = new RecordDTO();
         input.setType(RELEASE);
         input.setAmount((long) -rand(10));
         input.setNomenclatureId(nomenclature.get(0).getId());
@@ -592,7 +598,7 @@ public class RecordServiceTest {
     @Test
     void add_ReleaseZeroAmount() {
         createNomenclature();
-        input = new RecordInputDTO();
+        input = new RecordDTO();
         input.setType(RELEASE);
         input.setAmount(0L);
         input.setNomenclatureId(nomenclature.get(0).getId());
@@ -609,7 +615,7 @@ public class RecordServiceTest {
     void add_LongValueOverfow() {
         createNomenclature();
         String username = users.get(0).getUsername();
-        input = new RecordInputDTO();
+        input = new RecordDTO();
         input.setType(RECEPTION);
         input.setAmount(Long.MAX_VALUE / 2 + 1);
         input.setNomenclatureId(nomenclature.get(0).getId());
@@ -625,7 +631,7 @@ public class RecordServiceTest {
     @Test
     void add_ReleaseNotEnoughAmount() {
         createNomenclature();
-        input = new RecordInputDTO();
+        input = new RecordDTO();
         input.setType(RELEASE);
         NomenclatureDTO nomenclatureDTO = nomenclature.get(0);
         input.setNomenclatureId(nomenclatureDTO.getId());
@@ -651,17 +657,17 @@ public class RecordServiceTest {
         UserAccountDTO user;
         for (RecordDTO record : records) {
             user = users.get(rand(users));
-            output = (RecordOutputDTO) recordService.revert(record.getId(), user.getUsername());
+            output = recordService.revert(record.getId(), user.getUsername());
             reverseGeneratedRecords.add(output);
             assertNotEquals(record.getId(), output.getId());
             assertTrue(output.getId() > 0);
             assertEquals(user.getId(), output.getUserId());
             assertNotEquals(record.getType(), output.getType());
             assertEquals(record.getAmount(), output.getAmount());
-            assertEquals(((RecordOutputDTO) record).getNomenclatureId(), output.getNomenclatureId());
+            assertEquals(record.getNomenclatureId(), output.getNomenclatureId());
             assertTrue(output.getTime().isBefore(LocalDateTime.now()));
             assertTrue(output.getTime().isAfter(LocalDateTime.now().minusMinutes(1)));
-            assertNotEquals(((RecordOutputDTO) record).getTime(), output.getTime());
+            assertNotEquals(record.getTime(), output.getTime());
 
             tmp = recordService.getAllReverseRecords();
             assertEquals(reverseRecords.size() + 1, tmp.size());

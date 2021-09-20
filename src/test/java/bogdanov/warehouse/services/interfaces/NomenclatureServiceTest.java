@@ -846,14 +846,14 @@ class NomenclatureServiceTest {
 
         NomenclatureDTO deleted = dto.get(1);
 
-        RecordInputDTO record = new RecordInputDTO();
+        RecordDTO record = new RecordDTO();
         record.setType(RecordType.RECEPTION.name());
         record.setAmount(2L);
         record.setNomenclatureId(deleted.getId());
 
         assertNotNull(recordService.add(record, username));
 
-        record = new RecordInputDTO();
+        record = new RecordDTO();
         record.setType(RecordType.RELEASE.name());
         record.setAmount(2L);
         record.setNomenclatureId(deleted.getId());

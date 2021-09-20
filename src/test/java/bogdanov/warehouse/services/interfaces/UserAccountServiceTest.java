@@ -557,7 +557,7 @@ class UserAccountServiceTest {
         nomenclature.setName("NOMENCLATURE_NAME");
         nomenclature = nomenclatureService.createNew(
                 Collections.singletonList(nomenclature)).get(0);
-        RecordInputDTO recordInput = new RecordInputDTO();
+        RecordDTO recordInput = new RecordDTO();
         recordInput.setAmount(2L);
         recordInput.setType(RecordType.RECEPTION.name());
         recordInput.setNomenclatureId(nomenclature.getId());

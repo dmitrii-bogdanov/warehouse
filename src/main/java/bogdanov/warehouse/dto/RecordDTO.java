@@ -12,8 +12,11 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class RecordDTO {
 
-    protected Long id;
-    protected String type;
-    protected Long amount;
+    private Long id;
+    private String type;
+    private Long amount;
+    private Long nomenclatureId;
+    private LocalDateTime time;
+    private Long userId;
 
 }

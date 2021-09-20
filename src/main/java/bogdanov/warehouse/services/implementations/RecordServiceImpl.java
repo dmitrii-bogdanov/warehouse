@@ -6,7 +6,6 @@ import bogdanov.warehouse.database.repositories.RecordRepository;
 import bogdanov.warehouse.database.repositories.ReverseRecordRepository;
 import bogdanov.warehouse.dto.NomenclatureDTO;
 import bogdanov.warehouse.dto.RecordDTO;
-import bogdanov.warehouse.dto.RecordInputDTO;
 import bogdanov.warehouse.dto.ReverseRecordDTO;
 import bogdanov.warehouse.exceptions.ArgumentException;
 import bogdanov.warehouse.exceptions.ResourceNotFoundException;
@@ -47,7 +46,7 @@ public class RecordServiceImpl implements RecordService {
     }
 
     @Override
-    public RecordDTO add(RecordInputDTO record, String username) {
+    public RecordDTO add(RecordDTO record, String username) {
         checkDtoNotNull(record);
         RecordEntity entity = mapper.convert(record);
         entity.setNomenclature(nomenclatureService.getEntityById(record.getNomenclatureId()));
@@ -86,7 +85,7 @@ public class RecordServiceImpl implements RecordService {
     }
 
     @Override
-    public RecordDTO update(Long id, String username, RecordInputDTO record) {
+    public RecordDTO update(Long id, String username, RecordDTO record) {
         revert(id, username);
         return add(record, username);
     }

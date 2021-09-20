@@ -67,7 +67,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
     private void checkAmountAvailable(Long amount, NomenclatureEntity entity) {
         checkAmountPositive(amount);
         if ((entity.getAmount() < amount)) {
-            throw new ArgumentException(ExceptionType.NOT_ENOUGH_AMOUNT.setId(entity.getId()));
+            throw new ArgumentException(ExceptionType.NOT_ENOUGH_AMOUNT.setId(entity.getId()).setFieldValue(amount));
         }
     }
 

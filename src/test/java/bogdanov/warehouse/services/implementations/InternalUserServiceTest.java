@@ -46,8 +46,8 @@ class InternalUserServiceTest {
     private String SPACE_STR = " ";
     private String BLANK_STR = "\t \t\t\t   \t \t\t ";
 
-    private List<PersonDTO> persons;
-    private List<RoleEntity> roles;
+    private List<PersonDTO> persons = new LinkedList<>();
+    private List<RoleEntity> roles = new LinkedList<>();
 
     @BeforeEach
     private void clear() {

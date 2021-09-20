@@ -39,10 +39,10 @@ public class NomenclatureServiceImpl implements NomenclatureService {
     private static final String MAX_AMOUNT = "maxAmount";
     private static final String UNKNOWN_FIELD = "unknown field";
     private static final String REGEX_TO_DELETE_NESTED_EXCEPTIONS = ";.*";
+    private static final String SEMICOLON = ";";
     private static final String APOSTROPHE = "\"";
     private static final String SPACE_STR = " ";
     private static final String COMMENT_FOR_GET_BY_CODE_NULL = "If system allows to use blank codes, try ?search?code=null";
-
 
     //region Utility Methods
     private boolean isCodeNotReserved(NomenclatureDTO dto) {
@@ -111,6 +111,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
         if ((index = sb.indexOf(DATA_INTEGRITY_EXCEPTION_SUBSTRING)) > -1) {
             ExceptionType type = null;
             sb.delete(0, index + DATA_INTEGRITY_EXCEPTION_SUBSTRING.length());
+            sb.delete(sb.indexOf(SEMICOLON), sb.length());
             long id = Long.parseLong(sb.substring(1 + sb.lastIndexOf(SPACE_STR), sb.indexOf(APOSTROPHE)));//was 13
             Optional<NomenclatureEntity> entity = nomenclatureRepository.findById(id);
             String field = UNKNOWN_FIELD;

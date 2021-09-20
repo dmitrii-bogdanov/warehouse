@@ -45,6 +45,9 @@ public class RecordServiceTest {
     private List<UserAccountDTO> accounts = new LinkedList<>();
     private List<RecordDTO> all = new LinkedList<>();
     private List<NomenclatureDTO> nomenclature = new LinkedList<>();
+    private List<RecordDTO> records = new LinkedList<>();
+    private List<ReverseRecordDTO> reverseRecords = new LinkedList<>();
+    private List<RecordDTO> reverseGeneratedRecords = new LinkedList<>();
 
     private final int PERSON_LIST_SIZE = 3; //>=3
     private final String RECEPTION = RecordType.RECEPTION.name();
@@ -53,16 +56,14 @@ public class RecordServiceTest {
     private final String EMPTY_STR = Strings.EMPTY;
     private final String SPACE_STR = " ";
     private final String BLANK_STR = "\t \t\t   \t\t\t  \t      ";
-    
+
     @BeforeEach
     private void clear() {
         reverseRecordRepository.deleteAll();
         recordRepository.deleteAll();
-        nomenclature.forEach(n -> nomenclatureService.subtractAmount(n));
-        accounts.stream().filter(account -> !account.equals(testUser))
-                .map(UserAccountDTO::getId)
-                .forEach(userAccountService::delete);
-        accounts.clear();
+        records.clear();
+        reverseRecords.clear();
+        reverseGeneratedRecords.clear();
         all.clear();
     }
 
@@ -89,25 +90,27 @@ public class RecordServiceTest {
     }
 
     private void createUsers() {
-        createPersons();
-        String username = "username";
-        String password = "password";
-        List<String> roleList = Arrays.stream(Role.values()).map(Role::name).toList();
-        List<String> roles = new LinkedList<>();
-        UserAccountWithPasswordDTO user;
+        if (accounts.isEmpty()) {
+            createPersons();
+            String username = "username";
+            String password = "password";
+            List<String> roleList = Arrays.stream(Role.values()).map(Role::name).toList();
+            List<String> roles = new LinkedList<>();
+            UserAccountWithPasswordDTO user;
 
-        int i = 0;
-        for (PersonDTO person : persons) {
-            user = new UserAccountWithPasswordDTO();
-            user.setUsername(username + i);
-            user.setPassword(password + i);
-            user.setPersonId(person.getId());
-            roles.add(roleList.get(i));
-            user.setRoles(roles);
-            accounts.add(userAccountService.add(user));
-            i++;
+            int i = 0;
+            for (PersonDTO person : persons) {
+                user = new UserAccountWithPasswordDTO();
+                user.setUsername(username + i);
+                user.setPassword(password + i);
+                user.setPersonId(person.getId());
+                roles.add(roleList.get(i));
+                user.setRoles(roles);
+                accounts.add(userAccountService.add(user));
+                i++;
+            }
+            testUser = accounts.get(2);
         }
-        testUser = accounts.get(2);
     }
 
     private void createNomenclature() {
@@ -121,6 +124,44 @@ public class RecordServiceTest {
             }
             nomenclature = new LinkedList<>(nomenclatureService.createNew(nomenclature));
         }
+    }
+
+    private void createRecords() {
+        createNomenclature();
+        createUsers();
+        if (testUser == null) {
+            createUsers();
+        }
+        final long receptionMult = 20;
+        final long releaseMult = 3;
+        int i = 1;
+        for (NomenclatureDTO n : nomenclature) {
+            input.setType(RECEPTION);
+            input.setAmount(i * receptionMult);
+            input.setNomenclatureId(n.getId());
+            records.add(recordService.add(input, accounts.get(i - 1).getUsername()));
+            i++;
+        }
+        for (NomenclatureDTO n : nomenclature) {
+            input.setType(RELEASE);
+            input.setAmount(records.get(i-3).getAmount() / 3 + i * releaseMult);
+            input.setNomenclatureId(n.getId());
+            records.add(recordService.add(input, accounts.get(6-i).getUsername()));
+        }
+    }
+
+    private void createReverseRecords() {
+        if (records.isEmpty()) {
+            createRecords();
+        }
+        List<RecordDTO> recordsToBeReverted = new LinkedList<>(records);
+        int i = 0;
+        while(!recordsToBeReverted.isEmpty()) {
+            dto = recordsToBeReverted.get((int)(System.nanoTime() % recordsToBeReverted.size()));
+            recordsToBeReverted.remove(dto);
+            reverseGeneratedRecords.add(recordService.revert(dto.getId(), accounts.get(i++).getUsername()));
+        }
+        reverseRecords.addAll(recordService.getAllReverseRecords());
     }
 
 }

@@ -71,7 +71,7 @@ public class RecordServiceImpl implements RecordService {
         }
         generatedRecord = add(generatedRecord);
         ReverseRecordEntity reverseRecord = new ReverseRecordEntity(
-                revertedRecord, generatedRecord, generatedRecord.getTime(), generatedRecord.getUser());
+                null, revertedRecord, generatedRecord, generatedRecord.getTime(), generatedRecord.getUser());
         reverseRecordRepository.save(reverseRecord);
         return mapper.convert(generatedRecord);
     }

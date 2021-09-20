@@ -12,15 +12,18 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class ReverseRecordEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @OneToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(unique = true)
     private RecordEntity revertedRecord;
 
     @OneToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(unique = true)
     private RecordEntity generatedRecord;
 
     @Column(nullable = false)
@@ -29,13 +32,4 @@ public class ReverseRecordEntity {
     @ManyToOne(fetch = FetchType.EAGER)
     private UserEntity user;
 
-    public ReverseRecordEntity(RecordEntity revertedRecord,
-                               RecordEntity generatedRecord,
-                               LocalDateTime time,
-                               UserEntity user) {
-        this.revertedRecord = revertedRecord;
-        this.generatedRecord = generatedRecord;
-        this.time = time;
-        this.user = user;
-    }
 }

@@ -13,6 +13,6 @@ public class RecordOutputDTO extends RecordDTO{
 
     private Long nomenclatureId;
     private LocalDateTime time;
-    private String username;
+    private Long userId;
 
 }

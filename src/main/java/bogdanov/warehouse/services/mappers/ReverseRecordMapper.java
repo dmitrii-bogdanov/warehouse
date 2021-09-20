@@ -13,7 +13,7 @@ public class ReverseRecordMapper {
                 reverseRecord.getRevertedRecord().getId(),
                 reverseRecord.getGeneratedRecord().getId(),
                 reverseRecord.getTime(),
-                reverseRecord.getUser().getUsername()
+                reverseRecord.getUser().getId()
         );
     }
 

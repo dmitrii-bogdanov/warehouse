@@ -15,6 +15,6 @@ public class ReverseRecordDTO {
     private Long revertedRecordId;
     private Long generatedRecordId;
     private LocalDateTime time;
-    private String username;
+    private Long userId;
 
 }

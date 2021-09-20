@@ -88,13 +88,10 @@ public class Mapper {
         return recordMapper.convert(record);
     }
 
-    public RecordDTO convert(RecordEntity record) {
+    public RecordOutputDTO convert(RecordEntity record) {
         return recordMapper.convert(record);
     }
 
-    public RecordEntity convert(RecordOutputDTO record) {
-        return recordMapper.convert(record);
-    }
     //endregion
 
     //region RecordTypeDTO <--> RecordTypeEntity

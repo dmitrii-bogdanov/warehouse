@@ -8,7 +8,9 @@ import bogdanov.warehouse.dto.NomenclatureDTO;
 import bogdanov.warehouse.dto.RecordDTO;
 import bogdanov.warehouse.dto.RecordInputDTO;
 import bogdanov.warehouse.dto.ReverseRecordDTO;
+import bogdanov.warehouse.exceptions.ArgumentException;
 import bogdanov.warehouse.exceptions.ResourceNotFoundException;
+import bogdanov.warehouse.exceptions.enums.ExceptionType;
 import bogdanov.warehouse.services.interfaces.NomenclatureService;
 import bogdanov.warehouse.services.interfaces.RecordService;
 import bogdanov.warehouse.services.interfaces.RecordTypeService;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,9 +40,15 @@ public class RecordServiceImpl implements RecordService {
     private static final String RECORD = "Record";
     private static final String ID = "id";
 
+    private void checkDtoNotNull(RecordDTO dto) {
+        if (dto == null) {
+            throw new ArgumentException(ExceptionType.NO_OBJECT_WAS_PASSED);
+        }
+    }
 
     @Override
     public RecordDTO add(RecordInputDTO record, String username) {
+        checkDtoNotNull(record);
         RecordEntity entity = mapper.convert(record);
         entity.setNomenclature(nomenclatureService.getEntityById(record.getNomenclatureId()));
         entity.setType(recordTypeService.getEntityByName(record.getType()));
@@ -84,7 +93,7 @@ public class RecordServiceImpl implements RecordService {
 
     @Override
     public List<RecordDTO> getAll() {
-        return recordRepository.findAll().stream().map(mapper::convert).toList();
+        return new LinkedList<>(recordRepository.findAll().stream().map(mapper::convert).toList());
     }
 
     @Override

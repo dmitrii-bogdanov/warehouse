@@ -20,6 +20,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.lang.annotation.ElementType;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -59,7 +60,7 @@ public class RecordServiceTest {
     private List<RecordDTO> reverseGeneratedRecords = new LinkedList<>();
 
     private final Random generator = new Random(System.nanoTime());
-    private final int PERSON_LIST_SIZE = 3; //>=3
+    private final int PERSON_LIST_SIZE = 3; //<=3
     private final String RECEPTION = RecordType.RECEPTION.name();
     private final String RELEASE = RecordType.RELEASE.name();
     private final String NULL_STR = null;
@@ -114,7 +115,6 @@ public class RecordServiceTest {
     private void createUsers() {
         createPersons();
         if (users.isEmpty()) {
-            log.info("Users is Empty");
             String username = "username";
             String password = "password";
             List<String> roleList = Arrays.stream(Role.values()).map(Role::name).toList();
@@ -127,10 +127,9 @@ public class RecordServiceTest {
                 user.setUsername(username + i);
                 user.setPassword(password + i);
                 user.setPersonId(person.getId());
-                roles.add(roleList.get(i));
+                roles.add(roleList.get(roleList.size() - 1 - i));
                 user.setRoles(roles);
                 users.add(userAccountService.add(user));
-                log.info(String.valueOf(users.size()));
                 i++;
             }
             testUser = users.get(users.size() - 1);
@@ -170,7 +169,7 @@ public class RecordServiceTest {
         }
         for (NomenclatureDTO n : nomenclature) {
             input.setType(RELEASE);
-            input.setAmount(records.get(i - 3).getAmount() / 3 + i * releaseMult);
+            input.setAmount(n.getAmount() / 3 + i * releaseMult);
             input.setNomenclatureId(n.getId());
             records.add(recordService.add(input, users.get(6 - i).getUsername()));
             i++;
@@ -198,6 +197,24 @@ public class RecordServiceTest {
         return generator.nextInt(bound);
     }
 
+    private List<RecordDTO> formatTime(List<RecordDTO> records) {
+        return records.stream().map(this::formatTime).toList();
+    }
+
+    private RecordDTO formatTime(RecordDTO dto) {
+        LocalDateTime tmp = dto.getTime();
+        int nano = tmp.getNano();
+        nano = (nano / 1000 + (nano % 1000 >= 500 ? 1 : 0)) * 1000;
+        boolean plusSecond = nano / 1_000_000_000 > 0;
+        nano = nano % 1_000_000_000;
+        tmp = LocalDateTime.of(tmp.getYear(), tmp.getMonthValue(), tmp.getDayOfMonth(), tmp.getHour(), tmp.getMinute(), tmp.getSecond(), nano);
+        if (plusSecond) {
+            tmp = tmp.plusSeconds(1);
+        }
+        dto.setTime(tmp);
+        return dto;
+    }
+
     @Test
     void add() {
         createNomenclature();
@@ -210,9 +227,9 @@ public class RecordServiceTest {
 
         for (int i = 0; i < 10; i++) {
             input = new RecordDTO();
-            input.setAmount(recordAmount = rand(20));
+            input.setAmount(recordAmount = (rand(20) + 1));
             input.setType(RECEPTION.toLowerCase(Locale.ROOT));
-            nomenclatureDTO = nomenclature.get(rand(nomenclature));
+            nomenclatureDTO = nomenclatureService.getById(nomenclature.get(rand(nomenclature)).getId());
             input.setNomenclatureId(nomenclatureDTO.getId());
             amount = nomenclatureDTO.getAmount();
             user = users.get(rand(users));
@@ -228,19 +245,19 @@ public class RecordServiceTest {
             assertTrue(output.getTime().isBefore(LocalDateTime.now()));
             all = recordService.getAll();
             assertEquals(records.size(), all.size());
-            log.info("records");
-            records.forEach(r -> log.info(r.toString()));
-            log.info("getAll");
-            all.forEach(r -> log.info(r.toString()));
-            assertTrue(all.containsAll(records));
+            assertTrue(all.containsAll(formatTime(records)));
         }
 
         for (int i = 0; i < 10; i++) {
             input = new RecordDTO();
-            nomenclatureDTO = nomenclature.get(rand(nomenclature));
+            nomenclatureDTO = nomenclatureService.getById(nomenclature.get(rand(nomenclature)).getId());
             input.setNomenclatureId(nomenclatureDTO.getId());
             amount = nomenclatureDTO.getAmount();
-            input.setAmount(recordAmount = rand((int) amount));
+            if (amount == 0) {
+                i--;
+                continue;
+            }
+            input.setAmount(recordAmount = (amount > 1 ? (rand((int) amount - 1) + 1) : 1));
             input.setType(RELEASE.toLowerCase(Locale.ROOT));
             user = users.get(rand(users));
             output = recordService.add(input, user.getUsername().toLowerCase(Locale.ROOT));
@@ -255,16 +272,16 @@ public class RecordServiceTest {
             assertTrue(output.getTime().isBefore(LocalDateTime.now()));
             all = recordService.getAll();
             assertEquals(records.size(), all.size());
-            assertTrue(all.containsAll(records));
+            assertTrue(all.containsAll(formatTime(records)));
         }
 
         input = new RecordDTO();
         long id = records.get(0).getId();
         input.setId(id);
-        nomenclatureDTO = nomenclature.get(rand(nomenclature));
+        nomenclatureDTO = nomenclatureService.getById(nomenclature.get(rand(nomenclature)).getId());
         input.setNomenclatureId(nomenclatureDTO.getId());
         amount = nomenclatureDTO.getAmount();
-        input.setAmount(recordAmount = rand(10));
+        input.setAmount(recordAmount = (rand(10) + 1));
         input.setType(RECEPTION.toUpperCase(Locale.ROOT));
         user = users.get(rand(users));
         output = recordService.add(input, user.getUsername().toLowerCase(Locale.ROOT));
@@ -280,31 +297,36 @@ public class RecordServiceTest {
         assertTrue(output.getTime().isBefore(LocalDateTime.now()));
         all = recordService.getAll();
         assertEquals(records.size(), all.size());
-        assertTrue(all.containsAll(records));
+        assertTrue(all.containsAll(formatTime(records)));
 
-        input = new RecordDTO();
-        id = records.get(0).getId();
-        input.setId(id);
-        nomenclatureDTO = nomenclature.get(rand(nomenclature));
-        input.setNomenclatureId(nomenclatureDTO.getId());
-        amount = nomenclatureDTO.getAmount();
-        input.setAmount(recordAmount = rand((int) amount));
-        input.setType(RELEASE.toUpperCase(Locale.ROOT));
-        user = users.get(rand(users));
-        output = recordService.add(input, user.getUsername().toLowerCase(Locale.ROOT));
-        records.add(output);
-        assertTrue(output.getId() > 0);
-        assertNotEquals(id, output.getId());
-        assertTrue(output.getType().equalsIgnoreCase(input.getType()));
-        assertEquals(input.getNomenclatureId(), output.getNomenclatureId());
-        assertEquals(user.getId(), output.getUserId());
-        assertEquals(recordAmount, output.getAmount());
-        assertEquals(amount - recordAmount, nomenclatureService.getById(nomenclatureDTO.getId()).getAmount());
-        assertTrue(output.getTime().isAfter(LocalDateTime.now().minusMinutes(1)));
-        assertTrue(output.getTime().isBefore(LocalDateTime.now()));
-        all = recordService.getAll();
-        assertEquals(records.size(), all.size());
-        assertTrue(all.containsAll(records));
+        release: {
+            input = new RecordDTO();
+            id = records.get(0).getId();
+            input.setId(id);
+            nomenclatureDTO = nomenclatureService.getById(nomenclature.get(rand(nomenclature)).getId());
+            amount = nomenclatureDTO.getAmount();
+            if (amount == 0) {
+                break release;
+            }
+            input.setNomenclatureId(nomenclatureDTO.getId());
+            input.setAmount(recordAmount = (amount > 1 ? (rand((int) amount - 1) + 1) : 1));
+            input.setType(RELEASE.toUpperCase(Locale.ROOT));
+            user = users.get(rand(users));
+            output = recordService.add(input, user.getUsername().toLowerCase(Locale.ROOT));
+            records.add(output);
+            assertTrue(output.getId() > 0);
+            assertNotEquals(id, output.getId());
+            assertTrue(output.getType().equalsIgnoreCase(input.getType()));
+            assertEquals(input.getNomenclatureId(), output.getNomenclatureId());
+            assertEquals(user.getId(), output.getUserId());
+            assertEquals(recordAmount, output.getAmount());
+            assertEquals(amount - recordAmount, nomenclatureService.getById(nomenclatureDTO.getId()).getAmount());
+            assertTrue(output.getTime().isAfter(LocalDateTime.now().minusMinutes(1)));
+            assertTrue(output.getTime().isBefore(LocalDateTime.now()));
+            all = recordService.getAll();
+            assertEquals(records.size(), all.size());
+            assertTrue(all.containsAll(formatTime(records)));
+        }
     }
 
     @Test

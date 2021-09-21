@@ -493,7 +493,7 @@ class UserAccountServiceTest {
         int i = 0;
         for (PersonDTO person : persons) {
             dtoWithPassword = getDtoWithPassword(num == null ? null : num + i);
-            rolesNames.add(ROLES.get(i).getName());
+            rolesNames.add(ROLES.get(ROLES.size() - 1 - i).getName());
             dtoWithPassword.setRoles(rolesNames);
             dtoWithPassword.setPersonId(person.getId());
             dtoWithPassword.setUsername(USERNAME + '_' + i);

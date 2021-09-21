@@ -61,7 +61,7 @@ class UserServiceTest {
             String lastname = "lastname";
             LocalDate date = LocalDate.of(2001, 1, 1);
             String position = "position";
-            for (int i = 0; i < 3; i++) {
+            for (int i = 0; i < 3; i++) { // <=3
                 persons.add(new PersonDTO(
                         null,
                         firstname + (char) ('A' + i),
@@ -91,7 +91,7 @@ class UserServiceTest {
             user.setUsername(username + i);
             user.setPassword(password + i);
             user.setPersonId(person.getId());
-            roles.add(roleList.get(i));
+            roles.add(roleList.get(roleList.size() - 1 - i));
             user.setRoles(roles);
             accounts.add(accountService.add(user));
             i++;

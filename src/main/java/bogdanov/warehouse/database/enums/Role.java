@@ -3,9 +3,7 @@ package bogdanov.warehouse.database.enums;
 public enum Role {
     ROLE_ADMIN(1L),
     ROLE_STAFF(2L),
-    ROLE_USER(3L),
-    ROLE_EXTERIOR_MANAGER(4L),
-    ROLE_MANAGER(5L);
+    ROLE_USER(3L);
 
     private final long id;
 

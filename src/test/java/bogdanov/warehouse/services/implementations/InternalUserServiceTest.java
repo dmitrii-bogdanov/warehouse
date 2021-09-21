@@ -90,7 +90,7 @@ class InternalUserServiceTest {
             dto.setUsername(USERNAME + i);
             dto.setPassword(PASSWORD + i);
             dto.setPersonId(persons.get(i).getId());
-            dto.setRoles(Collections.singleton(roles.get(i).getName()));
+            dto.setRoles(Collections.singleton(roles.get(roles.size() - 1 - i).getName()));
             list.add(accountService.add(dto));
         }
         return list;

@@ -841,7 +841,7 @@ class NomenclatureServiceTest {
         user.setUsername(username);
         user.setPassword("password");
         user.setPersonId(person.getId());
-        user.setRoles(Arrays.stream(Role.values()).map(Role::name).toList());
+        user.setRoles(Arrays.stream(Role.values()).filter(role -> !role.equals(Role.ROLE_ADMIN)).map(Role::name).toList());
         username = userAccountService.add(user).getUsername();
 
         NomenclatureDTO deleted = dto.get(1);

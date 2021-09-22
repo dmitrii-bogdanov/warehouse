@@ -1,12 +1,12 @@
 package bogdanov.warehouse.services.implementations;
 
-import bogdanov.warehouse.database.entities.RecordEntity;
-import bogdanov.warehouse.database.entities.ReverseRecordEntity;
+import bogdanov.warehouse.database.entities.*;
 import bogdanov.warehouse.database.repositories.RecordRepository;
 import bogdanov.warehouse.database.repositories.ReverseRecordRepository;
 import bogdanov.warehouse.dto.NomenclatureDTO;
 import bogdanov.warehouse.dto.RecordDTO;
 import bogdanov.warehouse.dto.ReverseRecordDTO;
+import bogdanov.warehouse.dto.search.SearchRecordDTO;
 import bogdanov.warehouse.exceptions.ArgumentException;
 import bogdanov.warehouse.exceptions.ResourceNotFoundException;
 import bogdanov.warehouse.exceptions.enums.ExceptionType;
@@ -15,10 +15,12 @@ import bogdanov.warehouse.services.interfaces.RecordService;
 import bogdanov.warehouse.services.interfaces.RecordTypeService;
 import bogdanov.warehouse.services.mappers.Mapper;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -38,8 +40,10 @@ public class RecordServiceImpl implements RecordService {
     private static final String RELEASE = "RELEASE";
     private static final String RECORD = "Record";
     private static final String ID = "id";
+    private static final String FROM_DATE = "fromDate";
+    private static final String TO_DATE = "toDate";
 
-    private void checkDtoNotNull(RecordDTO dto) {
+    private void checkDtoNotNull(Object dto) {
         if (dto == null) {
             throw new ArgumentException(ExceptionType.NO_OBJECT_WAS_PASSED);
         }
@@ -117,12 +121,76 @@ public class RecordServiceImpl implements RecordService {
 
     //TODO
     @Override
-    public List<RecordDTO> search(Long nomenclatureId, Long userId, String type, LocalDate dateFrom, LocalDate dateTo) {
-        return null;
+    public List<RecordDTO> search(SearchRecordDTO dto) {
+
+        checkDtoNotNull(dto);
+
+        boolean isTypeBlank = Strings.isBlank(dto.getType());
+        boolean isFromDateAbsent = dto.getFromDate() == null;
+        boolean isToDateAbsent = dto.getToDate() == null;
+        boolean isNomenclatureListAbsent = dto.getNomenclatureId() == null || dto.getNomenclatureId().isEmpty();
+        boolean isUserListAbsent = dto.getUserId() == null || dto.getUserId().isEmpty();
+
+        if (isTypeBlank && isFromDateAbsent && isToDateAbsent && isNomenclatureListAbsent && isUserListAbsent) {
+            throw new ArgumentException(ExceptionType.NO_PARAMETER_IS_PRESENT);
+        }
+
+        List<RecordTypeEntity> types = new LinkedList<>();
+        List<NomenclatureEntity> nomenclature = new LinkedList<>();
+        List<UserEntity> users = new LinkedList<>();
+        LocalDateTime from;
+        LocalDateTime to;
+        if (isTypeBlank) {
+            types.add(recordTypeService.getEntityByName(RECEPTION));
+            types.add(recordTypeService.getEntityByName(RELEASE));
+        } else {
+            types.add(recordTypeService.getEntityByName(dto.getType()));
+        }
+        if (isFromDateAbsent) {
+            from = LocalDateTime.of(0, 1, 1, 0, 0, 0, 0);
+        } else {
+            from = LocalDateTime.of(dto.getFromDate(), LocalTime.of(0, 0, 0, 0));
+        }
+        if (isToDateAbsent) {
+            to = LocalDateTime.of(2200, 12, 31, 23, 59, 59, 999_999_000);
+        } else {
+            to = LocalDateTime.of(dto.getToDate(), LocalTime.of(23, 59, 59, 999_999_000));
+        }
+        if (from.isAfter(to)) {
+            throw new ArgumentException(ExceptionType.INCORRECT_RANGE.setFrom(FROM_DATE).setTo(TO_DATE));
+        }
+        if (!isNomenclatureListAbsent) {
+            for (Long id : dto.getNomenclatureId()) {
+                nomenclature.add(nomenclatureService.getEntityById(id));
+            }
+        }
+        if (!isUserListAbsent) {
+            for (Long id : dto.getUserId()) {
+                users.add(userService.getEntityById(id));
+            }
+        }
+
+        List<RecordEntity> entities;
+
+        if (isTypeBlank && isNomenclatureListAbsent && isUserListAbsent) {
+            entities = recordRepository.findAllByTimeBetween(from, to);
+        } else if (isNomenclatureListAbsent && isUserListAbsent) {
+            entities = recordRepository.findAllByTypeInAndTimeBetween(types, from, to);
+        } else if (isUserListAbsent) {
+            entities = recordRepository.findAllByTypeInAndNomenclatureInAndTimeBetween(types, nomenclature, from, to);
+        } else if (isNomenclatureListAbsent) {
+            entities = recordRepository.findAllByTypeInAndUserInAndTimeBetween(types, users, from, to);
+        } else {
+            entities = recordRepository.findAllByTypeInAndNomenclatureInAndUserInAndTimeBetween(
+                    types, nomenclature, users, from, to);
+        }
+
+        return entities.stream().map(mapper::convert).toList();
+
     }
 
     @Override
-    public boolean existsByUserId(Long id) {
+    public boolean existsByUserId(long id) {
         return recordRepository.existsByUser_Id(id);
     }
 }

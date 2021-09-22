@@ -23,6 +23,7 @@ public class InternalUserService  implements UserDetailsService {
 
     private static final String USER = "User";
     private static final String USERNAME = "username";
+    private static final String ID = "id";
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -35,6 +36,14 @@ public class InternalUserService  implements UserDetailsService {
         }
         return userRepository.findByUsernameIgnoreCase(username.toUpperCase(Locale.ROOT))
                 .orElseThrow(() -> new ResourceNotFoundException(USER, USERNAME, username.toUpperCase(Locale.ROOT)));
+    }
+
+    public UserEntity getEntityById(Long id) {
+        if (id == null) {
+            throw new ArgumentException(ExceptionType.NULL_ID);
+        }
+        return userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(USER, ID, id));
     }
 
 }

@@ -581,7 +581,7 @@ class UserAccountServiceTest {
         Collection<String> rolesBeforeUpdate = dto.getRoles();
         dto.setRoles(Collections.singletonList(ROLES.get(2).getName()));
         long personBeforeUpdate = dto.getPersonId();
-        dto.setPersonId(users.get(index + 1).getPersonId());
+        dto.setPersonId(users.get(index).getPersonId());
         dto.setIsEnabled(true);
         String passwordBeforeUpdate = userAccountService.getEntityById(dto.getId()).getPassword();
 
@@ -618,7 +618,7 @@ class UserAccountServiceTest {
             Collection<String> rolesBeforeUpdate = dto.getRoles();
             dto.setRoles(Collections.singletonList(ROLES.get(2).getName()));
             long personBeforeUpdate = dto.getPersonId();
-            dto.setPersonId(users.get(index + 1).getPersonId());
+            dto.setPersonId(users.get(index).getPersonId());
             dto.setIsEnabled(true);
 
             String passwordBeforeUpdate = userAccountService.getEntityById(dto.getId()).getPassword();
@@ -762,7 +762,7 @@ class UserAccountServiceTest {
         Collection<String> rolesBeforeUpdate = dto.getRoles();
         dto.setRoles(Collections.singletonList(ROLES.get(2).getName()));
         long personBeforeUpdate = dto.getPersonId();
-        dto.setPersonId(users.get(index + 1).getPersonId());
+        dto.setPersonId(users.get(index).getPersonId());
         dto.setIsEnabled(true);
 
         dtoWithPassword = convert(dto);

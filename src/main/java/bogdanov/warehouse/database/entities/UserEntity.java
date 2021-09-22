@@ -32,7 +32,7 @@ public class UserEntity implements UserDetails {
     private Collection<RoleEntity> roles = new HashSet<>();
 
     @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(unique = true)
+    @JoinColumn(nullable = true, unique = true)
     private PersonEntity person;
 
     @Override

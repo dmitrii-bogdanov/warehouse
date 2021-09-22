@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "reverse_records")
 public class ReverseRecordEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

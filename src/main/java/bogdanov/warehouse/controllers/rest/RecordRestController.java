@@ -2,6 +2,7 @@ package bogdanov.warehouse.controllers.rest;
 
 import bogdanov.warehouse.dto.RecordDTO;
 import bogdanov.warehouse.dto.ReverseRecordDTO;
+import bogdanov.warehouse.dto.search.SearchRecordDTO;
 import bogdanov.warehouse.services.interfaces.RecordService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -48,13 +49,9 @@ public class RecordRestController {
         return recordService.update(id, user.getName(), record);
     }
 
-    @GetMapping(params = {"search", "nomenclatureId", "userId", "type", "dateFrom", "dateTo"})
-    public List<RecordDTO> updateRecord(@RequestParam Long nomenclatureId,
-                                        @RequestParam Long userId,
-                                        @RequestParam String type,
-                                        @RequestParam LocalDate dateFrom,
-                                        @RequestParam LocalDate dateTo) {
-        return recordService.search(nomenclatureId, userId, type, dateFrom, dateTo);
+    @GetMapping(params = {"search"})
+    public List<RecordDTO> search(@RequestBody SearchRecordDTO searchRecordDTO) {
+        return recordService.search(searchRecordDTO);
     }
 
     @GetMapping("/reversed")

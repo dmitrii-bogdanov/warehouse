@@ -3,6 +3,7 @@ package bogdanov.warehouse.services.interfaces;
 import bogdanov.warehouse.database.entities.RecordEntity;
 import bogdanov.warehouse.dto.RecordDTO;
 import bogdanov.warehouse.dto.ReverseRecordDTO;
+import bogdanov.warehouse.dto.search.SearchRecordDTO;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -15,7 +16,7 @@ public interface RecordService {
 
     List<RecordDTO> getAll();
 
-    List<RecordDTO> search(Long nomenclatureId, Long userId, String type, LocalDate dateFrom, LocalDate dateTo);
+    List<RecordDTO> search(SearchRecordDTO searchRecordDTO);
 
     RecordDTO getById(Long id);
 
@@ -27,5 +28,5 @@ public interface RecordService {
 
     List<ReverseRecordDTO> getAllReverseRecords();
 
-    boolean existsByUserId(Long id);
+    boolean existsByUserId(long id);
 }

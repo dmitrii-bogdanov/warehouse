@@ -15,6 +15,7 @@ import bogdanov.warehouse.services.interfaces.RecordService;
 import bogdanov.warehouse.services.interfaces.RecordTypeService;
 import bogdanov.warehouse.services.mappers.Mapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 
@@ -119,7 +120,6 @@ public class RecordServiceImpl implements RecordService {
         return reverseRecordRepository.findAll().stream().map(mapper::convert).toList();
     }
 
-    //TODO
     @Override
     public List<RecordDTO> search(SearchRecordDTO dto) {
 

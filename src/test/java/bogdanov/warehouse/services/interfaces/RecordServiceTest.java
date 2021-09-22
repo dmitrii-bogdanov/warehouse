@@ -47,6 +47,8 @@ public class RecordServiceTest {
     private NomenclatureService nomenclatureService;
     @Autowired
     private NomenclatureRepository nomenclatureRepository;
+    @Autowired
+    private RecordTypeService recordTypeService;
 
     private UserAccountDTO testUser = null;
     private RecordDTO input = null;
@@ -1117,20 +1119,10 @@ public class RecordServiceTest {
     private List<RecordDTO> correct(List<RecordDTO> list, SearchRecordDTO dto) {
         List<RecordDTO> result = list;
         result = result.stream().filter(r -> Strings.isBlank(dto.getType()) || r.getType().equalsIgnoreCase(dto.getType())).toList();
-        log.info("--> type: " + dto.getType());//todo
-        result.forEach(r -> log.info(r.toString()));//todo
         result = result.stream().filter(r -> dto.getNomenclatureId() == null || dto.getNomenclatureId().isEmpty() || dto.getNomenclatureId().contains(r.getNomenclatureId())).toList();
-        log.info("--> nomenclature: " + dto.getNomenclatureId().toString());//todo
-        result.forEach(r -> log.info(r.toString()));//todo
         result = result.stream().filter(r -> dto.getUserId() == null || dto.getUserId().isEmpty() || dto.getUserId().contains(r.getUserId())).toList();
-        log.info("--> user: " + dto.getUserId().toString());//todo
-        result.forEach(r -> log.info(r.toString()));//todo
         result = result.stream().filter(r -> dto.getFromDate() == null || r.getTime().isAfter(LocalDateTime.of(dto.getFromDate(), LocalTime.of(0, 0, 0, 0)))).toList();
-        log.info("--> from: " + dto.getFromDate());//todo
-        result.forEach(r -> log.info(r.toString()));//todo
         result = result.stream().filter(r -> dto.getToDate() == null || r.getTime().isBefore(LocalDateTime.of(dto.getToDate(), LocalTime.of(23, 59, 59, 999_999_000)))).toList();
-        log.info("--> to: " + dto.getToDate());//todo
-        result.forEach(r -> log.info(r.toString()));//todo
 
         return result;
     }
@@ -1193,35 +1185,216 @@ public class RecordServiceTest {
         return dto;
     }
 
+    private void changeRecordDates() {
+        createRecords();
+        int i = 1;
+        for (RecordDTO record : records) {
+            record.setTime(formatTime(record.getTime().minusDays(i++)));
+
+            RecordEntity entity = new RecordEntity();
+            entity.setId(record.getId());
+            entity.setAmount(record.getAmount());
+            entity.setTime(record.getTime());
+            entity.setUser(userAccountService.getEntityById(record.getUserId()));
+            entity.setNomenclature(nomenclatureService.getEntityById(record.getNomenclatureId()));
+            entity.setType(recordTypeService.getEntityByName(record.getType()));
+
+            recordRepository.save(entity);
+        }
+    }
+
     @Test
     void search() {
         List<RecordDTO> correct;
         List<RecordDTO> result;
         SearchRecordDTO dto;
-        createRecords();
-        int i = 1;
-        for (RecordDTO record : records) {
-            record.setTime(formatTime(record.getTime().minusDays(i++)));
-        }
 
-        for (i = 0; i < 100; i++) {
-            log.info("\ni = " + i);//todo
+        changeRecordDates();
+
+        for (int i = 0; i < 100; i++) {
             all = recordService.getAll();
-            all.forEach(r -> log.info(r.toString()));//todo
             dto = getRandomSearch(records);
-            log.info("search --> " + dto.toString());//todo
             correct = correct(records, dto);
-            log.info("correct:");//todo
-            correct.forEach(r -> log.info(r.toString()));//todo
             result = recordService.search(dto);
-            log.info("result:");//todo
-            result.forEach(r -> log.info(r.toString()));//todo
             assertEquals(correct.size(), result.size());
             assertTrue(result.containsAll(correct));
             assertEquals(all, recordService.getAll());
         }
-
     }
+
+    @Test
+    void search_NullDto() {
+        all = recordService.getAll();
+
+        SearchRecordDTO dto = null;
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> recordService.search(dto));
+        assertEquals(ExceptionType.NO_OBJECT_WAS_PASSED, e.getExceptionType());
+        assertEquals(all, recordService.getAll());
+    }
+
+    @Test
+    void search_NullType() {
+        changeRecordDates();
+        all = recordService.getAll();
+
+        SearchRecordDTO dto = new SearchRecordDTO();
+        dto.setType(NULL_STR);
+        dto.setFromDate(null);
+        dto.setToDate(null);
+        dto.setNomenclatureId(nomenclature.stream().map(NomenclatureDTO::getId).toList());
+        dto.setUserId(users.stream().map(UserAccountDTO::getId).toList());
+
+        List<RecordDTO> correct = correct(records, dto);
+        List<RecordDTO> result = recordService.search(dto);
+
+        assertEquals(correct.size(), result.size());
+        assertTrue(result.containsAll(correct));
+        assertEquals(all, recordService.getAll());
+    }
+
+    @Test
+    void search_EmptyType() {
+        changeRecordDates();
+        all = recordService.getAll();
+
+        SearchRecordDTO dto = new SearchRecordDTO();
+        dto.setType(EMPTY_STR);
+        dto.setFromDate(null);
+        dto.setToDate(null);
+        dto.setNomenclatureId(nomenclature.stream().map(NomenclatureDTO::getId).toList());
+        dto.setUserId(users.stream().map(UserAccountDTO::getId).toList());
+
+        List<RecordDTO> correct = correct(records, dto);
+        List<RecordDTO> result = recordService.search(dto);
+
+        assertEquals(correct.size(), result.size());
+        assertTrue(result.containsAll(correct));
+        assertEquals(all, recordService.getAll());
+    }
+
+    @Test
+    void search_SpaceType() {
+        changeRecordDates();
+        all = recordService.getAll();
+
+        SearchRecordDTO dto = new SearchRecordDTO();
+        dto.setType(SPACE_STR);
+        dto.setFromDate(null);
+        dto.setToDate(null);
+        dto.setNomenclatureId(nomenclature.stream().map(NomenclatureDTO::getId).toList());
+        dto.setUserId(users.stream().map(UserAccountDTO::getId).toList());
+
+        List<RecordDTO> correct = correct(records, dto);
+        List<RecordDTO> result = recordService.search(dto);
+
+        assertEquals(correct.size(), result.size());
+        assertTrue(result.containsAll(correct));
+        assertEquals(all, recordService.getAll());
+    }
+
+    @Test
+    void search_BlankType() {
+        changeRecordDates();
+        all = recordService.getAll();
+
+        SearchRecordDTO dto = new SearchRecordDTO();
+        dto.setType(BLANK_STR);
+        dto.setFromDate(null);
+        dto.setToDate(null);
+        dto.setNomenclatureId(nomenclature.stream().map(NomenclatureDTO::getId).toList());
+        dto.setUserId(users.stream().map(UserAccountDTO::getId).toList());
+
+        List<RecordDTO> correct = correct(records, dto);
+        List<RecordDTO> result = recordService.search(dto);
+
+        assertEquals(correct.size(), result.size());
+        assertTrue(result.containsAll(correct));
+        assertEquals(all, recordService.getAll());
+    }
+
+    @Test
+    void search_NullNomenclature() {
+        changeRecordDates();
+        all = recordService.getAll();
+
+        SearchRecordDTO dto = new SearchRecordDTO();
+        dto.setType(null);
+        dto.setFromDate(null);
+        dto.setToDate(null);
+        dto.setNomenclatureId(null);
+        dto.setUserId(users.stream().map(UserAccountDTO::getId).toList());
+
+        List<RecordDTO> correct = correct(records, dto);
+        List<RecordDTO> result = recordService.search(dto);
+
+        assertEquals(correct.size(), result.size());
+        assertTrue(result.containsAll(correct));
+        assertEquals(all, recordService.getAll());
+    }
+
+    @Test
+    void search_EmptyNomenclature() {
+        changeRecordDates();
+        all = recordService.getAll();
+
+        SearchRecordDTO dto = new SearchRecordDTO();
+        dto.setType(null);
+        dto.setFromDate(null);
+        dto.setToDate(null);
+        dto.setNomenclatureId(Collections.emptyList());
+        dto.setUserId(users.stream().map(UserAccountDTO::getId).toList());
+
+        List<RecordDTO> correct = correct(records, dto);
+        List<RecordDTO> result = recordService.search(dto);
+
+        assertEquals(correct.size(), result.size());
+        assertTrue(result.containsAll(correct));
+        assertEquals(all, recordService.getAll());
+    }
+
+    @Test
+    void search_NullUsers() {
+        changeRecordDates();
+        all = recordService.getAll();
+
+        SearchRecordDTO dto = new SearchRecordDTO();
+        dto.setType(null);
+        dto.setFromDate(null);
+        dto.setToDate(null);
+        dto.setNomenclatureId(nomenclature.stream().map(NomenclatureDTO::getId).toList());
+        dto.setUserId(null);
+
+        List<RecordDTO> correct = correct(records, dto);
+        List<RecordDTO> result = recordService.search(dto);
+
+        assertEquals(correct.size(), result.size());
+        assertTrue(result.containsAll(correct));
+        assertEquals(all, recordService.getAll());
+    }
+
+    @Test
+    void search_EmptyUsers() {
+        changeRecordDates();
+        all = recordService.getAll();
+
+        SearchRecordDTO dto = new SearchRecordDTO();
+        dto.setType(null);
+        dto.setFromDate(null);
+        dto.setToDate(null);
+        dto.setNomenclatureId(nomenclature.stream().map(NomenclatureDTO::getId).toList());
+        dto.setUserId(Collections.emptyList());
+
+        List<RecordDTO> correct = correct(records, dto);
+        List<RecordDTO> result = recordService.search(dto);
+
+        assertEquals(correct.size(), result.size());
+        assertTrue(result.containsAll(correct));
+        assertEquals(all, recordService.getAll());
+    }
+
+
 
 
 }

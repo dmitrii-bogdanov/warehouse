@@ -4,6 +4,7 @@ import bogdanov.warehouse.database.entities.PersonEntity;
 import bogdanov.warehouse.database.entities.PositionEntity;
 import bogdanov.warehouse.database.repositories.PersonRepository;
 import bogdanov.warehouse.database.repositories.PositionRepository;
+import bogdanov.warehouse.database.repositories.UserRepository;
 import bogdanov.warehouse.dto.PositionDTO;
 import bogdanov.warehouse.exceptions.ArgumentException;
 import bogdanov.warehouse.exceptions.ProhibitedRemovingException;
@@ -12,6 +13,8 @@ import bogdanov.warehouse.exceptions.enums.ExceptionType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +42,8 @@ class PositionServiceTest {
     private PersonRepository personRepository;
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private UserRepository userRepository;
 
     private List<PositionDTO> dtoList;
     private List<PositionDTO> resultList;
@@ -53,6 +58,7 @@ class PositionServiceTest {
 
     @BeforeEach
     private void clear() {
+        userRepository.deleteAll();
         personRepository.deleteAll();
         positionRepository.deleteAll();
     }

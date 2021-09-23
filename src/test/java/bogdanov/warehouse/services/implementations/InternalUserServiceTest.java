@@ -12,6 +12,7 @@ import bogdanov.warehouse.services.interfaces.PersonService;
 import bogdanov.warehouse.services.interfaces.RoleService;
 import bogdanov.warehouse.services.interfaces.UserAccountService;
 import org.apache.logging.log4j.util.Strings;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +54,12 @@ class InternalUserServiceTest {
     @BeforeEach
     private void clear() {
         accountService.getAll().forEach(account -> accountService.delete(account.getId()));
+        personService.getAll().forEach(person -> personService.delete(person.getId()));
+    }
+
+    @AfterEach
+    private void clearAfter() {
+        clear();
     }
 
     private void readRoles() {
@@ -160,6 +167,38 @@ class InternalUserServiceTest {
     void loadUserByUsername_NotRecordedUsername() {
         List<UserAccountDTO> users = createUsers();
         String username = users.get(0).getUsername() + "something";
+        assertThrows(UsernameNotFoundException.class,
+                () -> userService.loadUserByUsername(username));
+    }
+
+    @Test
+    void loadUserByUsername_NullUsername() {
+        List<UserAccountDTO> users = createUsers();
+        String username = NULL_STR;
+        assertThrows(UsernameNotFoundException.class,
+                () -> userService.loadUserByUsername(username));
+    }
+
+    @Test
+    void loadUserByUsername_EmptyUsername() {
+        List<UserAccountDTO> users = createUsers();
+        String username = EMPTY_STR;
+        assertThrows(UsernameNotFoundException.class,
+                () -> userService.loadUserByUsername(username));
+    }
+
+    @Test
+    void loadUserByUsername_SpaceUsername() {
+        List<UserAccountDTO> users = createUsers();
+        String username = SPACE_STR;
+        assertThrows(UsernameNotFoundException.class,
+                () -> userService.loadUserByUsername(username));
+    }
+
+    @Test
+    void loadUserByUsername_BlankUsername() {
+        List<UserAccountDTO> users = createUsers();
+        String username = BLANK_STR;
         assertThrows(UsernameNotFoundException.class,
                 () -> userService.loadUserByUsername(username));
     }

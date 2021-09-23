@@ -28,7 +28,7 @@ public class NomenclatureServiceImpl implements NomenclatureService {
 
     private static final String DATA_INTEGRITY_EXCEPTION_SUBSTRING = "ON PUBLIC.NOMENCLATURE(";
     private static final String EXISTING_REFERENCE_SUBSTRING = "REFERENCES PUBLIC.NOMENCLATURE";
-    private static final String RECORD_FOREIGN_KEY_SUBSTRING = "PUBLIC.RECORD_ENTITY FOREIGN KEY(NOMENCLATURE";
+    private static final String RECORD_FOREIGN_KEY_SUBSTRING = "PUBLIC.RECORDS FOREIGN KEY(NOMENCLATURE";
     private static final String NOMENCLATURE = "Nomenclature";
     private static final String ID = "id";
     private static final String NAME = "name";

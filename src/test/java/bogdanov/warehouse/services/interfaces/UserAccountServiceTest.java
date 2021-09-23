@@ -14,6 +14,7 @@ import bogdanov.warehouse.exceptions.enums.ExceptionType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.h2.engine.User;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -93,6 +94,11 @@ class UserAccountServiceTest {
         resultEntity = null;
         users = null;
         all = null;
+    }
+
+    @AfterEach
+    private void clearAfter() {
+        clear();
     }
 
     private void createPersons() {
@@ -935,7 +941,7 @@ class UserAccountServiceTest {
         users.remove(index);
         dto.setRoles(Collections.singletonList(ROLES.get(index + 1).getName()));
         long personBeforeUpdate = dto.getPersonId();
-        dto.setPersonId(users.get(index + 1).getPersonId());
+        dto.setPersonId(users.get(0).getPersonId());
         dto.setIsEnabled(true);
         String passwordBeforeUpdate = userAccountService.getEntityById(dto.getId()).getPassword();
 
@@ -970,9 +976,9 @@ class UserAccountServiceTest {
             dto = users.get(index);
             users.remove(index);
 
-            dto.setRoles(Collections.singletonList(ROLES.get(index + 1).getName()));
+            dto.setRoles(Collections.singletonList(ROLES.get(0).getName()));
             long personBeforeUpdate = dto.getPersonId();
-            dto.setPersonId(users.get(index + 1).getPersonId());
+            dto.setPersonId(users.get(0).getPersonId());
             dto.setIsEnabled(true);
 
             String passwordBeforeUpdate = userAccountService.getEntityById(dto.getId()).getPassword();

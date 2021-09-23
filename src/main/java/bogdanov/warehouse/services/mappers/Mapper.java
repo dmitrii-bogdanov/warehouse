@@ -9,25 +9,12 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class Mapper {
 
-    private final RoleMapper roleMapper;
     private final UserAccountMapper userAccountMapper;
     private final UserMapper userMapper;
     private final PersonMapper personMapper;
     private final NomenclatureMapper nomenclatureMapper;
-    private final PositionMapper positionMapper;
     private final RecordMapper recordMapper;
-    private final RecordTypeMapper recordTypeMapper;
     private final ReverseRecordMapper reverseRecordMapper;
-
-    //region RoleDTO <--> RoleEntity
-    public RoleEntity convert(RoleDTO role) {
-        return roleMapper.convert(role);
-    }
-
-    public RoleDTO convert(RoleEntity role) {
-        return roleMapper.convert(role);
-    }
-    //endregion
 
     //region UserRegistrationDTO, UserRegistrationInfoDTO <--> UserEntity
     public UserEntity convert(UserAccountWithPasswordDTO user) {
@@ -73,16 +60,6 @@ public class Mapper {
     }
     //endregion
 
-    //region PositionDTO <--> PositionEntity
-    public PositionEntity convert(PositionDTO position) {
-        return positionMapper.convert(position);
-    }
-
-    public PositionDTO convert(PositionEntity position) {
-        return positionMapper.convert(position);
-    }
-    //endregion
-
     //region RecordDTO <--> RecordEntity
     public RecordEntity convert(RecordDTO record) {
         return recordMapper.convert(record);
@@ -90,17 +67,6 @@ public class Mapper {
 
     public RecordDTO convert(RecordEntity record) {
         return recordMapper.convert(record);
-    }
-
-    //endregion
-
-    //region RecordTypeDTO <--> RecordTypeEntity
-    public RecordTypeEntity convert(RecordTypeDTO recordType) {
-        return recordTypeMapper.convert(recordType);
-    }
-
-    public RecordTypeDTO convert(RecordTypeEntity recordType) {
-        return recordTypeMapper.convert(recordType);
     }
     //endregion
 

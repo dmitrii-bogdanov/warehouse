@@ -109,6 +109,7 @@ public class RecordServiceImpl implements RecordService {
     //TODO need to add some verifier to not revert if it cannot be added
     @Override
     public RecordDTO update(Long id, String username, RecordDTO record) {
+        checkDtoNotNull(record);
         RecordDTO generated = revert(id, username);
         try {
             return add(record, username);

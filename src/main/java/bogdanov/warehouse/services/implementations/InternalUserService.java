@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.Locale;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +28,11 @@ public class InternalUserService  implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByUsername(username.toUpperCase(Locale.ROOT));
+        if (Strings.isBlank(username)) {
+            throw new UsernameNotFoundException(ExceptionType.BLANK_USERNAME.getMessage());
+        }
+        return Optional.ofNullable(userRepository.findByUsername(username.toUpperCase(Locale.ROOT)))
+                .orElseThrow(() -> new UsernameNotFoundException("User with username : " + username.toUpperCase(Locale.ROOT) + " not found"));
     }
 
     public UserEntity getEntityByUsername(String username) {

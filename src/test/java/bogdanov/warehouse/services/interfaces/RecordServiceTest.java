@@ -13,6 +13,7 @@ import bogdanov.warehouse.exceptions.ResourceNotFoundException;
 import bogdanov.warehouse.exceptions.enums.ExceptionType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -93,6 +94,15 @@ public class RecordServiceTest {
         dto = null;
         result = null;
         output = null;
+    }
+
+    @AfterEach
+    private void clearAfter() {
+        reverseRecordRepository.deleteAll();
+        recordRepository.deleteAll();
+        userAccountService.getAll().forEach(u -> userAccountService.delete(u.getId()));
+        personService.getAll().forEach(p -> personService.delete(p.getId()));
+        nomenclatureRepository.deleteAll();
     }
 
     private void createPersons() {
@@ -1432,6 +1442,152 @@ public class RecordServiceTest {
         assertEquals(all, recordService.getAll());
     }
 
+    @Test
+    void search_NullIdUsers() {
+        changeRecordDates();
+        all = recordService.getAll();
+
+        SearchRecordDTO dto = new SearchRecordDTO();
+        dto.setType(null);
+        dto.setFromDate(null);
+        dto.setToDate(null);
+        dto.setNomenclatureId(nomenclature.stream().map(NomenclatureDTO::getId).toList());
+        dto.setUserId(Collections.singletonList(null));
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> recordService.search(dto));
+        assertEquals(ExceptionType.NULL_ID, e.getExceptionType());
+
+        assertEquals(all, recordService.getAll());
+    }
+
+    @Test
+    void search_NotRecordedIdUsers() {
+        changeRecordDates();
+        all = recordService.getAll();
+
+        SearchRecordDTO dto = new SearchRecordDTO();
+        dto.setType(null);
+        dto.setFromDate(null);
+        dto.setToDate(null);
+        dto.setNomenclatureId(nomenclature.stream().map(NomenclatureDTO::getId).toList());
+        dto.setUserId(Collections.singletonList(getNotRecordedId(users.stream().map(UserAccountDTO::getId).toList())));
+
+        ResourceNotFoundException e = assertThrows(ResourceNotFoundException.class,
+                () -> recordService.search(dto));
+        assertEquals(ExceptionType.RESOURCE_NOT_FOUND, e.getExceptionType());
+
+        assertEquals(all, recordService.getAll());
+    }
+
+    @Test
+    void search_NullIdNomenclature() {
+        changeRecordDates();
+        all = recordService.getAll();
+
+        SearchRecordDTO dto = new SearchRecordDTO();
+        dto.setType(null);
+        dto.setFromDate(null);
+        dto.setToDate(null);
+        dto.setNomenclatureId(Collections.singletonList(null));
+        dto.setUserId(null);
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> recordService.search(dto));
+        assertEquals(ExceptionType.NULL_ID, e.getExceptionType());
+
+        assertEquals(all, recordService.getAll());
+    }
+
+    @Test
+    void search_NotRecordedIdNomenclature() {
+        changeRecordDates();
+        all = recordService.getAll();
+
+        SearchRecordDTO dto = new SearchRecordDTO();
+        dto.setType(null);
+        dto.setFromDate(null);
+        dto.setToDate(null);
+        dto.setNomenclatureId(Collections.singletonList(getNotRecordedId(nomenclature.stream().map(NomenclatureDTO::getId).toList())));
+        dto.setUserId(null);
+
+        ResourceNotFoundException e = assertThrows(ResourceNotFoundException.class,
+                () -> recordService.search(dto));
+        assertEquals(ExceptionType.RESOURCE_NOT_FOUND, e.getExceptionType());
+
+        assertEquals(all, recordService.getAll());
+    }
+
+    @Test
+    void search_IncorrectDateRange() {
+        changeRecordDates();
+        all = recordService.getAll();
+
+        SearchRecordDTO dto = new SearchRecordDTO();
+        dto.setType(null);
+        dto.setFromDate(LocalDate.now().plusDays(1));
+        dto.setToDate(LocalDate.now().minusDays(1));
+        dto.setNomenclatureId(null);
+        dto.setUserId(null);
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> recordService.search(dto));
+        assertEquals(ExceptionType.INCORRECT_RANGE, e.getExceptionType());
+
+        assertEquals(all, recordService.getAll());
+    }
+
+    @Test
+    void search_NoParameter() {
+        changeRecordDates();
+        all = recordService.getAll();
+
+        SearchRecordDTO dto = new SearchRecordDTO();
+        dto.setType(null);
+        dto.setFromDate(null);
+        dto.setToDate(null);
+        dto.setNomenclatureId(null);
+        dto.setUserId(null);
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> recordService.search(dto));
+        assertEquals(ExceptionType.NO_PARAMETER_IS_PRESENT, e.getExceptionType());
+
+        assertEquals(all, recordService.getAll());
+    }
+
+    @Test
+    void update_NullDto() {
+        createRecords();
+        dto = records.get(records.size() - 1);
+        long id = dto.getId();
+        input = null;
+        String username = users.get(0).getUsername();
+        long amount = nomenclatureService.getById(dto.getNomenclatureId()).getAmount();
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> recordService.update(id, username, input));
+        assertEquals(ExceptionType.NO_OBJECT_WAS_PASSED, e.getExceptionType());
+        assertEquals(amount, nomenclatureService.getById(dto.getNomenclatureId()).getAmount());
+    }
+
+    @Test
+    void update_NegativeAmountDto() {
+        createRecords();
+        dto = records.get(records.size() - 1);
+        long id = dto.getId();
+        input = new RecordDTO();
+        input.setType(RECEPTION);
+        input.setAmount(-2L);
+        input.setNomenclatureId(dto.getNomenclatureId());
+        String username = users.get(0).getUsername();
+        long amount = nomenclatureService.getById(dto.getNomenclatureId()).getAmount();
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> recordService.update(id, username, input));
+        assertEquals(ExceptionType.NOT_POSITIVE_AMOUNT, e.getExceptionType());
+        assertEquals(amount, nomenclatureService.getById(dto.getNomenclatureId()).getAmount());
+    }
 
 }
 

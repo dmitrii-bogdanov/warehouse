@@ -44,7 +44,7 @@ public class PositionRestController {
         return positionService.getByName(name);
     }
 
-    @GetMapping(params = {"search", "name"})
+    @GetMapping(value = "/search", params = "name")
     public List<PositionDTO> findAllByNameContaining(@RequestParam String name) {
         return positionService.findAllByNameContaining(name);
     }

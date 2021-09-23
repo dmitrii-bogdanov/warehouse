@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -147,6 +148,20 @@ class InternalUserServiceTest {
         ArgumentException e = assertThrows(ArgumentException.class,
                 () -> userService.getEntityByUsername(username));
         assertEquals(ExceptionType.BLANK_USERNAME, e.getExceptionType());
+    }
+
+    @Test
+    void loadUserByUsername() {
+        List<UserAccountDTO> users = createUsers();
+        assertEquals(users.get(0).getUsername(), userService.loadUserByUsername(users.get(0).getUsername()).getUsername());
+    }
+
+    @Test
+    void loadUserByUsername_NotRecordedUsername() {
+        List<UserAccountDTO> users = createUsers();
+        String username = users.get(0).getUsername() + "something";
+        assertThrows(UsernameNotFoundException.class,
+                () -> userService.loadUserByUsername(username));
     }
 
 }

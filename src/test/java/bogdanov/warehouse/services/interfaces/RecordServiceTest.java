@@ -708,7 +708,7 @@ public class RecordServiceTest {
             assertTrue(tmpAll.containsAll(all));
             assertTrue(tmpAll.contains(formatTime(output)));
 
-            tmp = recordService.getAllReverseRecords();
+            tmp = new LinkedList<>(recordService.getAllReverseRecords());
             assertEquals(reverseRecords.size() + 1, tmp.size());
             assertTrue(tmp.containsAll(reverseRecords));
             tmp.removeAll(reverseRecords);
@@ -720,6 +720,25 @@ public class RecordServiceTest {
 
             reverseRecords = recordService.getAllReverseRecords();
         }
+    }
+
+    @Test
+    void revert_AlreadyRevertedRecord() {
+        createReverseRecords();
+        all = recordService.getAll();
+
+        for (RecordDTO record : records) {
+            if (RELEASE.equalsIgnoreCase(record.getType())) {
+                input = record;
+                break;
+            }
+        }
+        String username = users.get(0).getUsername();
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> recordService.revert(input.getId(), username));
+        assertEquals(ExceptionType.ALREADY_REVERTED_RECORD, e.getExceptionType());
+        assertEquals(all, recordService.getAll());
     }
 
     @Test
@@ -828,18 +847,19 @@ public class RecordServiceTest {
         RecordDTO generated;
         long amount;
         long recordAmount;
+        records = records.stream().filter(r -> RELEASE.equalsIgnoreCase(r.getType())).toList();
         for (int i = records.size() - 1; i >= 0; i--) {
             RecordDTO record = records.get(i);
-
-            nomenclatureDTO = nomenclature.get(rand(nomenclature));
+            recordAmount = nomenclatureService.getById(record.getNomenclatureId()).getAmount();
+            input = new RecordDTO();
+            nomenclatureDTO = nomenclatureService.getById(nomenclature.get(rand(nomenclature)).getId());
             amount = nomenclatureDTO.getAmount();
+            input.setNomenclatureId(nomenclatureDTO.getId());
             input.setType(rand(2) == 1 ? RECEPTION : RELEASE);
             if (amount == 0 && RELEASE.equalsIgnoreCase(input.getType())) {
                 i++;
                 continue;
             }
-            recordAmount = nomenclatureService.getById(record.getNomenclatureId()).getAmount();
-            input.setNomenclatureId(nomenclatureDTO.getId());
             input.setAmount(
                     RELEASE.equalsIgnoreCase(input.getType())
                             ? (long) (amount == 1 ? 1 : (rand((int) amount - 1) + 1))
@@ -853,7 +873,7 @@ public class RecordServiceTest {
             assertNotEquals(record.getId(), output.getId());
             assertTrue(output.getId() > 0);
             assertEquals(user.getId(), output.getUserId());
-            assertNotEquals(input.getType(), output.getType());
+            assertTrue(input.getType().equalsIgnoreCase(output.getType()));
             assertEquals(input.getAmount(), output.getAmount());
             assertEquals(input.getNomenclatureId(), output.getNomenclatureId());
             assertTrue(output.getTime().isBefore(LocalDateTime.now()));
@@ -868,7 +888,7 @@ public class RecordServiceTest {
             );
             if (!sameNomenclature) {
                 assertEquals(
-                        amount + input.getAmount() * (RECEPTION.equals(input.getType()) ? 1 : -1),
+                        amount + input.getAmount() * (RECEPTION.equalsIgnoreCase(input.getType()) ? 1 : -1),
                         nomenclatureService.getById(input.getNomenclatureId()).getAmount()
                 );
             }
@@ -887,18 +907,36 @@ public class RecordServiceTest {
             assertEquals(record.getNomenclatureId(), generated.getNomenclatureId());
             assertEquals(user.getId(), generated.getUserId());
 
-            tmp = recordService.getAllReverseRecords();
+            tmp = new LinkedList<>(recordService.getAllReverseRecords());
             assertEquals(reverseRecords.size() + 1, tmp.size());
             assertTrue(tmp.containsAll(reverseRecords));
             tmp.removeAll(reverseRecords);
             reverse = tmp.get(0);
             assertEquals(user.getId(), reverse.getUserId());
             assertEquals(record.getId(), reverse.getRevertedRecordId());
-            assertEquals(output.getId(), reverse.getGeneratedRecordId());
-            assertEquals(output.getTime(), reverse.getTime());
+            assertEquals(generated.getId(), reverse.getGeneratedRecordId());
+            assertEquals(generated.getTime(), reverse.getTime());
 
             reverseRecords = recordService.getAllReverseRecords();
         }
+    }
+
+    @Test
+    void update_AlreadyRevertedRecord() {
+        createReverseRecords();
+        all = recordService.getAll();
+
+        long id = records.get(records.size() - 1).getId();
+        String username = users.get(0).getUsername();
+        input = new RecordDTO();
+        input.setType(RECEPTION);
+        input.setAmount(10L);
+        input.setNomenclatureId(nomenclature.get(0).getId());
+
+        ArgumentException e = assertThrows(ArgumentException.class,
+                () -> recordService.update(id, username, input));
+        assertEquals(ExceptionType.ALREADY_REVERTED_RECORD, e.getExceptionType());
+        assertEquals(all, recordService.getAll());
     }
 
     @Test
@@ -1393,8 +1431,6 @@ public class RecordServiceTest {
         assertTrue(result.containsAll(correct));
         assertEquals(all, recordService.getAll());
     }
-
-
 
 
 }

@@ -9,6 +9,7 @@ import bogdanov.warehouse.dto.ReverseRecordDTO;
 import bogdanov.warehouse.dto.search.SearchRecordDTO;
 import bogdanov.warehouse.exceptions.ArgumentException;
 import bogdanov.warehouse.exceptions.ResourceNotFoundException;
+import bogdanov.warehouse.exceptions.WarehouseExeption;
 import bogdanov.warehouse.exceptions.enums.ExceptionType;
 import bogdanov.warehouse.services.interfaces.NomenclatureService;
 import bogdanov.warehouse.services.interfaces.RecordService;
@@ -17,6 +18,7 @@ import bogdanov.warehouse.services.mappers.Mapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -43,10 +45,18 @@ public class RecordServiceImpl implements RecordService {
     private static final String ID = "id";
     private static final String FROM_DATE = "fromDate";
     private static final String TO_DATE = "toDate";
+    private static final String UNIQUE_KEY_VIOLATION_SUBSTRING = "ON PUBLIC.REVERSE_RECORDS(";
+    private static final String REVERTED_RECORD_ID = "REVERTED_RECORD_ID";
 
     private void checkDtoNotNull(Object dto) {
         if (dto == null) {
             throw new ArgumentException(ExceptionType.NO_OBJECT_WAS_PASSED);
+        }
+    }
+
+    private void checkId(Long id) {
+        if (id == null) {
+            throw new ArgumentException(ExceptionType.NULL_ID);
         }
     }
 
@@ -71,9 +81,16 @@ public class RecordServiceImpl implements RecordService {
         return recordRepository.save(entity);
     }
 
+    private void checkAlreadyReverted(Long id) {
+        if (reverseRecordRepository.findByRevertedRecord_Id(id).isPresent()) {
+            throw new ArgumentException(ExceptionType.ALREADY_REVERTED_RECORD.setId(id));
+        }
+    }
+
     @Override
     public RecordDTO revert(Long id, String username) {
         RecordEntity revertedRecord = getEntityById(id);
+        checkAlreadyReverted(id);
         RecordEntity generatedRecord = new RecordEntity();
         generatedRecord.setUser(userService.getEntityByUsername(username));
         generatedRecord.setNomenclature(revertedRecord.getNomenclature());
@@ -89,10 +106,16 @@ public class RecordServiceImpl implements RecordService {
         return mapper.convert(generatedRecord);
     }
 
+    //TODO need to add some verifier to not revert if it cannot be added
     @Override
     public RecordDTO update(Long id, String username, RecordDTO record) {
-        revert(id, username);
-        return add(record, username);
+        RecordDTO generated = revert(id, username);
+        try {
+            return add(record, username);
+        } catch (ArgumentException e) {
+            revert(generated.getId(), username);
+            throw e;
+        }
     }
 
     @Override
@@ -107,12 +130,9 @@ public class RecordServiceImpl implements RecordService {
 
     @Override
     public RecordEntity getEntityById(Long id) {
-        Optional<RecordEntity> entity = recordRepository.findById(id);
-        if (entity.isPresent()) {
-            return entity.get();
-        } else {
-            throw new ResourceNotFoundException(RECORD, ID, id);
-        }
+        checkId(id);
+        return recordRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(RECORD, ID, id));
     }
 
     @Override

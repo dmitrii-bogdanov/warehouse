@@ -52,12 +52,12 @@ public class PersonRestController {
         return personService.findAllByPosition(id);
     }
 
-    @GetMapping(value = "/position/", params = "name")
+    @GetMapping(value = "/position", params = "name")
     public List<PersonDTO> getByPositionName(@RequestParam String name) {
         return personService.findAllByPosition(name);
     }
 
-    @GetMapping(params = "search")
+    @GetMapping(value = "/search")
     public List<PersonDTO> search(@RequestBody SearchPersonDTO searchPersonDto) {
         return personService.search(searchPersonDto);
     }

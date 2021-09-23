@@ -18,6 +18,7 @@ import bogdanov.warehouse.services.mappers.Mapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
+import org.springframework.context.annotation.Primary;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +29,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
+@Primary
 @Service
 @RequiredArgsConstructor
 public class RecordServiceImpl implements RecordService {

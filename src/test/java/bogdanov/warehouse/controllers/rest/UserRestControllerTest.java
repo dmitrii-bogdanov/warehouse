@@ -22,7 +22,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import javax.annotation.PostConstruct;
-import javax.persistence.Embedded;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.List;
@@ -104,6 +103,15 @@ class UserRestControllerTest extends AbstractSpringBootTest {
         }
     }
 
+    private long getNotRecordedId(List<Long> list) {
+        Random generator = new Random(System.nanoTime());
+        long id = generator.nextLong() & 1023;
+        while (list.contains(id)) {
+            id = generator.nextLong() & 1023;
+        }
+        return id;
+    }
+
     @Test
     void getAll() throws Exception {
         initData();
@@ -114,15 +122,6 @@ class UserRestControllerTest extends AbstractSpringBootTest {
         });
         assertEquals(users.size(), list.size());
         assertTrue(list.containsAll(users));
-    }
-
-    private long getNotRecordedId(List<Long> list) {
-        Random generator = new Random(System.nanoTime());
-        long id = generator.nextLong() & 1023;
-        while (list.contains(id)) {
-            id = generator.nextLong() & 1023;
-        }
-        return id;
     }
 
     @Test

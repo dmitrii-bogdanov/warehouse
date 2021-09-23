@@ -49,7 +49,7 @@ public class RecordRestController {
         return recordService.update(id, user.getName(), record);
     }
 
-    @GetMapping(params = {"search"})
+    @GetMapping(value = "search")
     public List<RecordDTO> search(@RequestBody SearchRecordDTO searchRecordDTO) {
         return recordService.search(searchRecordDTO);
     }
